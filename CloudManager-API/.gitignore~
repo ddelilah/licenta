@@ -1,7 +1,0 @@
-*.class
-bin/
-<<<<<<< HEAD
-*config.properties
-=======
-src/config/config.properties
->>>>>>> f8422c8557c07bb2fe996685610849a60b6d6941
