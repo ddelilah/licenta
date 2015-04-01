@@ -10,13 +10,10 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import app.constants.ServerState;
 
 
 @Entity
@@ -26,11 +23,10 @@ public class Server implements Comparable<Server> {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "server_id")
-	private int idServer;
+	private int serverId;
 
 	@Column(name = "state")
-	private ServerState state;
-
+	private String state;
 	@Column(name = "name")
 	private String name;
 
@@ -45,26 +41,26 @@ public class Server implements Comparable<Server> {
 
 	@Column(name = "e_idle")
 	private float idleEnergy;
-	
+
 	@ManyToOne
-	@JoinColumn(name="cpu_id")
+	@JoinColumn(name = "cpu_id")
 	private CPU cpu;
-	
+
 	@ManyToOne
-	@JoinColumn(name="ram_id")
+	@JoinColumn(name = "ram_id")
 	private RAM ram;
 
 	@ManyToOne
-	@JoinColumn(name="hdd_id")
+	@JoinColumn(name = "hdd_id")
 	private HDD hdd;
 
 	@ManyToOne
-	@JoinColumn(name="rack_id")
+	@JoinColumn(name = "rack_id")
 	private Rack rack;
-	
-	@OneToMany(mappedBy = "server",cascade  = CascadeType.ALL,fetch=FetchType.EAGER )
+
+	@OneToMany(mappedBy = "server", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<VirtualMachine> correspondingVMs = new ArrayList<VirtualMachine>();
-	
+
 	public Server() {
 
 	}
@@ -77,11 +73,11 @@ public class Server implements Comparable<Server> {
 		this.hdd = hdd;
 	}
 
-	public Server(int idServer, ServerState state, String name,
-			float coolingValue, float powerValue, float utilization,
-			float idleEnergy, CPU cpu, RAM ram, HDD hdd, Rack rack) {
+	public Server(int serverId, String state, String name, float coolingValue,
+			float powerValue, float utilization, float idleEnergy, CPU cpu,
+			RAM ram, HDD hdd, Rack rack) {
 		super();
-		this.idServer = idServer;
+		this.serverId = serverId;
 		this.state = state;
 		this.name = name;
 		this.coolingValue = coolingValue;
@@ -94,14 +90,13 @@ public class Server implements Comparable<Server> {
 		this.rack = rack;
 	}
 
-	public int getIdServer() {
-		return idServer;
+	public int getServerId() {
+		return serverId;
 	}
 
-	public void setIdServer(int idServer) {
-		this.idServer = idServer;
+	public void setServerId(int serverId) {
+		this.serverId = serverId;
 	}
-
 
 	public String getName() {
 		return name;
@@ -142,14 +137,12 @@ public class Server implements Comparable<Server> {
 	public void setIdleEnergy(float idleEnergy) {
 		this.idleEnergy = idleEnergy;
 	}
-	
-	
 
-	public ServerState getState() {
+	public String getState() {
 		return state;
 	}
 
-	public void setState(ServerState state) {
+	public void setState(String state) {
 		this.state = state;
 	}
 
@@ -197,6 +190,16 @@ public class Server implements Comparable<Server> {
 	public int compareTo(Server arg0) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public String toString() {
+		return "Server [serverId=" + serverId + ", state=" + state + ", name="
+				+ name + ", coolingValue=" + coolingValue + ", powerValue="
+				+ powerValue + ", utilization=" + utilization + ", idleEnergy="
+				+ idleEnergy + ", cpu=" + cpu + ", ram=" + ram + ", hdd=" + hdd
+				+ ", rack=" + rack + ", correspondingVMs=" + correspondingVMs
+				+ "]";
 	}
 
 }

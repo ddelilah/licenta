@@ -16,7 +16,7 @@ import javax.persistence.Table;
 public class Cooling {
 
 	@Id
-	@Column(name = "id_cooling")
+	@Column(name = "cooling_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int coolingId;
 
@@ -64,6 +64,12 @@ public class Cooling {
 
 	public void setPowerValue(float powerValue) {
 		this.powerValue = powerValue;
+	}
+
+	@Override
+	public String toString() {
+		return "Cooling [coolingId=" + coolingId + ", fanSpeed=" + fanSpeed
+				+ ", powerValue=" + powerValue + ", rack=" + rack + "]";
 	}
 
 }

@@ -14,7 +14,7 @@ public class HDD {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "hdd_id")
-	private int idHdd;
+	private int hddId;
 
 	@Column(name = "capacity")
 	private float capacity;
@@ -22,12 +22,12 @@ public class HDD {
 	@Column(name = "name")
 	private String name;
 
-	public int getIdHdd() {
-		return idHdd;
+	public int getHddId() {
+		return hddId;
 	}
 
-	public void setIdHdd(int idHdd) {
-		this.idHdd = idHdd;
+	public void setHddId(int hddId) {
+		this.hddId = hddId;
 	}
 
 	public float getCapacity() {
@@ -45,4 +45,11 @@ public class HDD {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	@Override
+	public String toString() {
+		return "HDD [hddId=" + hddId + ", capacity=" + capacity + ", name="
+				+ name + "]";
+	}
+	
 }

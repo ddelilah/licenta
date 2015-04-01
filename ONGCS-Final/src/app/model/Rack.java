@@ -11,14 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-
-import app.constants.RackState;
 
 @Entity
 @Table(name = "rack")
@@ -36,7 +29,7 @@ public class Rack {
 	private String name;
 
 	@Column(name = "state")
-	private RackState state;
+	private String state;
 
 	@Column(name = "utilization")
 	private float utilization;
@@ -74,11 +67,11 @@ public class Rack {
 		this.name = name;
 	}
 
-	public RackState getState() {
+	public String getState() {
 		return state;
 	}
 
-	public void setState(RackState state) {
+	public void setState(String state) {
 		this.state = state;
 	}
 
@@ -113,4 +106,13 @@ public class Rack {
 	public void setServers(List<Server> servers) {
 		this.servers = servers;
 	}
+
+	@Override
+	public String toString() {
+		return "Rack [rackId=" + rackId + ", capacity=" + capacity + ", name="
+				+ name + ", state=" + state + ", utilization=" + utilization
+				+ ", powerValue=" + powerValue + ", coolingValue="
+				+ coolingValue + ", servers=" + servers + "]";
+	}
+
 }

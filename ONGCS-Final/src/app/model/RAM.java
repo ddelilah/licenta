@@ -14,7 +14,7 @@ public class RAM {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "ram_id")
-	private int idRam;
+	private int ramId;
 
 	@Column(name = "capacity")
 	private float capacity;
@@ -22,12 +22,12 @@ public class RAM {
 	@Column(name = "name")
 	private String name;
 
-	public int getIdRam() {
-		return idRam;
+	public int getRamId() {
+		return ramId;
 	}
 
-	public void setIdRam(int idRam) {
-		this.idRam = idRam;
+	public void setRamId(int ramId) {
+		this.ramId = ramId;
 	}
 
 	public float getCapacity() {
@@ -44,6 +44,12 @@ public class RAM {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return "RAM [ramId=" + ramId + ", capacity=" + capacity + ", name="
+				+ name + "]";
 	}
 
 }

@@ -7,7 +7,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -21,7 +20,7 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "vm_id")
-	private int idVm;
+	private int vmId;
 
 	@Column(name = "state")
 	private VMState state;
@@ -33,7 +32,7 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 	private float powerValue;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name="cpu_id")
+	@JoinColumn(name = "cpu_id")
 	private CPU cpu;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -52,9 +51,9 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 
 	}
 
-	public VirtualMachine(int idVm, VMState state, String name,
+	public VirtualMachine(int vmId, VMState state, String name,
 			float powerValue, CPU cpu, RAM ram, HDD hdd, Server server) {
-		this.idVm = idVm;
+		this.vmId = vmId;
 		this.state = state;
 		this.name = name;
 		this.powerValue = powerValue;
@@ -64,9 +63,9 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 		this.server = server;
 	}
 
-	public VirtualMachine(int idVm, VMState state, String name, CPU cpu,
+	public VirtualMachine(int vmId, VMState state, String name, CPU cpu,
 			RAM ram, HDD hdd) {
-		this.idVm = idVm;
+		this.vmId = vmId;
 		this.state = state;
 		this.name = name;
 		this.cpu = cpu;
@@ -74,12 +73,12 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 		this.hdd = hdd;
 	}
 
-	public int getIdVm() {
-		return idVm;
+	public int getVmId() {
+		return vmId;
 	}
 
-	public void setIdVm(int idVm) {
-		this.idVm = idVm;
+	public void setVmId(int vmId) {
+		this.vmId = vmId;
 	}
 
 	public VMState getState() {
@@ -143,4 +142,12 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+	@Override
+	public String toString() {
+		return "VirtualMachine [vmId=" + vmId + ", state=" + state + ", name="
+				+ name + ", powerValue=" + powerValue + ", cpu=" + cpu
+				+ ", ram=" + ram + ", hdd=" + hdd + ", server=" + server + "]";
+	}
+	
 }

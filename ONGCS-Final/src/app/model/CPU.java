@@ -8,32 +8,32 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table (name = "cpu")
+@Table(name = "cpu")
 public class CPU {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "cpu_id")
-	private int idCpu;
-	
+	private int cpuId;
+
 	@Column(name = "nr_cores")
 	private int nr_cores;
-	
+
 	@Column(name = "frequency")
 	private float frequency;
 
 	@Column(name = "cpu_utilization")
 	private float cpu_utilization;
-	
+
 	@Column(name = "name")
 	private String name;
 
-	public int getIdCpu() {
-		return idCpu;
+	public int getCpuId() {
+		return cpuId;
 	}
 
-	public void setIdCpu(int idCpu) {
-		this.idCpu = idCpu;
+	public void setCpuId(int cpuId) {
+		this.cpuId = cpuId;
 	}
 
 	public int getNr_cores() {
@@ -67,6 +67,12 @@ public class CPU {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-}
 
+	@Override
+	public String toString() {
+		return "CPU [cpuId=" + cpuId + ", nr_cores=" + nr_cores
+				+ ", frequency=" + frequency + ", cpu_utilization="
+				+ cpu_utilization + ", name=" + name + "]";
+	}
+
+}
