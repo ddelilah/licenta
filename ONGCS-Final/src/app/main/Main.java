@@ -1,5 +1,8 @@
 package app.main;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +24,22 @@ public class Main {
 
 	final static Logger logger = LoggerFactory.getLogger(Main.class);
 
-	public static void main(String[] args) {
-
+	public static void main(String[] args) throws IOException {
+		
+		 ProcessBuilder builder = new ProcessBuilder(
+ 	            "cmd.exe", "/c", " mysql -u root licenta < init_script.sql "
+ 	            );
+ 	
+	 	builder.redirectErrorStream(true);
+	     Process p = builder.start();
+	     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+	     String line;
+	     while (true) {
+	         line = r.readLine();
+	         if (line == null) { break; }
+	         System.out.println(line);
+	     }
+/*
 		ServerDAOImpl srv = new ServerDAOImpl();
 
 		CPU cpu = new CPU();
@@ -100,7 +117,7 @@ public class Main {
 		srv.getAllServers();
 		srv.getServerById(3);
 		srv.deleteInstance(srv.getServerById(6));
-
+*/
 	}
 
 }
