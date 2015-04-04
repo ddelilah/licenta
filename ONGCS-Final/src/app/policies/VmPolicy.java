@@ -2,7 +2,7 @@ package app.policies;
 
 import app.model.VirtualMachine;
 
-public class VmPolicy extends Policy{
+public class VmPolicy{
 
 	private VirtualMachine vm;
 	
@@ -15,6 +15,4 @@ public class VmPolicy extends Policy{
 		System.out.println(vm.getServer());
 		return vm.getServer() == null;
 	}	
-	
-	
 }

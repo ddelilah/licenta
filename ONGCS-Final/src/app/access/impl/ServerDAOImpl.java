@@ -66,5 +66,34 @@ public class ServerDAOImpl extends GenericDAOImpl implements ServerDAO {
 	    
 	    return identified;
 	}
-
+/*
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Server> getServerListFromRack(int rackId) {
+		Transaction tx = null;
+	    Session session = SessionFactoryUtil.getInstance().getCurrentSession();
+	    List<Server> servers = new ArrayList<Server>();
+	    List<Server> serversIdentified = new ArrayList<Server>();
+	    try {
+	      tx = session.beginTransaction();
+	      servers = session.createQuery("select h from Server as h").list();
+	      for (Server s : servers) {
+	    	  if(s.getRack().getRackId() == rackId) {
+	    		  serversIdentified.add(s);
+	    	  }	 
+	      }
+	      tx.commit();
+	    } catch (RuntimeException e) {
+	      if (tx != null && tx.isActive()) {
+	        try {
+	          tx.rollback();
+	        } catch (HibernateException e1) {
+	          System.out.println("Error for getServerListFromRack(int rackId)");
+	        }
+	        throw e;
+	      }
+	    }
+	    
+	    return serversIdentified;
+	}*/
 }

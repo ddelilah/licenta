@@ -2,7 +2,7 @@ package app.policies;
 
 import app.model.Rack;
 
-public class RackPolicy extends Policy{
+public class RackPolicy{
 
 	private static int MIN_UTIL_THRESHOLD = 40;
 	private static int MAX_UTIL_THRESHOLD = 80;

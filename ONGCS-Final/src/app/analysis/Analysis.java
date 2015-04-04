@@ -59,7 +59,7 @@ public class Analysis {
 	public void checkPlanning(Float entropy){
 		
 		if (entropy > THRESHOLD) {
-			System.out.println("Starting Reinforcement Learning Algorithm");
+			System.out.println("Starting Learning Algorithm");
 		} else {
 			System.out.println("System is Optimal");
 		}

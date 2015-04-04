@@ -2,7 +2,7 @@ package app.policies;
 
 import app.model.Server;
 
-public class ServerPolicy extends Policy {
+public class ServerPolicy {
 
 	/**
 	 * When cpu utilization is 70% and storage usage(disk utilization) is 50%
