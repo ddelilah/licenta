@@ -10,5 +10,4 @@ public interface ServerDAO {
 	
 	public Server getServerById(int serverId);
 
-//	public List<Server> getServerListFromRack(int rackId);
 }
