@@ -4,7 +4,7 @@ import app.constants.PolicyType;
 import app.model.Server;
 import app.model.VirtualMachine;
 
-public class ServerPolicy {
+public class ServerPolicy extends Policy {
 
 	/**
 	 * When cpu utilization is 70% and storage usage(disk utilization) is 50%

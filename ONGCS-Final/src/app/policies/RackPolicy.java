@@ -3,7 +3,6 @@ package app.policies;
 import app.constants.PolicyType;
 import app.model.Rack;
 import app.model.Server;
-import app.model.VirtualMachine;
 
 public class RackPolicy extends Policy {
 
