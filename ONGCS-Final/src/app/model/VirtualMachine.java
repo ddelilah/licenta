@@ -28,8 +28,8 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 	@Column(name = "name")
 	private String name;
 
-	@Column(name = "power_value")
-	private float powerValue;
+	@Column(name = "vm_mips")
+	private int vmMips;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "cpu_id")
@@ -52,11 +52,11 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 	}
 
 	public VirtualMachine(int vmId, VMState state, String name,
-			float powerValue, CPU cpu, RAM ram, HDD hdd, Server server) {
+			int vmMips, CPU cpu, RAM ram, HDD hdd, Server server) {
 		this.vmId = vmId;
 		this.state = state;
 		this.name = name;
-		this.powerValue = powerValue;
+		this.vmMips = vmMips;
 		this.cpu = cpu;
 		this.ram = ram;
 		this.hdd = hdd;
@@ -97,12 +97,12 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 		this.name = name;
 	}
 
-	public float getPowerValue() {
-		return powerValue;
+	public int getVmMips() {
+		return vmMips;
 	}
 
-	public void setPowerValue(float powerValue) {
-		this.powerValue = powerValue;
+	public void setVmMips(int vmMips) {
+		this.vmMips = vmMips;
 	}
 
 	public CPU getCpu() {
@@ -146,7 +146,7 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 	@Override
 	public String toString() {
 		return "VirtualMachine [vmId=" + vmId + ", state=" + state + ", name="
-				+ name + ", powerValue=" + powerValue + ", cpu=" + cpu
+				+ name + ", vmMips=" + vmMips + ", cpu=" + cpu
 				+ ", ram=" + ram + ", hdd=" + hdd + ", server=" + server + "]";
 	}
 	

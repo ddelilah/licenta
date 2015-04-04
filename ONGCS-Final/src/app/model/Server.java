@@ -35,6 +35,9 @@ public class Server implements Comparable<Server> {
 
 	@Column(name = "power_value")
 	private float powerValue;
+	
+	@Column(name = "server_MIPS")
+	private int serverMIPS;
 
 	@Column(name = "utilization")
 	private float utilization;
@@ -168,6 +171,14 @@ public class Server implements Comparable<Server> {
 
 	public void setHdd(HDD hdd) {
 		this.hdd = hdd;
+	}
+
+	public int getServerMIPS() {
+		return serverMIPS;
+	}
+
+	public void setServerMIPS(int serverMIPS) {
+		this.serverMIPS = serverMIPS;
 	}
 
 	public Rack getRack() {
