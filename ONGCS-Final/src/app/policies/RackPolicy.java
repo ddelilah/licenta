@@ -1,22 +1,37 @@
 package app.policies;
 
+import app.constants.PolicyType;
 import app.model.Rack;
+import app.model.Server;
+import app.model.VirtualMachine;
 
-public class RackPolicy{
+public class RackPolicy extends Policy {
 
 	private static int MIN_UTIL_THRESHOLD = 40;
 	private static int MAX_UTIL_THRESHOLD = 80;
 	private Rack rack;
-	
-	public RackPolicy(Rack rack){
-		this.rack =rack;
+
+	public RackPolicy(PolicyType policyType, boolean isViolated, Rack rack) {
+		super(policyType, isViolated);
+		this.rack = rack;
 	}
 
+	@Override
 	public boolean evaluatePolicy() {
-		if(rack.getUtilization() >= MIN_UTIL_THRESHOLD && rack.getUtilization() <= MAX_UTIL_THRESHOLD )
-			/* rack utilization is within range */
-				return false;
-			return true;
+		double totalRequestedUtilization = 0;
+
+		for (Server s : rack.getServers()) {
+			totalRequestedUtilization += s.getUtilization();
+		}
+
+		if (totalRequestedUtilization < MAX_UTIL_THRESHOLD
+				&& totalRequestedUtilization > MIN_UTIL_THRESHOLD) {
+			isViolated = false;
+		} else {
+			isViolated = true;
+		}
+		
+		return isViolated;
 	}
 
 }

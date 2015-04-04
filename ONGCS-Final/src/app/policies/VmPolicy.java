@@ -1,18 +1,21 @@
 package app.policies;
 
+import app.constants.PolicyType;
 import app.model.VirtualMachine;
 
-public class VmPolicy{
+public class VmPolicy extends Policy {
 
 	private VirtualMachine vm;
-	
-	public VmPolicy(VirtualMachine vm){
-		this.vm=vm;
+
+	public VmPolicy(PolicyType policyType, boolean isViolated, VirtualMachine vm) {
+		super(policyType, isViolated);
+		this.vm = vm;
 	}
 
-	
-	public boolean evaluatePolicy(){
+	@Override
+	public boolean evaluatePolicy() {
 		System.out.println(vm.getServer());
 		return vm.getServer() == null;
-	}	
+	}
+
 }
