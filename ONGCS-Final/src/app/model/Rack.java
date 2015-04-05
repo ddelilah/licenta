@@ -1,5 +1,6 @@
 package app.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import org.hibernate.annotations.Proxy;
 @Entity
 @Table(name = "rack")
 @Proxy(lazy = false)
-public class Rack {
+public class Rack implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

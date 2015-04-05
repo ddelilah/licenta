@@ -6,30 +6,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import app.access.ServerDAO;
-import app.access.impl.CpuDAOImpl;
-import app.access.impl.HddDAOImpl;
-import app.access.impl.RackDAOImpl;
-import app.access.impl.RamDAOImpl;
-import app.constants.VMState;
-import app.model.CPU;
-import app.model.HDD;
-import app.model.RAM;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
 
-public class RackScheduling implements Serializable {
+public class RBR implements Serializable {
 
-	private List<Rack> rackList;
-	private List<VirtualMachine> vmList;
-	private List<Server> serverList;
-	private VMProcessor vmProcessor;
-	private RackProcessor rackProcessor;
-	private SchedulingUtil schedulingUtil;
+	private List<Rack> rackList= new ArrayList<Rack>();
+	private List<VirtualMachine> vmList= new ArrayList<VirtualMachine>();
+	private List<Server> serverList = new ArrayList<Server>();
+	private VMProcessor vmProcessor= new VMProcessor(); 
+	private RackProcessor rackProcessor = new RackProcessor();
+	private SchedulingUtil schedulingUtil= new SchedulingUtil();
 
-	public RackScheduling(List<Rack> rackList, List<VirtualMachine> vmList) {
+	public RBR(List<Rack> rackList, List<VirtualMachine> vmList) {
 		this.rackList = rackList;
 		this.vmList = vmList;
 
@@ -41,11 +31,12 @@ public class RackScheduling implements Serializable {
 		schedulingUtil = new SchedulingUtil();
 
 	}
+	public RBR(){}
 
 	@SuppressWarnings("unchecked")
-	public Map<VirtualMachine, Server> placeVMsRackByRack() {
+	public Map<VirtualMachine, Server> placeVMsRackByRack(List<VirtualMachine> vmList, List<Rack> rackList) {
 		
-		Map<Server, VirtualMachine> power = new HashMap<Server, VirtualMachine>();
+		//Map<Server, VirtualMachine> power = new HashMap<Server, VirtualMachine>();
 		Map<Server, List<Double>> resultOfOBFD = new HashMap<Server, List<Double>>();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 

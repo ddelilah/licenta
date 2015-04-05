@@ -1,5 +1,6 @@
 package app.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +22,7 @@ import org.hibernate.annotations.Proxy;
 @Entity
 @Table(name = "server")
 @Proxy(lazy = false)
-public class Server implements Comparable<Server> {
+public class Server implements Comparable<Server>,Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

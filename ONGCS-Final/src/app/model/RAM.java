@@ -1,5 +1,7 @@
 package app.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,7 +14,7 @@ import org.hibernate.annotations.Proxy;
 @Entity
 @Table(name = "ram")
 @Proxy(lazy = false)
-public class RAM {
+public class RAM implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -6,6 +6,7 @@ import java.util.List;
 import app.access.*;
 import app.access.impl.*;
 import app.constants.PolicyType;
+import app.execution.Execution;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -48,7 +49,7 @@ public class Analysis {
 		
 	}
 
-	public void performAnalysis() {
+	public void performAnalysis(List<VirtualMachine> vmList) {
 		/* evaluate all policies */
 		boolean isViolated = false;
 
@@ -58,7 +59,7 @@ public class Analysis {
 				if (vmPolicy.evaluatePolicy() == true){
 					System.out.println("VM policy violated");
 					isViolated = true;
-					checkPlanning((float) 1);
+					checkPlanning((float) 1, vmList);
 					break;
 				}
 			}
@@ -70,7 +71,7 @@ public class Analysis {
 				if (serverPolicy.evaluatePolicy() == true && !isViolated){
 					System.out.println("Server policy violated");
 					isViolated = true;
-					checkPlanning((float) 1);
+					checkPlanning((float) 1, vmList);
 					break;
 					
 				}
@@ -82,7 +83,7 @@ public class Analysis {
 						rack);
 				if (rackPolicy.evaluatePolicy() == true && !isViolated){
 					System.out.println("Rack policy violated");
-					checkPlanning((float) 1);
+					checkPlanning((float) 1, vmList);
 					isViolated = true;
 					break;
 				}
@@ -90,10 +91,21 @@ public class Analysis {
 
 }
 
-	public void checkPlanning(Float entropy) {
+	public void checkPlanning(Float entropy,List<VirtualMachine> allVMs) {
 
 		if (entropy > THRESHOLD) {
 			System.out.println("Starting Learning Algorithm");
+			Execution execution = new Execution();
+			RackDAO rackDAO = new RackDAOImpl();
+			List<Rack> allRacks  = new ArrayList<Rack>();
+			allRacks = rackDAO.getAllRacks();
+			System.out.println("\n\n\n"+allRacks.size());
+			System.out.println(allVMs.size());
+			
+			execution.executeNUR(allVMs, allRacks);
+		//	execution.executeRBR(allVMs, allRacks);
+			
+			
 			
 		} else {
 			System.out.println("System is Optimal");

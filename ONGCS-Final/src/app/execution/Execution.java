@@ -19,12 +19,13 @@ import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
 import app.scheduling.NUR;
-import app.scheduling.RackScheduling;
+import app.scheduling.RBR;
 
 public class Execution {
 	
 	private NUR nur = new NUR();
-	private static RackScheduling rackScheduling;
+	private static RBR rackScheduling;
+	private History history = new History();
 	
 	public void executeNUR(List<VirtualMachine> allVMs, List<Rack> allRacks) {
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
@@ -32,21 +33,25 @@ public class Execution {
 		
 		for(Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			int serverId = entry.getValue().getServerId();
-			System.out.println("vm " + entry.getKey().getName() + " should be assigned to server with id " + serverId);
+			System.out.println("[NUR]vm " + entry.getKey().getName() + " should be assigned to server with id " + serverId);
 			
 		}
+		System.out.println("[NUR] map size: "+ allocation.size());
+		history.writeToFile(allocation, "historyNUR.txt");
 	}
 	
-	public void executeRBR() {
+	public void executeRBR(List<VirtualMachine> allVMs, List<Rack> allRacks) {
+		RBR rackScheduling = new RBR(allRacks, allVMs);
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		//create new instance of rackScheduling when having the vms required for scheduling
-		allocation = rackScheduling.placeVMsRackByRack();
+		System.out.println(" size rbr"+ rackScheduling.placeVMsRackByRack(allVMs, allRacks).size());
+		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
 		for(Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			int serverId = entry.getValue().getServerId();
 			System.out.println("[RBR]vm " + entry.getKey().getName() + " should be assigned to server with id " + serverId);
 			
 		}
-		
+		history.writeToFile(allocation, "historyRBR.txt");
 	}
 	
 //	public static void main(String[] args) {

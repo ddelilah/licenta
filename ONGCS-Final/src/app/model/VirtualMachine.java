@@ -1,5 +1,7 @@
 package app.model;
 
+import java.io.Serializable;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,7 +20,7 @@ import app.constants.VMState;
 @Entity
 @Table(name = "vm")
 @Proxy(lazy = false)
-public class VirtualMachine implements Comparable<VirtualMachine> {
+public class VirtualMachine implements Comparable<VirtualMachine>,Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

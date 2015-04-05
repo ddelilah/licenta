@@ -28,6 +28,7 @@ public class Queue extends Thread {
 	boolean statesChanged = false;
 	private GenericDAO dao;
 	private List<ContextData> msg;
+	List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
 	
 	public Queue() {
 		this.receivedMessage = new LinkedBlockingDeque<ContextData>();
@@ -39,6 +40,7 @@ public class Queue extends Thread {
 	
 	@Override
 	public void run() {
+		//List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
 
 		while (true) {
 			while (!receivedMessage.isEmpty()) {
@@ -49,33 +51,39 @@ public class Queue extends Thread {
 				} catch (Exception e) {}
 				
 				ContextData message = receivedMessage.pollFirst();
-				System.out.println("Monitoring " + message.toString());
+				System.out.println("\n\n\nMonitoring " + message.toString());
 				
-					updateDB(message);
+				vmList = updateDB(message);
 			
 				Thread.yield();
 				statesChanged = true;
 			}
 			if (statesChanged) {
-				System.out.println("Starting system analysis...");
+				System.out.println("\n\n\nStarting system analysis...");
+				for(VirtualMachine vm: vmList){
+					System.out.println(vm.getName()+"\n\n");
+				}
 				statesChanged = false;
 				break;		
 			}
 		}
 		Analysis analysis = new Analysis();
 		
-		analysis.performAnalysis();
+		analysis.performAnalysis(vmList);
 		
 	}
 
-	private void updateDB(ContextData message) {
+	private List<VirtualMachine> updateDB(ContextData message) {
+		
+		
+		
 		if(message.getCommand().equals("CREATE")){
 			if(message.getType() instanceof VirtualMachine){
 
-				System.out.println("Preparing to create VM.....");
+				System.out.println("\n\n\nPreparing to create VM.....");
 				VirtualMachine vm = (VirtualMachine) message.getType();
 				vm.setState(VMState.RUNNING.getValue());
-				
+				vmList.add(vm);
 				System.out.println("vm's state is " + vm.getState());
 				dao.createInstance(vm);
 				
@@ -96,7 +104,7 @@ public class Queue extends Thread {
 			}
 			else if(message.getType() instanceof Rack){}
 		}
-		
+		return vmList;
 	}
 
 
