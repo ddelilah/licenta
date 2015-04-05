@@ -17,7 +17,7 @@ import org.hibernate.annotations.Proxy;
 public class CPU implements Serializable{
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "cpu_id")
 	private int cpuId;
 

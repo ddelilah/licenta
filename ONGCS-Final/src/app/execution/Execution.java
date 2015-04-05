@@ -6,15 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import app.access.impl.CpuDAOImpl;
-import app.access.impl.HddDAOImpl;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+
 import app.access.impl.RackDAOImpl;
-import app.access.impl.RamDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
-import app.constants.VMState;
-import app.model.CPU;
-import app.model.HDD;
-import app.model.RAM;
+import app.hibernate.SessionFactoryUtil;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -22,84 +20,104 @@ import app.scheduling.NUR;
 import app.scheduling.RBR;
 
 public class Execution {
-	
-	private NUR nur = new NUR();
+
+	private static NUR nur = new NUR();
 	private static RBR rackScheduling;
-	private History history = new History();
-	
-	public void executeNUR(List<VirtualMachine> allVMs, List<Rack> allRacks) {
+	private static History history = new History();
+
+	public static void executeNUR(List<VirtualMachine> allVMs,
+			List<Rack> allRacks) {
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = nur.placeVMsInNoneUnderutilizedRack(allVMs, allRacks);
-		
-		for(Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
+
+		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			int serverId = entry.getValue().getServerId();
-			System.out.println("[NUR]vm " + entry.getKey().getName() + " should be assigned to server with id " + serverId);
-			
+			System.out.println("[NUR]vm " + entry.getKey().getName()
+					+ " should be assigned to server with id " + serverId);
+			Server s = entry.getValue();
+			VirtualMachine vm = entry.getKey();
+			vm.setServer(s);
+			mergeSessionsForExecution(vm);
+			// vmDAO.updateInstance(vm);
 		}
-		System.out.println("[NUR] map size: "+ allocation.size());
+
+		System.out.println("[NUR] map size: " + allocation.size());
 		history.writeToFile(allocation, "historyNUR.txt");
 	}
-	
-	public static void executeRBR(List<VirtualMachine> allVMs, List<Rack> allRacks) {
+
+	public static void executeRBR(List<VirtualMachine> allVMs,
+			List<Rack> allRacks) {
 		RBR rackScheduling = new RBR(allRacks, allVMs);
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
-		//create new instance of rackScheduling when having the vms required for scheduling
-		System.out.println(" size rbr"+ rackScheduling.placeVMsRackByRack(allVMs, allRacks).size());
+		// create new instance of rackScheduling when having the vms required
+		System.out.println(" size rbr"
+				+ rackScheduling.placeVMsRackByRack(allVMs, allRacks).size());
 		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
-		for(Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
+		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			int serverId = entry.getValue().getServerId();
-			System.out.println("[RBR]vm " + entry.getKey().getName() + " should be assigned to server with id " + serverId);
-			
+			System.out.println("[RBR]vm " + entry.getKey().getName()
+					+ " should be assigned to server with id " + serverId);
+			Server s = entry.getValue();
+			VirtualMachine vm = entry.getKey();
+			vm.setServer(s);
+			mergeSessionsForExecution(vm);
+
 		}
 		History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");
 	}
-	
+
+	private static String mergeSessionsForExecution(VirtualMachine vm) {
+		Session session = SessionFactoryUtil.getInstance().openSession();
+		Query query = session
+				.createQuery("from VirtualMachine vm where vm.vmId=:vm_id");
+		List<VirtualMachine> queryList = query.setParameter("vm_id",
+				vm.getVmId()).list();
+		session.close();
+		Session session2 = SessionFactoryUtil.getInstance().openSession();
+		try {
+			if (queryList.size() > 0) {
+				session2.beginTransaction();
+				VirtualMachine v = (VirtualMachine) session2.get(
+						VirtualMachine.class, new Integer(213));
+				session2.merge(vm);
+				// session2.update(vm);
+			} else {
+				session2.beginTransaction();
+				session2.save(vm);
+			}
+		} catch (HibernateException e) {
+			session2.getTransaction().rollback();
+			System.out
+					.println("Getting Exception : " + e.getLocalizedMessage());
+		} finally {
+			session2.getTransaction().commit();
+			session2.close();
+		}
+
+		return "Successfully data updated into table";
+
+	}
+
 	public static void main(String[] args) {
 		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
 		List<Rack> allRacks = new ArrayList<Rack>();
 
-		CPU cpu1, cpu2;
-		HDD hdd1, hdd2;
-		RAM ram1, ram2;
-		
-		CpuDAOImpl cpuDAO = new CpuDAOImpl();
-		HddDAOImpl hddDAO = new HddDAOImpl();
-		RamDAOImpl ramDAO = new RamDAOImpl();
-		
-		cpu1 = cpuDAO.getCPUById(1);
-		cpu2 = cpuDAO.getCPUById(2);
-		
-		hdd1 = hddDAO.getHDDById(1);
-		hdd2 = hddDAO.getHDDById(2);
-		
-		ram1 = ramDAO.getRAMById(1);
-		ram2 = ramDAO.getRAMById(2);
-		
-		VirtualMachine vm = new VirtualMachine();
-		vm.setCpu(cpu1);
-		vm.setHdd(hdd1);
-		vm.setRam(ram1);
-		vm.setName("vm1_testScheduling");
-		vm.setVmMips(250);
-		vm.setState(VMState.SHUT_DOWN.getValue());
-		
-		VirtualMachine vm2 = new VirtualMachine();
-		vm2.setCpu(cpu2);
-		vm2.setHdd(hdd2);
-		vm2.setRam(ram2);
-		vm2.setName("vm2_testScheduling");
-		vm2.setVmMips(250);
-		vm2.setState(VMState.SHUT_DOWN.getValue());
-		
+		VirtualMachine vm, vm2;
+
+		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+
+		vm = vmDAO.getVirtualMachineById(213);
+		vm2 = vmDAO.getVirtualMachineById(214);
+
 		allVMs.add(vm);
 		allVMs.add(vm2);
 
 		RackDAOImpl rackDAO = new RackDAOImpl();
 		allRacks = rackDAO.getAllRacks();
-		rackScheduling = new RBR(allRacks, allVMs);
-	//	executeNUR(allVMs, allRacks);
-		executeRBR(allVMs, allRacks);
+		// rackScheduling = new RackScheduling(allRacks, allVMs);
+		executeNUR(allVMs, allRacks);
+		// executeRBR();
 	}
 
 }
