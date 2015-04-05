@@ -212,7 +212,7 @@ public class Server implements Comparable<Server> {
 				+ name + ", coolingValue=" + coolingValue + ", powerValue="
 				+ powerValue + ", utilization=" + utilization + ", idleEnergy="
 				+ idleEnergy + ", cpu=" + cpu + ", ram=" + ram + ", hdd=" + hdd
-				+ ", rack=" + rack + ", correspondingVMs=" + correspondingVMs
+				+ ", rack=" + rack.getRackId() + ", correspondingVMs=" + correspondingVMs
 				+ "]";
 	}
 

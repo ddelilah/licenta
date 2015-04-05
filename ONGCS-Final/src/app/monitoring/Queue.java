@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
 import app.access.GenericDAO;
 import app.access.ServerDAO;
 import app.access.VirtualMachineDAO;
@@ -11,7 +14,9 @@ import app.access.impl.GenericDAOImpl;
 import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.analysis.Analysis;
+import app.constants.PolicyType;
 import app.constants.VMState;
+import app.hibernate.SessionFactoryUtil;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -22,13 +27,15 @@ public class Queue extends Thread {
 	private Analysis analysis;
 	boolean statesChanged = false;
 	private GenericDAO dao;
+	private List<ContextData> msg;
 	
 	public Queue() {
 		this.receivedMessage = new LinkedBlockingDeque<ContextData>();
 		this.analysis = new Analysis();
 		this.dao = new GenericDAOImpl();
+		this.msg = new ArrayList<ContextData>();
+		
 	}
-
 	
 	@Override
 	public void run() {
@@ -50,12 +57,17 @@ public class Queue extends Thread {
 				statesChanged = true;
 			}
 			if (statesChanged) {
-				System.out.println("starting system analysis");
-		//		analysis.performAnalysis();
+				System.out.println("Starting system analysis...");
 				statesChanged = false;
+				break;		
 			}
 		}
+		Analysis analysis = new Analysis();
+		
+		analysis.performAnalysis();
+		
 	}
+
 	private void updateDB(ContextData message) {
 		if(message.getCommand().equals("CREATE")){
 			if(message.getType() instanceof VirtualMachine){
@@ -86,6 +98,7 @@ public class Queue extends Thread {
 		}
 		
 	}
+
 
 	public synchronized void addTOQueue(ContextData message) {
 		this.receivedMessage.add(message);

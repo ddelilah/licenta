@@ -47,10 +47,10 @@ INSERT INTO `licenta`.`rack`(`rack_id`,`capacity`,`state`,`name`,`utilization`,`
 INSERT INTO `licenta`.`rack`(`rack_id`,`capacity`,`state`,`name`,`utilization`,`cooling_value`,`power_value`)VALUES(4,16,'on','rack04',50,0,0);
 select * from rack;
 
-INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(1,'host01','on',5,5,2,0,0,0,0,1,2000);
-INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(2,'host02','on',5,5,2,0,0,0,0,2,2000);
+INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(1,'host01','on',5,5,2,70,0,0,0,1,2000);
+INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(2,'host02','on',5,5,2,50,0,0,0,2,2000);
 INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(3,'host03','on',5,5,2,0,0,0,0,1,2000);
-INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(4,'host04','on',5,5,2,0,0,0,0,4,2000);
+INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(4,'host04','on',5,5,2,60,0,0,0,4,2000);
 select * from server;
 
 

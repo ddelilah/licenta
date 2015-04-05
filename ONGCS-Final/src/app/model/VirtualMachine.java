@@ -149,8 +149,8 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 	@Override
 	public String toString() {
 		return "VirtualMachine [vmId=" + vmId + ", state=" + state + ", name="
-				+ name + ", vmMips=" + vmMips + ", cpu=" + cpu
-				+ ", ram=" + ram + ", hdd=" + hdd + ", server=" + server + "]";
+				+ name + ", vmMips=" + vmMips + ", cpu=" + cpu.getCpuId()
+				+ ", ram=" + ram.getRamId() + ", hdd=" + hdd.getHddId() + ", server=" + server.getServerId() + "]";
 	}
 	
 }

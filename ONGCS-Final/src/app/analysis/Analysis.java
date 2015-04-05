@@ -45,50 +45,56 @@ public class Analysis {
 		this.serverList= serverDao.getAllServers();
 		this.rackList = rackDao.getAllRacks();
 		
-		/** set policy*/
-		this.p = PolicyType.VM_POLICY;
+		
 	}
 
 	public void performAnalysis() {
 		/* evaluate all policies */
+		boolean isViolated = false;
 
-		switch (p) {
-		case VM_POLICY:
 			/** If there are undeployed VMs learning algorithm should be started */
 			for (VirtualMachine vm : vmList) {
 				VmPolicy vmPolicy = new VmPolicy(p.VM_POLICY, false, vm);
-				if (vmPolicy.evaluatePolicy() == true)
+				if (vmPolicy.evaluatePolicy() == true){
+					System.out.println("VM policy violated");
+					isViolated = true;
 					checkPlanning((float) 1);
+					break;
+				}
 			}
-			break;
+			
 
-		case SERVER_POLICY:
 			for (Server server : serverList) {
 				ServerPolicy serverPolicy = new ServerPolicy(p.SERVER_POLICY,
 						false, server);
-				if (serverPolicy.evaluatePolicy() == true)
+				if (serverPolicy.evaluatePolicy() == true && !isViolated){
+					System.out.println("Server policy violated");
+					isViolated = true;
 					checkPlanning((float) 1);
-
+					break;
+					
+				}
 			}
-			break;
-
-		case RACK_POLICY:
+		
+		
 			for (Rack rack : rackList) {
 				RackPolicy rackPolicy = new RackPolicy(p.RACK_POLICY, false,
 						rack);
-				if (rackPolicy.evaluatePolicy() == true)
+				if (rackPolicy.evaluatePolicy() == true && !isViolated){
+					System.out.println("Rack policy violated");
 					checkPlanning((float) 1);
+					isViolated = true;
+					break;
+				}
 			}
 
-			break;
-		}
-
-	}
+}
 
 	public void checkPlanning(Float entropy) {
 
 		if (entropy > THRESHOLD) {
 			System.out.println("Starting Learning Algorithm");
+			
 		} else {
 			System.out.println("System is Optimal");
 		}

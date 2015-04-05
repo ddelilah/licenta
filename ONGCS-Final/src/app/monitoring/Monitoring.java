@@ -15,7 +15,7 @@ public class Monitoring {
 
 	public Monitoring() {
 		queue = new Queue();
-		queue.start();
+	//	queue.start();
 	}
 
 	public void addToQueue(Object type, String command) {
@@ -23,6 +23,9 @@ public class Monitoring {
 		ContextData contextData = new ContextData(type, command);	
 		queue.addTOQueue(contextData);
 		
+	}
+	public void startMonitoring(){
+		queue.start();
 	}
 	/*
 	public static void main(String []args){

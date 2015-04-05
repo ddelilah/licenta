@@ -41,7 +41,6 @@ public class Main {
 	     while (true) {
 	         line = r.readLine();
 	         if (line == null) { break; }
-	         System.out.println(line);
 	     }
 	}
 	
@@ -54,8 +53,9 @@ public class Main {
 		  Monitoring monitoring = new Monitoring();
 		  int length = data.getData().length();
 		     String[] toParse = new String[length];
-		     toParse = data.getData().split("\n");
-		     
+		     toParse = data.getData().split("\\r?\\n");
+		     for(int i=0; i<toParse.length; i++)
+		    	 System.out.println(toParse[i]);
 		     for(int i=0; i<toParse.length; i++){
 		    	 VirtualMachine vm = null;
 		    	 Server server = null;
@@ -73,6 +73,7 @@ public class Main {
 			    	 }
 		    	 
 		     }
+		     monitoring.startMonitoring();
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -80,11 +81,10 @@ public class Main {
 		Main main = new Main();
 		
 		main.startInitialization();
-	    
+	  
 		main.startMonitoring();
-	    	
+	    
 
-		
 	//	VirtualMachineDAO vmDao= new VirtualMachineDAO();
 /*
 		ServerDAOImpl srv = new ServerDAOImpl();
