@@ -1,8 +1,17 @@
 package app.monitoring;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import app.access.GenericDAO;
+import app.access.ServerDAO;
+import app.access.VirtualMachineDAO;
+import app.access.impl.GenericDAOImpl;
+import app.access.impl.ServerDAOImpl;
+import app.access.impl.VirtualMachineDAOImpl;
 import app.analysis.Analysis;
+import app.constants.VMState;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -12,41 +21,52 @@ public class Queue extends Thread {
 	private LinkedBlockingDeque<ContextData> receivedMessage;
 	private Analysis analysis;
 	boolean statesChanged = false;
-
+	private GenericDAO dao;
+	
 	public Queue() {
 		this.receivedMessage = new LinkedBlockingDeque<ContextData>();
 		this.analysis = new Analysis();
+		this.dao = new GenericDAOImpl();
 	}
 
+	
 	@Override
 	public void run() {
+
 		while (true) {
 			while (!receivedMessage.isEmpty()) {
 				try {
+					//join();
+					//Thread.yield();
 					Thread.sleep(1000);
-					System.out.println("thread waiting");
 				} catch (Exception e) {}
 				
 				ContextData message = receivedMessage.pollFirst();
-				System.out.println("Processing " + message.toString());
+				System.out.println("Monitoring " + message.toString());
 				
-				updateDB(message);
-				
+					updateDB(message);
+			
+				Thread.yield();
 				statesChanged = true;
 			}
 			if (statesChanged) {
 				System.out.println("starting system analysis");
+		//		analysis.performAnalysis();
 				statesChanged = false;
 			}
 		}
 	}
-
 	private void updateDB(ContextData message) {
-
 		if(message.getCommand().equals("CREATE")){
 			if(message.getType() instanceof VirtualMachine){
-				//create vm
-				System.out.println("Preparing to create VM");
+
+				System.out.println("Preparing to create VM.....");
+				VirtualMachine vm = (VirtualMachine) message.getType();
+				vm.setState(VMState.RUNNING.getValue());
+				
+				System.out.println("vm's state is " + vm.getState());
+				dao.createInstance(vm);
+				
 			}
 			else if(message.getType() instanceof Server){
 				System.out.println("Preparing to create Server");
@@ -54,9 +74,10 @@ public class Queue extends Thread {
 			else if(message.getType() instanceof Rack){}
 		}
 		else if(message.getCommand().equals("DELETE")){
+
 			if(message.getType() instanceof VirtualMachine){
-				//check if vm exists
-				//delete vm
+				VirtualMachine vm = (VirtualMachine) message.getType();
+				dao.deleteInstance(vm);
 			}
 			else if(message.getType() instanceof Server){
 				System.out.println("Preparing to delete VM");

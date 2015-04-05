@@ -3,10 +3,13 @@ package app.analysis;
 import java.util.ArrayList;
 import java.util.List;
 
+import app.access.*;
+import app.access.impl.*;
 import app.constants.PolicyType;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
+import app.policies.Policy;
 import app.policies.RackPolicy;
 import app.policies.ServerPolicy;
 import app.policies.VmPolicy;
@@ -34,6 +37,16 @@ public class Analysis {
 
 	public Analysis() {
 
+		VirtualMachineDAO vmDao = new VirtualMachineDAOImpl();
+		ServerDAO serverDao = new ServerDAOImpl();
+		RackDAO rackDao = new RackDAOImpl();
+		
+		this.vmList = vmDao.getAllVMs();
+		this.serverList= serverDao.getAllServers();
+		this.rackList = rackDao.getAllRacks();
+		
+		/** set policy*/
+		this.p = PolicyType.VM_POLICY;
 	}
 
 	public void performAnalysis() {

@@ -9,7 +9,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import app.access.impl.ServerDAOImpl;
+import app.access.*;
+import app.access.impl.*;
+import app.access.impl.VirtualMachineDAOImpl;
 import app.constants.RackState;
 import app.constants.ServerState;
 import app.constants.VMState;
@@ -19,14 +21,16 @@ import app.model.RAM;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
+import app.monitoring.Data;
+import app.monitoring.Monitoring;
 
 public class Main {
 
 	final static Logger logger = LoggerFactory.getLogger(Main.class);
 
-	public static void main(String[] args) throws IOException {
-		
-		 ProcessBuilder builder = new ProcessBuilder(
+	
+	public void startInitialization() throws Exception{
+		ProcessBuilder builder = new ProcessBuilder(
  	            "cmd.exe", "/c", " mysql -u root licenta < init_script.sql "
  	            );
  	
@@ -39,6 +43,49 @@ public class Main {
 	         if (line == null) { break; }
 	         System.out.println(line);
 	     }
+	}
+	
+	public void startMonitoring() throws Exception{
+		
+		VirtualMachineDAO vmDAO = new VirtualMachineDAOImpl();
+		ServerDAO serverDAO = new ServerDAOImpl();
+		String command;
+		  Data data = new Data();
+		  Monitoring monitoring = new Monitoring();
+		  int length = data.getData().length();
+		     String[] toParse = new String[length];
+		     toParse = data.getData().split("\n");
+		     
+		     for(int i=0; i<toParse.length; i++){
+		    	 VirtualMachine vm = null;
+		    	 Server server = null;
+		    	 
+		    	 if(((toParse[i].split(" "))[0]).equals("VM")){
+		    		vm = vmDAO.getVirtualMachineById(Integer.parseInt(toParse[i].split(" ")[1]));
+		    		command = toParse[i].split(" ")[2];
+		    		monitoring.addToQueue(vm, command);
+		    	 }
+		    	 
+		    	 else if(((toParse[i].split(" "))[0]).equals("SERVER")){
+			    		server = serverDAO.getServerById(Integer.parseInt(toParse[i].split(" ")[1]));
+			    		command = toParse[i].split(" ")[2];
+			    		monitoring.addToQueue(server, command);
+			    	 }
+		    	 
+		     }
+	}
+	
+	public static void main(String[] args) throws Exception {
+		
+		Main main = new Main();
+		
+		main.startInitialization();
+	    
+		main.startMonitoring();
+	    	
+
+		
+	//	VirtualMachineDAO vmDao= new VirtualMachineDAO();
 /*
 		ServerDAOImpl srv = new ServerDAOImpl();
 

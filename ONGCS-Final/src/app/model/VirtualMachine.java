@@ -26,7 +26,7 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 	private int vmId;
 
 	@Column(name = "state")
-	private VMState state;
+	private String state;
 
 	@Column(name = "name")
 	private String name;
@@ -54,7 +54,7 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 
 	}
 
-	public VirtualMachine(int vmId, VMState state, String name,
+	public VirtualMachine(int vmId, String state, String name,
 			int vmMips, CPU cpu, RAM ram, HDD hdd, Server server) {
 		this.vmId = vmId;
 		this.state = state;
@@ -66,7 +66,7 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 		this.server = server;
 	}
 
-	public VirtualMachine(int vmId, VMState state, String name, CPU cpu,
+	public VirtualMachine(int vmId, String state, String name, CPU cpu,
 			RAM ram, HDD hdd) {
 		this.vmId = vmId;
 		this.state = state;
@@ -84,12 +84,12 @@ public class VirtualMachine implements Comparable<VirtualMachine> {
 		this.vmId = vmId;
 	}
 
-	public VMState getState() {
+	public String getState() {
 		return state;
 	}
 
-	public void setState(VMState state) {
-		this.state = state;
+	public void setState(String string) {
+		this.state = string;
 	}
 
 	public String getName() {

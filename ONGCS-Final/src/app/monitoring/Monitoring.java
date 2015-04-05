@@ -24,7 +24,7 @@ public class Monitoring {
 		queue.addTOQueue(contextData);
 		
 	}
-	
+	/*
 	public static void main(String []args){
 		Monitoring monitoring = new Monitoring();
 		
@@ -37,6 +37,6 @@ public class Monitoring {
 		monitoring.addToQueue(server, "DELETE");
 		monitoring.addToQueue(vm, "CREATE");
 		
-	}
+	}*/
 
 }
