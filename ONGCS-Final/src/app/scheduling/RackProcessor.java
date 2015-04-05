@@ -1,13 +1,19 @@
 package app.scheduling;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import app.access.impl.RackDAOImpl;
 import app.model.*;
 
 public class RackProcessor implements Comparator<Rack> {
 
 	private List<Rack> rackList;
+	
+	private RackDAOImpl rackDAO = new RackDAOImpl();
+	
+	private static int LOWER_BOUND_RACK_UTILIZATION = 40;
 	
 	public RackProcessor(List<Rack> rackList){
 		this.rackList=rackList;
@@ -33,6 +39,32 @@ public class RackProcessor implements Comparator<Rack> {
 		
 		Collections.sort(rackList, new RackProcessor());
 		return rackList;
+	}
+	
+	public List<Rack> getNonUnderUtilizedRacks(List<Rack> allRacks) {
+		List<Rack> nonUnderutilizedRacks = new ArrayList<Rack>();
+		
+		for(Rack r : allRacks) {
+			if(r.getUtilization() > LOWER_BOUND_RACK_UTILIZATION) {
+				nonUnderutilizedRacks.add(r);
+			}
+		}
+		
+		return nonUnderutilizedRacks;
+		
+	}
+	
+	public List<Rack> getUnderUtilizedRacks(List<Rack> allRacks) {
+		List<Rack> underutilizedRacks = new ArrayList<Rack>();
+		
+		for(Rack r : allRacks) {
+			if(r.getUtilization() < LOWER_BOUND_RACK_UTILIZATION) {
+				underutilizedRacks.add(r);
+			}
+		}
+		
+		return underutilizedRacks;
+		
 	}
 	
 	/*public static void main(String []args){
