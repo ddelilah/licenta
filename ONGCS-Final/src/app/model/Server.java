@@ -15,9 +15,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Proxy;
+
 
 @Entity
 @Table(name = "server")
+@Proxy(lazy = false)
 public class Server implements Comparable<Server> {
 
 	@Id

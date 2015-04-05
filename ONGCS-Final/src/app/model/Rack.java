@@ -13,8 +13,13 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+import org.hibernate.annotations.Proxy;
+
 @Entity
 @Table(name = "rack")
+@Proxy(lazy = false)
 public class Rack {
 
 	@Id
@@ -40,7 +45,8 @@ public class Rack {
 	@Column(name = "cooling_value")
 	private float coolingValue;
 
-	@OneToMany(mappedBy = "rack", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "rack", cascade = CascadeType.ALL)
+	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<Server> servers = new ArrayList<Server>();
 
 	public int getRackId() {
