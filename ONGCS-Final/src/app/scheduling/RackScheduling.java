@@ -35,17 +35,13 @@ public class RackScheduling implements Serializable{
 	@SuppressWarnings("unchecked")
 	public void placeVMsRackByRack(){
 
-		Map<Server,VirtualMachine> allocation = new HashMap<Server,VirtualMachine>();
-		Map<Server,VirtualMachine> power = new HashMap<Server,VirtualMachine>();
+		Map<Server,List<VirtualMachine>> allocation = new HashMap<Server,List<VirtualMachine>>();
 
-		List<Float> computedPower = new ArrayList<Float>();
 		Server allocatedServer = new Server();
 		rackList = rackProcessor.sortRackListDescending();
 		vmList = vmProcessor.sortVMListDescending();
 		Rack rack = new Rack();
-		float cooling;
-		float powerConsumption;
-		
+
 		for(VirtualMachine vm: vmList){
 			rack = selectSuitableRack(rackList, vm);
 			
@@ -56,9 +52,11 @@ public class RackScheduling implements Serializable{
 				allocatedServer = (Server) obfd.findAppropriateServer(vm).get(0);
 				
 		//	}
-			
+			List<VirtualMachine> updateList = null;
 			if(allocatedServer!=null){
-				allocation.put(allocatedServer, vm);
+				updateList = allocation.get(allocatedServer);
+				updateList.add(vm);
+				allocation.put(allocatedServer,updateList);
 				
 			}
 			

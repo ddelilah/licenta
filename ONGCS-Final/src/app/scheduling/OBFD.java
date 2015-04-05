@@ -90,6 +90,9 @@ public class OBFD {
 			
 			if(!allocatedServers.isEmpty())
 			{
+				allocatedServers.get(0).setPowerValue(power);
+				allocatedServers.get(0).setCoolingValue(cooling);
+
 				toReturn.add(allocatedServers);
 				toReturn.add(power);
 				toReturn.add(cooling);
