@@ -152,7 +152,9 @@ public class VirtualMachine implements Comparable<VirtualMachine>,Serializable {
 	public String toString() {
 		return "VirtualMachine [vmId=" + vmId + ", state=" + state + ", name="
 				+ name + ", vmMips=" + vmMips + ", cpu=" + cpu.getCpuId()
-				+ ", ram=" + ram.getRamId() + ", hdd=" + hdd.getHddId() + ", server=" + server.getServerId() + "]";
+				+ ", ram=" + ram.getRamId() +
+				", hdd=" + hdd.getHddId() + ","
+						+ " server=" + server.getServerId() + "]";
 	}
 	
 }

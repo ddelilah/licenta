@@ -59,7 +59,6 @@ public void writeToFile(Map<VirtualMachine, Server> map, String fileName){
 		String content = "";
 		
 		for (Map.Entry<VirtualMachine, Server> entry : map.entrySet()){
-			System.out.println(entry.getKey().toString());
 			content+=entry.getKey().toString();
 			content+=" allocated to server with id: ";
 			content+=entry.getValue().getServerId();

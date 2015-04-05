@@ -47,11 +47,11 @@ public class Queue extends Thread {
 				try {
 					//join();
 					//Thread.yield();
-					Thread.sleep(1000);
+					Thread.sleep(5000);
 				} catch (Exception e) {}
 				
 				ContextData message = receivedMessage.pollFirst();
-				System.out.println("\n\n\nMonitoring " + message.toString());
+				System.out.println("\n\n\n.............Monitoring " + message.toString()+".........");
 				
 				vmList = updateDB(message);
 			
@@ -59,10 +59,8 @@ public class Queue extends Thread {
 				statesChanged = true;
 			}
 			if (statesChanged) {
-				System.out.println("\n\n\nStarting system analysis...");
-				for(VirtualMachine vm: vmList){
-					System.out.println(vm.getName()+"\n\n");
-				}
+				System.out.println("\n\n\n............Starting system analysis..............");
+				
 				statesChanged = false;
 				break;		
 			}
@@ -80,7 +78,7 @@ public class Queue extends Thread {
 		if(message.getCommand().equals("CREATE")){
 			if(message.getType() instanceof VirtualMachine){
 
-				System.out.println("\n\n\nPreparing to create VM.....");
+				System.out.println("\n\n\n...........Preparing to create VM............");
 				VirtualMachine vm = (VirtualMachine) message.getType();
 				vm.setState(VMState.RUNNING.getValue());
 				vmList.add(vm);

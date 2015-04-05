@@ -46,8 +46,10 @@ public class RBR implements Serializable {
 		Rack rack = new Rack();
 
 		for (VirtualMachine vm : vmList) {
+			if(selectSuitableRack(rackList, vm) != null)
 			rack = selectSuitableRack(rackList, vm);
-
+			else 
+				rack=rackList.get(0);
 			serverList = rack.getServers();
 			// for(Server s: serverList){
 			/* find appropriate sever */

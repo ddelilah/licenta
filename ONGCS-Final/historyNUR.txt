@@ -1,2 +1,2 @@
-VirtualMachine [vmId=232, state=Running, name=vm1.tiny, vmMips=250, cpu=1, ram=1, hdd=1, server=1] allocated to server with id: 4
-VirtualMachine [vmId=229, state=Running, name=vm1.tiny, vmMips=250, cpu=1, ram=1, hdd=1, server=1] allocated to server with id: 4
+VirtualMachine [vmId=252, state=Running, name=vm1.tiny, vmMips=250, cpu=1, ram=1, hdd=1, server=1] allocated to server with id: 4
+VirtualMachine [vmId=249, state=Running, name=vm1.tiny, vmMips=250, cpu=1, ram=1, hdd=1, server=1] allocated to server with id: 4
