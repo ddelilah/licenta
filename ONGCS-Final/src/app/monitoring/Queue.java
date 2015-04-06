@@ -73,7 +73,7 @@ public class Queue extends Thread {
 
 	private List<VirtualMachine> updateDB(ContextData message) {
 		
-		
+		 VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 		
 		if(message.getCommand().equals("CREATE")){
 			if(message.getType() instanceof VirtualMachine){
@@ -81,10 +81,12 @@ public class Queue extends Thread {
 				System.out.println("\n\n\n...........Preparing to create VM............");
 				VirtualMachine vm = (VirtualMachine) message.getType();
 				vm.setState(VMState.RUNNING.getValue());
+				vm.setServer(null);
 				vmList.add(vm);
 				System.out.println("vm's state is " + vm.getState());
 				dao.createInstance(vm);
 				
+			//	dao.createInstance(vm);
 			}
 			else if(message.getType() instanceof Server){
 				System.out.println("Preparing to create Server");
@@ -94,6 +96,7 @@ public class Queue extends Thread {
 		else if(message.getCommand().equals("DELETE")){
 
 			if(message.getType() instanceof VirtualMachine){
+				System.out.println("\n\n\n...........Preparing to delete VM............");
 				VirtualMachine vm = (VirtualMachine) message.getType();
 				dao.deleteInstance(vm);
 			}

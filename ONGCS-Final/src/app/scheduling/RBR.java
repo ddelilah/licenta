@@ -49,7 +49,9 @@ public class RBR implements Serializable {
 			if(selectSuitableRack(rackList, vm) != null)
 			rack = selectSuitableRack(rackList, vm);
 			else 
-				rack=rackList.get(0);
+	//			rack=rackList.get(1);
+			{		allocation.put(null, null);}
+				
 			serverList = rack.getServers();
 			// for(Server s: serverList){
 			/* find appropriate sever */

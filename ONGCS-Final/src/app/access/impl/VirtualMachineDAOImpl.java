@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -64,10 +65,52 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 	        throw e;
 	      }
 	    }
-	    
 	    return identified;
+
 	}
-	
+	    public void deleteVirtualMachineById(int virtualMachineId) {
+			Transaction tx = null;
+		    Session session = SessionFactoryUtil.getInstance().getCurrentSession();
+		    List<VirtualMachine> VMs = new ArrayList<VirtualMachine>();
+		    VirtualMachine identified = null;
+		    try {
+		      tx = session.beginTransaction();
+		   //  session.createQuery("delete from VirtualMachine where vm_id="+virtualMachineId).list();
+		     String hql = "delete VirtualMachine where vmId = :vmId";
+		     Query q = session.createQuery(hql).setParameter("vmId", virtualMachineId);
+		     q.executeUpdate();
+		      tx.commit();
+		    } catch (RuntimeException e) {
+		      if (tx != null && tx.isActive()) {
+		        try {
+		          tx.rollback();
+		        } catch (HibernateException e1) {
+		          System.out.println("Error for getServerById(int serverId)");
+		        }
+		        throw e;
+		      }
+		    }
+	    
+	}
+	public void deleteInstance(VirtualMachine o) {
+		Transaction tx = null;
+		Session session = SessionFactoryUtil.getInstance().getCurrentSession();
+		try {
+			tx = session.beginTransaction();
+			session.delete(o);
+			tx.commit();
+		} catch (RuntimeException e) {
+			if (tx != null && tx.isActive()) {
+				try {
+					tx.rollback();
+				} catch (HibernateException e1) {
+					logger.debug("Error rolling back transaction");
+				}
+				throw e;
+			}
+		}
+
+	}
 	
 
 }

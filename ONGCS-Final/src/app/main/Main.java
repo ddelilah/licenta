@@ -83,8 +83,23 @@ public class Main {
 		main.startInitialization();
 	  
 		main.startMonitoring();
-	    
-
+	  
+		
+		
+		
+		
+		
+		
+		
+		
+	/*	GenericDAO gg = new GenericDAOImpl();
+		GenericDAOImpl g = new GenericDAOImpl();
+		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+		VirtualMachine vm = new VirtualMachine();
+		vm = vmDAO.getVirtualMachineById(1);
+		System.out.println("\n\n\n"+vm.toString());
+		gg.createInstance(vm);
+		vmDAO.deleteVirtualMachineById(1);
 	//	VirtualMachineDAO vmDao= new VirtualMachineDAO();
 /*
 		ServerDAOImpl srv = new ServerDAOImpl();

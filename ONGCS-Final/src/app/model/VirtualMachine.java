@@ -49,7 +49,7 @@ public class VirtualMachine implements Comparable<VirtualMachine>,Serializable {
 	private HDD hdd;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "server_id")
+	@JoinColumn(name = "server_id", nullable = true)
 	private Server server;
 
 	public VirtualMachine() {

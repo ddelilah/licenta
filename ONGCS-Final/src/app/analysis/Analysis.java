@@ -31,7 +31,7 @@ public class Analysis {
 
 	public Analysis(List<VirtualMachine> vmList, List<Server> serverList,
 			List<Rack> rackList) {
-		this.vmList = vmList;
+//		this.vmList = vmList;
 		this.serverList = serverList;
 		this.rackList = rackList;
 	}
@@ -42,7 +42,7 @@ public class Analysis {
 		ServerDAO serverDao = new ServerDAOImpl();
 		RackDAO rackDao = new RackDAOImpl();
 		
-		this.vmList = vmDao.getAllVMs();
+	//	this.vmList = vmDao.getAllVMs();
 		this.serverList= serverDao.getAllServers();
 		this.rackList = rackDao.getAllRacks();
 		
@@ -100,8 +100,21 @@ public class Analysis {
 			List<Rack> allRacks  = new ArrayList<Rack>();
 			allRacks = rackDAO.getAllRacks();
 		
-			execution.executeNUR(allVMs, allRacks);
-			execution.executeRBR(allVMs, allRacks);
+			List<VirtualMachine> allVMs1 = new ArrayList<VirtualMachine>();
+			List<VirtualMachine> allVMs2 = new ArrayList<VirtualMachine>();
+
+			for(int i=0; i<allVMs.size(); i++){
+				if(i < allVMs.size()/2)
+				{
+					allVMs.get(i).setName("NUR");
+					allVMs1.add(allVMs.get(i));}
+				else {
+					allVMs.get(i).setName("RBR");
+					allVMs2.add(allVMs.get(i));
+				}
+			}
+			execution.executeNUR(allVMs1, allRacks);
+			execution.executeRBR(allVMs2, allRacks);
 			
 			
 			
