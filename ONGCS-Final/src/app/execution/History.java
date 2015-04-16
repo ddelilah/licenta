@@ -56,17 +56,16 @@ public void writeHistory(Map<VirtualMachine, Server> map, String fileName){
 public void writeToFile(Map<VirtualMachine, Server> map, String fileName){
 	try {
 		 
-		String content = "";
+		History h = new History();
+		String content = h.readFromFile(fileName);
 		
 		for (Map.Entry<VirtualMachine, Server> entry : map.entrySet()){
 			content+=entry.getKey().toString();
 			content+=" allocated to server with id: ";
 			content+=entry.getValue().getServerId();
-			content+="\n";
+			content+=System.lineSeparator();
 		}
 		File file = new File(fileName);
-		System.out.println("Content: "+content);
-		// if file doesnt exists, then create it
 		if (!file.exists()) {
 			file.createNewFile();
 		}
@@ -79,6 +78,9 @@ public void writeToFile(Map<VirtualMachine, Server> map, String fileName){
 		System.out.println("Done");
 
 	} catch (IOException e) {
+		e.printStackTrace();
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
 }
@@ -96,7 +98,7 @@ public String readFromFile(String filename) throws Exception{
             line = br.readLine();
         }
         data = sb.toString();
-   //     System.out.println(data);
+       System.out.println(data);
     } finally {
         br.close();
     }
@@ -138,7 +140,7 @@ public String readFromFile(String filename) throws Exception{
 		   
 	}
 	
-	public static void main(String []args){
+	public static void main(String []args) throws Exception{
 		Map<VirtualMachine,Server> map = new HashMap<VirtualMachine,Server>();
 		
 		VirtualMachine vm1 = new VirtualMachine();
@@ -175,5 +177,6 @@ public String readFromFile(String filename) throws Exception{
 		h.serialize(null, "historyRBR.ser");
 		h.writeHistory(map, "historyNUR.ser");*/
 		h.writeToFile(map, "historyRBR.txt");
+		h.readFromFile("historyRBR.txt");
 	}
 }

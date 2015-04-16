@@ -10,8 +10,14 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 
+import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
+import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
+import app.algorithm.FFD;
+import app.energy.CoolingSimulation;
+import app.energy.PowerConsumption;
+import app.energy.Utilization;
 import app.hibernate.SessionFactoryUtil;
 import app.model.Rack;
 import app.model.Server;
@@ -22,9 +28,9 @@ import app.scheduling.RBR;
 public class Execution {
 
 	private static NUR nur = new NUR();
-	private static RBR rackScheduling;
+	private static RBR rackScheduling = new RBR();
 	private static History history = new History();
-
+	
 	public static void executeNUR(List<VirtualMachine> allVMs,
 			List<Rack> allRacks) {
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
@@ -41,32 +47,121 @@ public class Execution {
 			// vmDAO.updateInstance(vm);
 		}
 
+		Utilization util = new Utilization();
+		util.setServerUtilization();
+
+		turnOffUnusedServersAndRacks();
+		
+		PowerConsumption power = new PowerConsumption();
+		power.setServerPowerConsumption();
+		power.setRackPowerConsumption();
+		
+		CoolingSimulation cooling = new CoolingSimulation();
+		cooling.setServerCoolingValue();
+		cooling.setRackCoolingPower();
+		
 		System.out.println("[NUR] map size: " + allocation.size());
 		history.writeToFile(allocation, "historyNUR.txt");
 	}
 
 	public static void executeRBR(List<VirtualMachine> allVMs,
 			List<Rack> allRacks) {
-		RBR rackScheduling = new RBR(allRacks, allVMs);
+		
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		// create new instance of rackScheduling when having the vms required
-		System.out.println(" size rbr"
+/*		System.out.println(" size rbr"
 				+ rackScheduling.placeVMsRackByRack(allVMs, allRacks).size());
-		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
+	*/	allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			int serverId = entry.getValue().getServerId();
-			System.out.println("[RBR]vm " + entry.getKey().getName()
+	/*		System.out.println("[RBR]vm " + entry.getKey().getName()
 					+ " should be assigned to server with id " + serverId);
-			Server s = entry.getValue();
+	*/		Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
 			mergeSessionsForExecution(vm);
 
 		}
+	
+	
+		Utilization util = new Utilization();
+		util.setServerUtilization();
+		
+		turnOffUnusedServersAndRacks();
+		
+		PowerConsumption power = new PowerConsumption();
+		power.setServerPowerConsumption();
+		power.setRackPowerConsumption();
+		power.comparePowerValues();
+		
+		CoolingSimulation cooling = new CoolingSimulation();
+		cooling.setServerCoolingValue();
+		cooling.setRackCoolingPower();
+		
 		History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");
 	}
 
+	public void performFFD(List<VirtualMachine> allVMs){
+		FFD ffd = new FFD();
+		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
+		allocation = ffd.performFFD(allVMs);
+		
+		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
+			int serverId = entry.getValue().getServerId();
+			Server s = entry.getValue();
+			VirtualMachine vm = entry.getKey();
+			vm.setServer(s);
+			mergeSessionsForExecution(vm);
+		}
+	
+		Utilization util = new Utilization();
+		util.setServerUtilization();
+		
+		turnOffUnusedServersAndRacks();
+		
+		PowerConsumption power = new PowerConsumption();
+		power.setServerPowerConsumption();
+		power.setRackPowerConsumption();
+		power.comparePowerValues();
+		
+		CoolingSimulation cooling = new CoolingSimulation();
+		cooling.setServerCoolingValue();
+		cooling.setRackCoolingPower();
+		
+	/*	History history = new History();
+		history.writeToFile(allocation, "historyRBR.txt");
+	*/	
+	}
+
+	private static void turnOffUnusedServersAndRacks(){
+		
+		List<Rack> allRacks = new ArrayList<Rack>();
+		List<Server> allServers = new ArrayList<Server>();
+		GenericDAOImpl genericDAO = new GenericDAOImpl();
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		
+		allRacks = rackDAO.getAllRacks();
+		
+		for(Rack rack: allRacks){
+			allServers = rack.getServers();
+			for(Server server: allServers){
+					if(server.getUtilization() == 0){
+						server.setState("off");
+						genericDAO.updateInstance(server);
+					}
+					else{
+						server.setState("on");
+						genericDAO.updateInstance(server);
+					}
+				}
+			if(rack.getPowerValue()!=0){
+				rack.setState("on");
+				genericDAO.updateInstance(rack);
+			}
+		}
+	}
+	
 	private static String mergeSessionsForExecution(VirtualMachine vm) {
 		Session session = SessionFactoryUtil.getInstance().openSession();
 		Query query = session
@@ -99,14 +194,101 @@ public class Execution {
 
 	}
 
+	public void initialConsolidationRBR(){
+		
+		Utilization util = new Utilization();
+		util.setServerUtilization();
+		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
+		List<Rack> allRacks = new ArrayList<Rack>();
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		List<Server> allServers = new ArrayList<Server>();
+		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
+		allRacks = rackDAO.getAllRacks();
+		
+		for(Rack rack: allRacks){
+			allServers = rack.getServers();
+			for(Server server: allServers){
+				vmList = server.getCorrespondingVMs();
+				for(VirtualMachine vm1: vmList)
+				allVMs.add(vm1);
+			}
+		}
+		
+		executeRBR(allVMs, allRacks);
+	}
+	
+public void initialConsolidationFFD(){
+		
+		Utilization util = new Utilization();
+		util.setServerUtilization();
+		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
+		List<Rack> allRacks = new ArrayList<Rack>();
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		List<Server> allServers = new ArrayList<Server>();
+		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
+		allRacks = rackDAO.getAllRacks();
+		
+		for(Rack rack: allRacks){
+			allServers = rack.getServers();
+			for(Server server: allServers){
+				vmList = server.getCorrespondingVMs();
+				for(VirtualMachine vm1: vmList)
+				allVMs.add(vm1);
+			}
+		}
+		
+		performFFD(allVMs);
+	}
+	
+public void initialConsolidationNUR(){
+		
+		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
+		List<Rack> allRacks = new ArrayList<Rack>();
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		List<Server> allServers = new ArrayList<Server>();
+		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
+		allRacks = rackDAO.getAllRacks();
+		
+		for(Rack rack: allRacks){
+			allServers = rack.getServers();
+			for(Server server: allServers){
+				vmList = server.getCorrespondingVMs();
+				for(VirtualMachine vm1: vmList)
+				allVMs.add(vm1);
+			}
+		}
+		
+		Utilization util = new Utilization();
+		util.setServerUtilization();
+		executeNUR(allVMs, allRacks);
+	}
+	/*
 	public static void main(String[] args) {
 		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
 		List<Rack> allRacks = new ArrayList<Rack>();
-
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		List<Server> allServers = new ArrayList<Server>();
+		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
 		VirtualMachine vm, vm2;
 
 		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 
+		allRacks = rackDAO.getAllRacks();
+		
+		for(Rack rack: allRacks){
+			allServers = rack.getServers();
+			for(Server server: allServers){
+				vmList = server.getCorrespondingVMs();
+				for(VirtualMachine vm1: vmList)
+				allVMs.add(vm1);
+			}
+		}
+		
+		Utilization util = new Utilization();
+		util.setServerUtilization();
+	//	executeRBR(allVMs, allRacks);
+		
+		turnOffUnusedServersAndRacks();
 		vm = vmDAO.getVirtualMachineById(213);
 		vm2 = vmDAO.getVirtualMachineById(214);
 
@@ -118,6 +300,9 @@ public class Execution {
 		// rackScheduling = new RackScheduling(allRacks, allVMs);
 		executeNUR(allVMs, allRacks);
 		// executeRBR();
+	
+	
+		
 	}
-
+*/
 }

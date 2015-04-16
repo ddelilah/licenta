@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import app.access.*;
 import app.access.impl.*;
-import app.access.impl.VirtualMachineDAOImpl;
 import app.constants.RackState;
 import app.constants.ServerState;
 import app.constants.VMState;
+import app.execution.Execution;
 import app.model.CPU;
 import app.model.HDD;
 import app.model.RAM;
@@ -42,6 +42,7 @@ public class Main {
 	         line = r.readLine();
 	         if (line == null) { break; }
 	     }
+	     
 	}
 	
 	public void startMonitoring() throws Exception{
@@ -80,8 +81,8 @@ public class Main {
 		
 		Main main = new Main();
 		
-		main.startInitialization();
-	  
+		main.startInitialization();  
+		
 		main.startMonitoring();
 	  
 		

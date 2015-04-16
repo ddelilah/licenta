@@ -113,4 +113,11 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 	}
 	
 
+	public static void main(String []args){
+		
+		VirtualMachineDAOImpl vmDao = new VirtualMachineDAOImpl();
+		VirtualMachine vm = new VirtualMachine();
+		vm.setVmId(1);
+		vmDao.deleteInstance(vm);
+	}
 }

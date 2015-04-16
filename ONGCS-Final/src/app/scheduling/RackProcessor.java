@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import app.access.RackDAO;
 import app.access.impl.RackDAOImpl;
 import app.model.*;
 
@@ -67,27 +68,18 @@ public class RackProcessor implements Comparator<Rack> {
 		
 	}
 	
-	/*public static void main(String []args){
+	public static void main(String []args){
 		
-		Rack rack1= new Rack();
-		rack1.setUtilization(79);
-		Rack rack2= new Rack();
-		rack2.setUtilization(50);
-		Rack rack3= new Rack();
-		rack3.setUtilization(99);
-		Rack rack4= new Rack();
-		rack4.setUtilization(1);
-		List<Rack> rList = new ArrayList<Rack>();
-		rList.add(rack1);
-		rList.add(rack2);		
-		rList.add(rack3);
-		rList.add(rack4);
-		
-		Collections.sort(rList, new RackScheduling());
+		RackDAO rackDAO = new RackDAOImpl();
+
+		List<Rack> allRacks  = new ArrayList<Rack>();
+		allRacks = rackDAO.getAllRacks();
 	
-		for(Rack r: rList)
+		RackProcessor rProc = new RackProcessor(allRacks);
+		rProc.sortRackListDescending();
+		for(Rack r: allRacks)
 			System.out.println(r.getUtilization()+ " ");
-	}*/
+	}
 
 	
 }

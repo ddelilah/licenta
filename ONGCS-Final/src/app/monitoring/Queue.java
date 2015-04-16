@@ -40,14 +40,12 @@ public class Queue extends Thread {
 	
 	@Override
 	public void run() {
-		//List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
 
 		while (true) {
 			while (!receivedMessage.isEmpty()) {
 				try {
-					//join();
-					//Thread.yield();
-					Thread.sleep(5000);
+			
+					Thread.sleep(1000);
 				} catch (Exception e) {}
 				
 				ContextData message = receivedMessage.pollFirst();
@@ -96,9 +94,12 @@ public class Queue extends Thread {
 		else if(message.getCommand().equals("DELETE")){
 
 			if(message.getType() instanceof VirtualMachine){
-				System.out.println("\n\n\n...........Preparing to delete VM............");
 				VirtualMachine vm = (VirtualMachine) message.getType();
-				dao.deleteInstance(vm);
+				System.out.println("\n\n\n...........Preparing to delete VM............"+vm.getVmId());
+
+				VirtualMachine vmToDelete = new VirtualMachine();
+				vmToDelete.setVmId(vm.getVmId());
+				dao.deleteInstance(vmToDelete);
 			}
 			else if(message.getType() instanceof Server){
 				System.out.println("Preparing to delete VM");

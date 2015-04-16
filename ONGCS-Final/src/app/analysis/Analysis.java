@@ -6,6 +6,7 @@ import java.util.List;
 import app.access.*;
 import app.access.impl.*;
 import app.constants.PolicyType;
+import app.energy.Utilization;
 import app.execution.Execution;
 import app.model.Rack;
 import app.model.Server;
@@ -31,7 +32,6 @@ public class Analysis {
 
 	public Analysis(List<VirtualMachine> vmList, List<Server> serverList,
 			List<Rack> rackList) {
-//		this.vmList = vmList;
 		this.serverList = serverList;
 		this.rackList = rackList;
 	}
@@ -103,7 +103,7 @@ public class Analysis {
 			List<VirtualMachine> allVMs1 = new ArrayList<VirtualMachine>();
 			List<VirtualMachine> allVMs2 = new ArrayList<VirtualMachine>();
 
-			for(int i=0; i<allVMs.size(); i++){
+		/*	for(int i=0; i<allVMs.size(); i++){
 				if(i < allVMs.size()/2)
 				{
 					allVMs.get(i).setName("NUR");
@@ -112,10 +112,17 @@ public class Analysis {
 					allVMs.get(i).setName("RBR");
 					allVMs2.add(allVMs.get(i));
 				}
-			}
-			execution.executeNUR(allVMs1, allRacks);
-			execution.executeRBR(allVMs2, allRacks);
-			
+			}*/
+
+
+			Utilization util = new Utilization();
+			util.setServerUtilization();
+	/*		execution.initialConsolidationNUR();
+			execution.executeNUR(allVMs, allRacks);*/
+			/*execution.initialConsolidationRBR();
+			execution.executeRBR(allVMs, allRacks);*/
+			execution.initialConsolidationFFD();
+			execution.performFFD(allVMs);
 			
 			
 		} else {

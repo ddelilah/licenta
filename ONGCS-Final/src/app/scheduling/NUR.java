@@ -57,8 +57,8 @@ public class NUR {
 		for (VirtualMachine v : sortedVMs) {
 
 			OBFD obfdNonUnderUtilized = new OBFD(serversInNonUnderUtilizedRacks);
-			if (!obfdNonUnderUtilized.findAppropriateServer(v).isEmpty()) {
-				resultOfOBFD = obfdNonUnderUtilized.findAppropriateServer(v);
+			if (!obfdNonUnderUtilized.findAppropriateServer(v,allocation).isEmpty()) {
+				resultOfOBFD = obfdNonUnderUtilized.findAppropriateServer(v,allocation);
 				
 				for(Entry<Server, List<Double>> entry : resultOfOBFD.entrySet()) {
 					allocatedServer = entry.getKey();
@@ -71,8 +71,8 @@ public class NUR {
 				if (allocatedServer == null) {
 					OBFD obfdUnderUtilized = new OBFD(
 							serversInUnderUtilizedRacks);
-					if (!obfdUnderUtilized.findAppropriateServer(v).isEmpty()) {
-						resultOfOBFD = obfdUnderUtilized.findAppropriateServer(v);
+					if (!obfdUnderUtilized.findAppropriateServer(v,allocation).isEmpty()) {
+						resultOfOBFD = obfdUnderUtilized.findAppropriateServer(v,allocation);
 						
 						for(Entry<Server, List<Double>> entry : resultOfOBFD.entrySet()) {
 							allocatedServer = entry.getKey();
