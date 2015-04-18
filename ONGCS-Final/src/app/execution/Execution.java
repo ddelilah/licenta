@@ -15,6 +15,7 @@ import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.algorithm.FFD;
+import app.constants.VMState;
 import app.energy.CoolingSimulation;
 import app.energy.PowerConsumption;
 import app.energy.Utilization;
@@ -43,6 +44,7 @@ public class Execution {
 			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
+			vm.setState(VMState.RUNNING.getValue());
 			mergeSessionsForExecution(vm);
 			// vmDAO.updateInstance(vm);
 		}
@@ -50,7 +52,7 @@ public class Execution {
 		Utilization util = new Utilization();
 		util.setServerUtilization();
 
-		turnOffUnusedServersAndRacks();
+	//	turnOffUnusedServersAndRacks();
 		
 		PowerConsumption power = new PowerConsumption();
 		power.setServerPowerConsumption();
@@ -262,40 +264,21 @@ public void initialConsolidationNUR(){
 		util.setServerUtilization();
 		executeNUR(allVMs, allRacks);
 	}
-	/*
+	
 	public static void main(String[] args) {
 		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
 		List<Rack> allRacks = new ArrayList<Rack>();
 		RackDAOImpl rackDAO = new RackDAOImpl();
-		List<Server> allServers = new ArrayList<Server>();
-		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
-		VirtualMachine vm, vm2;
 
 		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
-
-		allRacks = rackDAO.getAllRacks();
+		allVMs = vmDAO.getAllVMs();
 		
-		for(Rack rack: allRacks){
-			allServers = rack.getServers();
-			for(Server server: allServers){
-				vmList = server.getCorrespondingVMs();
-				for(VirtualMachine vm1: vmList)
-				allVMs.add(vm1);
-			}
-		}
 		
 		Utilization util = new Utilization();
 		util.setServerUtilization();
 	//	executeRBR(allVMs, allRacks);
-		
-		turnOffUnusedServersAndRacks();
-		vm = vmDAO.getVirtualMachineById(213);
-		vm2 = vmDAO.getVirtualMachineById(214);
 
-		allVMs.add(vm);
-		allVMs.add(vm2);
 
-		RackDAOImpl rackDAO = new RackDAOImpl();
 		allRacks = rackDAO.getAllRacks();
 		// rackScheduling = new RackScheduling(allRacks, allVMs);
 		executeNUR(allVMs, allRacks);
@@ -304,5 +287,5 @@ public void initialConsolidationNUR(){
 	
 		
 	}
-*/
+
 }

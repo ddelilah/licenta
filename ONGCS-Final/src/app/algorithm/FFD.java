@@ -19,7 +19,7 @@ public class FFD {
 	
 
 	@SuppressWarnings("unchecked")
-	public Map<VirtualMachine, Server> performFFD(List<VirtualMachine> vmList){
+	public Map<VirtualMachine, Server> performFFD(List<VirtualMachine> vmList) {
 	
 		boolean foundServer = false;
 		RackDAO rackDAO = new RackDAOImpl();

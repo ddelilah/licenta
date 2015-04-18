@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
+import app.constants.VMState;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -16,6 +18,8 @@ public class NUR {
 
 	private static VMProcessor vmProcessor;
 	private static RackProcessor rackProcessor;
+	
+	public static GenericDAOImpl dao = new GenericDAOImpl();
 
 	public NUR() {
 
@@ -88,24 +92,34 @@ public class NUR {
 				} else {
 					allocation.put(v, allocatedServer);
 				}
+			} else {
+				v.setState(VMState.FAILED.getValue());
+				dao.updateInstance(v);
 			}
+			
+			
+			
 
+		}
+		
+		for(Entry<VirtualMachine, Server> alloc : allocation.entrySet()) {
+			System.out.println("VmId " + alloc.getKey().getVmId() + " Vm name " + alloc.getKey().getName() + " has state " + alloc.getKey().getState());
 		}
 
 		return allocation;
 
 	}
 
-//	public static void main(String[] args) {
-//		List<VirtualMachine> all = new ArrayList<VirtualMachine>();
-//		List<Rack> racks = new ArrayList<Rack>();
-//		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
-//		all = vmDAO.getAllVMs();
-//
-//		RackDAOImpl rackDAO = new RackDAOImpl();
-//		racks = rackDAO.getAllRacks();
-//		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
-//		allocation = placeVMsInNoneUnderutilizedRack(all, racks);
-//
-//	}
+	public static void main(String[] args) {
+		List<VirtualMachine> all = new ArrayList<VirtualMachine>();
+		List<Rack> racks = new ArrayList<Rack>();
+		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+		all = vmDAO.getAllVMs();
+
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		racks = rackDAO.getAllRacks();
+		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
+		allocation = placeVMsInNoneUnderutilizedRack(all, racks);
+
+	}
 }

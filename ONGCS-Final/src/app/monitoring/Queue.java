@@ -73,12 +73,12 @@ public class Queue extends Thread {
 		
 		 VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 		
-		if(message.getCommand().equals("CREATE")){
-			if(message.getType() instanceof VirtualMachine){
+		if(message.getCommand().equals("CREATE")) {
+			if(message.getType() instanceof VirtualMachine) {
 
 				System.out.println("\n\n\n...........Preparing to create VM............");
 				VirtualMachine vm = (VirtualMachine) message.getType();
-				vm.setState(VMState.RUNNING.getValue());
+				vm.setState(VMState.PENDING.getValue());
 				vm.setServer(null);
 				vmList.add(vm);
 				System.out.println("vm's state is " + vm.getState());
@@ -91,9 +91,17 @@ public class Queue extends Thread {
 			}
 			else if(message.getType() instanceof Rack){}
 		}
-		else if(message.getCommand().equals("DELETE")){
+		else if(message.getCommand().equals("DEPLOY")) {
+			VirtualMachine vm = (VirtualMachine) message.getType();
+			System.out.println("\n\n\n...........Preparing to deploy VM............"+vm.getVmId());
+			vmList.add(vm);
+			//analysis state
+			
+		}
+		
+		else if(message.getCommand().equals("DELETE")) {
 
-			if(message.getType() instanceof VirtualMachine){
+			if(message.getType() instanceof VirtualMachine) {
 				VirtualMachine vm = (VirtualMachine) message.getType();
 				System.out.println("\n\n\n...........Preparing to delete VM............"+vm.getVmId());
 
