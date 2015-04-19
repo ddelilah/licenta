@@ -70,7 +70,7 @@ public class Queue extends Thread {
 		Analysis analysis = new Analysis();
 		
 		
-		analysis.performAnalysis(toBeDeployedVmList);
+	//	analysis.performAnalysis(toBeDeployedVmList);
 		
 	}
 
