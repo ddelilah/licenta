@@ -32,7 +32,7 @@ public class RBR implements Serializable {
 	private RackProcessor rackProcessor = new RackProcessor();
 	private SchedulingUtil schedulingUtil= new SchedulingUtil();
 	public GenericDAOImpl dao = new GenericDAOImpl();
-
+	public VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 	public RBR(){}
 
 	@SuppressWarnings("unchecked")
@@ -79,11 +79,17 @@ public class RBR implements Serializable {
 
 			}
 			else{
+				System.out.println("Allocation failed "+ vm.getName()+ vm.getVmId()+ vm.getState());
 				vm.setState(VMState.FAILED.getValue());
-				dao.updateInstance(vm);
+				vmDAO.updateInstance(vm);
 			}
 		
 		}
+			else{
+				System.out.println("Allocation failed "+ vm.getName()+ vm.getVmId()+ vm.getState());
+				vm.setState(VMState.FAILED.getValue());
+				vmDAO.updateInstance(vm);
+			}
 		}
 		return allocation;
 	}

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -23,6 +22,30 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 	    try {
 	      tx = session.beginTransaction();
 	      VMs = session.createQuery("select h from VirtualMachine as h").list();
+	      tx.commit();
+	    } catch (RuntimeException e) {
+	      if (tx != null && tx.isActive()) {
+	        try {
+	          tx.rollback();
+	        } catch (HibernateException e1) {
+	          System.out.println("Error for getAllServers()");
+	        }
+	        throw e;
+	      }
+	    }
+	    
+	    return VMs;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<VirtualMachine> getAllVMsByState(String state) {
+		Transaction tx = null;
+	    Session session = SessionFactoryUtil.getInstance().getCurrentSession();
+	    List<VirtualMachine> VMs = new ArrayList<VirtualMachine>();
+	    try {
+	      tx = session.beginTransaction();
+	      VMs = session.createQuery("select h from VirtualMachine as h where state='"+state+"'").list();
 	      tx.commit();
 	    } catch (RuntimeException e) {
 	      if (tx != null && tx.isActive()) {
@@ -68,30 +91,7 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 	    return identified;
 
 	}
-	    public void deleteVirtualMachineById(int virtualMachineId) {
-			Transaction tx = null;
-		    Session session = SessionFactoryUtil.getInstance().getCurrentSession();
-		    List<VirtualMachine> VMs = new ArrayList<VirtualMachine>();
-		    VirtualMachine identified = null;
-		    try {
-		      tx = session.beginTransaction();
-		   //  session.createQuery("delete from VirtualMachine where vm_id="+virtualMachineId).list();
-		     String hql = "delete VirtualMachine where vmId = :vmId";
-		     Query q = session.createQuery(hql).setParameter("vmId", virtualMachineId);
-		     q.executeUpdate();
-		      tx.commit();
-		    } catch (RuntimeException e) {
-		      if (tx != null && tx.isActive()) {
-		        try {
-		          tx.rollback();
-		        } catch (HibernateException e1) {
-		          System.out.println("Error for getServerById(int serverId)");
-		        }
-		        throw e;
-		      }
-		    }
-	    
-	}
+	  
 	public void deleteInstance(VirtualMachine o) {
 		Transaction tx = null;
 		Session session = SessionFactoryUtil.getInstance().getCurrentSession();
@@ -116,8 +116,7 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 	public static void main(String []args){
 		
 		VirtualMachineDAOImpl vmDao = new VirtualMachineDAOImpl();
-		VirtualMachine vm = new VirtualMachine();
-		vm.setVmId(1);
-		vmDao.deleteInstance(vm);
+		
+		System.out.println(vmDao.getAllVMsByState("failed"));
 	}
 }

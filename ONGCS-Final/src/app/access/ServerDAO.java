@@ -10,4 +10,5 @@ public interface ServerDAO {
 	
 	public Server getServerById(int serverId);
 
+	public List<Server> getAllServersByState(String state);
 }

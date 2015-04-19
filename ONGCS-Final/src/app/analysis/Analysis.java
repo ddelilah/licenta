@@ -106,18 +106,12 @@ public class Analysis {
 		List<Rack> allRacks  = new ArrayList<Rack>();
 		allRacks = rackDAO.getAllRacks();
 			
-	//	allVMs = vmDAO.getAllVMs();
 		if(value == 1){
 			Utilization util = new Utilization();
 			util.setServerUtilization();
-		/*	execution.initialConsolidationNUR();
-			execution.executeNUR(allVMs, allRacks);*/
-	//		execution.initialConsolidationRBR();
-			System.out.println(allVMs.size()+"SIZE");
-			System.exit(0);
+		//	execution.executeNUR(allVMs, allRacks);
 			execution.executeRBR(allVMs, allRacks);
-			/*execution.initialConsolidationFFD();
-			execution.performFFD(allVMs);*/
+			//execution.performFFD(allVMs);
 				
 			
 		} else {

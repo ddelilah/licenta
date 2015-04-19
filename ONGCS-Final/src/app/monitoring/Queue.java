@@ -30,6 +30,9 @@ public class Queue extends Thread {
 	private List<ContextData> msg;
 	List<VirtualMachine> newlyCreatedVmList = new ArrayList<VirtualMachine>();
 	List<VirtualMachine> toBeDeployedVmList = new ArrayList<VirtualMachine>();
+	List<VirtualMachine> newlyCreatedVmListTestDelete = new ArrayList<VirtualMachine>();
+	List<VirtualMachine> newlyCreatedVmListTestShutdown = new ArrayList<VirtualMachine>();
+	List<VirtualMachine> newlyCreatedVmListTestDeploy = new ArrayList<VirtualMachine>();
 
 	public Queue() {
 		this.receivedMessage = new LinkedBlockingDeque<ContextData>();
@@ -66,6 +69,7 @@ public class Queue extends Thread {
 		}
 		Analysis analysis = new Analysis();
 		
+		
 		analysis.performAnalysis(toBeDeployedVmList);
 		
 	}
@@ -87,7 +91,9 @@ public class Queue extends Thread {
 				VirtualMachine vmToAdd = vmDAO.getVirtualMachineById(vm.getVmId());
 				System.out.println(vmToAdd);
 				newlyCreatedVmList.add(vmToAdd);
-				
+				newlyCreatedVmListTestDelete.add(vmToAdd);
+				newlyCreatedVmListTestShutdown.add(vmToAdd);
+				newlyCreatedVmListTestDeploy.add(vmToAdd);
 			}
 			else if(message.getType() instanceof Server){
 				System.out.println("Preparing to create Server");
@@ -95,20 +101,25 @@ public class Queue extends Thread {
 		}
 		else if(message.getCommand().equals("DEPLOY")) {
 			VirtualMachine vm = (VirtualMachine) message.getType();
+			VirtualMachine vmToDeploy = (VirtualMachine) message.getType();
+
 			System.out.println("\n\n\n...........Preparing to deploy VM............"+vm.getVmId());
 			boolean modifyNewlyCreated = false;
 			
 			vm.setState(VMState.DEPLOY.getValue());
-			
-			for(VirtualMachine virtualM: newlyCreatedVmList){
+			int pos =-1;
+			for(VirtualMachine virtualM: newlyCreatedVmListTestDeploy){
+				pos++;;
 			if(virtualM.getName().equals(vm.getName())){// && !virtualM.getState().equals(VMState.SHUT_DOWN.getValue())){
-				vm.setVmId(virtualM.getVmId());
-				toBeDeployedVmList.add(vm);
+				vmToDeploy.setVmId(virtualM.getVmId());
+				toBeDeployedVmList.add(vmToDeploy);
 				modifyNewlyCreated = true;
 				System.out.println("Found in list");
 				break;
 				}
 			}
+			if(pos!=-1)
+				newlyCreatedVmListTestDeploy.remove(pos);
 			
 			if(modifyNewlyCreated)
 				dao.updateInstance(vm);
@@ -134,7 +145,9 @@ public class Queue extends Thread {
 			vm.setState(VMState.SHUT_DOWN.getValue());
 			vm.setServer(null);
 			
-			for(VirtualMachine virtualM: newlyCreatedVmList){
+			int pos=-1;
+			for(VirtualMachine virtualM: newlyCreatedVmListTestShutdown){
+				pos++;
 			if(virtualM.getName().equals(vm.getName())){// && !virtualM.getState().equals(VMState.SHUT_DOWN.getValue())){
 				vm.setVmId(virtualM.getVmId());
 				modifyNewlyCreated = true;
@@ -143,6 +156,8 @@ public class Queue extends Thread {
 				}
 			}
 			
+			if(pos!=-1)
+				newlyCreatedVmListTestShutdown.remove(pos);
 			if(modifyNewlyCreated)
 				dao.updateInstance(vm);
 			else{
@@ -169,7 +184,7 @@ public class Queue extends Thread {
 
 				boolean startDelete = false;
 				int pos=-1;
-				for(VirtualMachine virtualM: newlyCreatedVmList){
+				for(VirtualMachine virtualM: newlyCreatedVmListTestDelete){
 					pos++;
 				if(virtualM.getName().equals(vm.getName())){// && !virtualM.getState().equals(VMState.SHUT_DOWN.getValue())){
 						vmToDelete.setVmId(virtualM.getVmId());
@@ -179,8 +194,24 @@ public class Queue extends Thread {
 					}
 				}
 				
+				int removeFromDeploy =-1;
+				int removeFromShutdown=-1;
+				/* delete from the other lists too */
+				for(VirtualMachine virtualM: newlyCreatedVmListTestDeploy){
+					removeFromDeploy++;
+					if(virtualM.getVmId() == vm.getVmId()){
+						break;
+					}}
+				newlyCreatedVmListTestDeploy.remove(removeFromDeploy);
+				for(VirtualMachine virtualM: newlyCreatedVmListTestShutdown){
+					removeFromShutdown++;
+					if(virtualM.getVmId() == vm.getVmId()){
+						break;
+					}}
+				newlyCreatedVmListTestShutdown.remove(removeFromDeploy);
+				
 				if(pos!=-1)
-					newlyCreatedVmList.remove(pos);
+					newlyCreatedVmListTestDelete.remove(pos);
 				else{
 					if(vmDAO.getVirtualMachineById(vm.getVmId()) != null){
 						vmToDelete.setVmId(vm.getVmId());

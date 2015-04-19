@@ -18,7 +18,7 @@ import app.algorithm.FFD;
 import app.constants.VMState;
 import app.energy.CoolingSimulation;
 import app.energy.PowerConsumption;
-import app.energy.Utilization;
+import app.energy.*;
 import app.hibernate.SessionFactoryUtil;
 import app.model.Rack;
 import app.model.Server;
@@ -47,6 +47,7 @@ public class Execution {
 			vm.setState(VMState.RUNNING.getValue());
 			mergeSessionsForExecution(vm);
 		}
+		MigrationEfficiency mEff = new MigrationEfficiency();
 
 		Utilization util = new Utilization();
 		util.setServerUtilization();
@@ -59,12 +60,12 @@ public class Execution {
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
 		util.setRackUtilization();
-
+		System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
 		System.out.println("[NUR] map size: " + allocation.size());
 		history.writeToFile(allocation, "historyNUR.txt");
 	}
 
-	public static void executeRBR(List<VirtualMachine> allVMs,
+	public void executeRBR(List<VirtualMachine> allVMs,
 			List<Rack> allRacks) {
 		
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
@@ -81,7 +82,7 @@ public class Execution {
 
 		}
 	
-	
+		MigrationEfficiency mEff = new MigrationEfficiency();
 		Utilization util = new Utilization();
 		util.setServerUtilization();
 		
@@ -90,16 +91,40 @@ public class Execution {
 		PowerConsumption power = new PowerConsumption();
 		power.setServerPowerConsumption();
 		power.setRackPowerConsumption();
-		power.comparePowerValues();
-		
+
 		CoolingSimulation cooling = new CoolingSimulation();
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
 		
 		turnOffUnusedServersAndRacks();
 		util.setRackUtilization();
-		History history = new History();
-		history.writeToFile(allocation, "historyRBR.txt");
+		
+		displayPowerConsumptionAndCooling("RBR");
+		System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
+//		History history = new History();
+//		history.writeToFile(allocation, "historyRBR.txt");
+	}
+
+	public static void displayPowerConsumptionAndCooling(String algorithm){
+		
+		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
+		List<Rack> allRacks = new ArrayList<Rack>();
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		List<Server> allServers = new ArrayList<Server>();
+		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
+		allRacks = rackDAO.getAllRacks();
+		float power=0, cooling=0;
+		for(Rack rack: allRacks){
+			allServers = rack.getServers();
+			for(Server server: allServers){
+				power+=server.getPowerValue();
+				cooling += server.getCoolingValue();
+			}
+			
+		}
+		System.out.println("\n\n\n\n "+algorithm+"Power: "+power + "Cooling: "+cooling);
+		
+		
 	}
 
 	public void performFFD(List<VirtualMachine> allVMs){
@@ -114,7 +139,8 @@ public class Execution {
 			vm.setServer(s);
 			mergeSessionsForExecution(vm);
 		}
-	
+		MigrationEfficiency mEff = new MigrationEfficiency();
+
 		Utilization util = new Utilization();
 		util.setServerUtilization();
 		
@@ -128,7 +154,8 @@ public class Execution {
 		CoolingSimulation cooling = new CoolingSimulation();
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
-		
+		System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
+
 	/*	History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");
 	*/	
@@ -262,29 +289,29 @@ public void initialConsolidationNUR(){
 		util.setServerUtilization();
 		executeNUR(allVMs, allRacks);
 	}
-	
-	public static void main(String[] args) {
-		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
-		List<Rack> allRacks = new ArrayList<Rack>();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-
-		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
-		allVMs = vmDAO.getAllVMs();
-		
-		
-		Utilization util = new Utilization();
-		util.setServerUtilization();
-		
-
-
-		allRacks = rackDAO.getAllRacks();
-		// rackScheduling = new RackScheduling(allRacks, allVMs);
-		executeNUR(allVMs, allRacks);
-	//	executeRBR(allVMs, allRacks);
-		// executeRBR();
-	
-	
-		
-	}
+//	
+//	public static void main(String[] args) {
+//		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
+//		List<Rack> allRacks = new ArrayList<Rack>();
+//		RackDAOImpl rackDAO = new RackDAOImpl();
+//
+//		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+//		allVMs = vmDAO.getAllVMs();
+//		
+//		
+//		Utilization util = new Utilization();
+//		util.setServerUtilization();
+//		
+//
+//
+//		allRacks = rackDAO.getAllRacks();
+//		// rackScheduling = new RackScheduling(allRacks, allVMs);
+//		executeNUR(allVMs, allRacks);
+//	//	executeRBR(allVMs, allRacks);
+//		// executeRBR();
+//	
+//	
+//		
+//	}
 
 }
