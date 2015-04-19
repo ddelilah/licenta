@@ -74,11 +74,11 @@ public class Main {
 		    		monitoring.addToQueue(vm, command);
 		    	 }
 		    	 
-		    	 else if(((toParse[i].split(" "))[0]).equals("SERVER")){
+		   /* 	 else if(((toParse[i].split(" "))[0]).equals("SERVER")){
 			    		server = serverDAO.getServerById(Integer.parseInt(toParse[i].split(" ")[1]));
 			    		command = toParse[i].split(" ")[2];
 			    		monitoring.addToQueue(server, command);
-			    	 }
+			    	 }*/
 		    	 
 		     }
 		     monitoring.startMonitoring();

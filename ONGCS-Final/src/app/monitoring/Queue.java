@@ -28,8 +28,9 @@ public class Queue extends Thread {
 	boolean statesChanged = false;
 	private GenericDAO dao;
 	private List<ContextData> msg;
-	List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
-	
+	List<VirtualMachine> newlyCreatedVmList = new ArrayList<VirtualMachine>();
+	List<VirtualMachine> toBeDeployedVmList = new ArrayList<VirtualMachine>();
+
 	public Queue() {
 		this.receivedMessage = new LinkedBlockingDeque<ContextData>();
 		this.analysis = new Analysis();
@@ -45,13 +46,13 @@ public class Queue extends Thread {
 			while (!receivedMessage.isEmpty()) {
 				try {
 			
-					//Thread.sleep(1000);
+					Thread.sleep(4000);
 				} catch (Exception e) {}
 				
 				ContextData message = receivedMessage.pollFirst();
 				System.out.println("\n\n\n.............Monitoring " + message.toString()+".........");
 				
-				vmList = updateDB(message);
+				toBeDeployedVmList = updateDB(message);
 			
 				Thread.yield();
 				statesChanged = true;
@@ -65,7 +66,7 @@ public class Queue extends Thread {
 		}
 		Analysis analysis = new Analysis();
 		
-		analysis.performAnalysis(vmList);
+		analysis.performAnalysis(toBeDeployedVmList);
 		
 	}
 
@@ -80,22 +81,80 @@ public class Queue extends Thread {
 				VirtualMachine vm = (VirtualMachine) message.getType();
 				vm.setState(VMState.PENDING.getValue());
 				vm.setServer(null);
-				vmList.add(vm);
 				System.out.println("vm's state is " + vm.getState());
-				dao.createInstance(vm);
+				vmDAO.createInstance(vm);
+				System.out.println(vm.getVmId());
+				VirtualMachine vmToAdd = vmDAO.getVirtualMachineById(vm.getVmId());
+				System.out.println(vmToAdd);
+				newlyCreatedVmList.add(vmToAdd);
 				
-			//	dao.createInstance(vm);
 			}
 			else if(message.getType() instanceof Server){
 				System.out.println("Preparing to create Server");
 			}
-			else if(message.getType() instanceof Rack){}
 		}
 		else if(message.getCommand().equals("DEPLOY")) {
 			VirtualMachine vm = (VirtualMachine) message.getType();
 			System.out.println("\n\n\n...........Preparing to deploy VM............"+vm.getVmId());
-			vmList.add(vm);
-			//analysis state
+			boolean modifyNewlyCreated = false;
+			
+			vm.setState(VMState.DEPLOY.getValue());
+			
+			for(VirtualMachine virtualM: newlyCreatedVmList){
+			if(virtualM.getName().equals(vm.getName())){// && !virtualM.getState().equals(VMState.SHUT_DOWN.getValue())){
+				vm.setVmId(virtualM.getVmId());
+				toBeDeployedVmList.add(vm);
+				modifyNewlyCreated = true;
+				System.out.println("Found in list");
+				}
+			}
+			
+			if(modifyNewlyCreated)
+				dao.updateInstance(vm);
+			else{
+				System.out.println("Not found in list");
+
+				if(vmDAO.getVirtualMachineById(vm.getVmId())!=null){
+					System.out.println("Found in db");
+					toBeDeployedVmList.add(vm);
+					dao.updateInstance(vm);
+				}
+				else 		
+					System.out.println("Not Found in db");
+
+			}
+			
+			
+
+		}
+		else if(message.getCommand().equals("SHUTDOWN")) {
+			VirtualMachine vm = (VirtualMachine) message.getType();
+			boolean modifyNewlyCreated = false;
+			vm.setState(VMState.SHUT_DOWN.getValue());
+			vm.setServer(null);
+			
+			for(VirtualMachine virtualM: newlyCreatedVmList){
+			if(virtualM.getName().equals(vm.getName())){// && !virtualM.getState().equals(VMState.SHUT_DOWN.getValue())){
+				vm.setVmId(virtualM.getVmId());
+				modifyNewlyCreated = true;
+				System.out.println("Found in list");
+				}
+			}
+			
+			if(modifyNewlyCreated)
+				dao.updateInstance(vm);
+			else{
+				System.out.println("Not found in list");
+
+				if(vmDAO.getVirtualMachineById(vm.getVmId())!=null){
+					System.out.println("Found in db");
+
+					dao.updateInstance(vm);
+				}
+				else 				System.out.println("Not Found in db");
+
+			}
+			
 			
 		}
 		
@@ -103,18 +162,42 @@ public class Queue extends Thread {
 
 			if(message.getType() instanceof VirtualMachine) {
 				VirtualMachine vm = (VirtualMachine) message.getType();
-				System.out.println("\n\n\n...........Preparing to delete VM............"+vm.getVmId());
-
+				System.out.println("\n\n\n...........Preparing to delete VM............");
 				VirtualMachine vmToDelete = new VirtualMachine();
-				vmToDelete.setVmId(vm.getVmId());
-				dao.deleteInstance(vmToDelete);
+
+				boolean startDelete = false;
+				int pos=-1;
+				for(VirtualMachine virtualM: newlyCreatedVmList){
+					pos++;
+				if(virtualM.getName().equals(vm.getName())){// && !virtualM.getState().equals(VMState.SHUT_DOWN.getValue())){
+						vmToDelete.setVmId(virtualM.getVmId());
+						System.out.println("virtualM is "+ virtualM.getVmId());
+						startDelete = true;
+						break;
+					}
+				}
+				
+				if(pos!=-1)
+					newlyCreatedVmList.remove(pos);
+				else{
+					if(vmDAO.getVirtualMachineById(vm.getVmId()) != null){
+						vmToDelete.setVmId(vm.getVmId());
+						startDelete = true;
+					}
+					else {
+						startDelete = false;
+					}
+				}
+				if(startDelete)
+					dao.deleteInstance(vmToDelete);
+				
+				System.out.println("\n\n\n...........VM "+ vmToDelete.getVmId()+" has been deleted............");
 			}
 			else if(message.getType() instanceof Server){
 				System.out.println("Preparing to delete VM");
 			}
-			else if(message.getType() instanceof Rack){}
 		}
-		return vmList;
+		return toBeDeployedVmList;
 	}
 
 

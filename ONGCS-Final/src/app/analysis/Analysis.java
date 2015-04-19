@@ -106,7 +106,7 @@ public class Analysis {
 		List<Rack> allRacks  = new ArrayList<Rack>();
 		allRacks = rackDAO.getAllRacks();
 			
-		allVMs = vmDAO.getAllVMs();
+	//	allVMs = vmDAO.getAllVMs();
 		if(value == 1){
 			Utilization util = new Utilization();
 			util.setServerUtilization();

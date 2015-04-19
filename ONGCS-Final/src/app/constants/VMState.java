@@ -2,7 +2,7 @@ package app.constants;
 
 public enum VMState {
 
-	SHUT_DOWN("Shut down"), PENDING("Pending"), RUNNING("Running"), FAILED("Failed");
+	SHUT_DOWN("Shut down"), PENDING("Pending"), RUNNING("Running"), FAILED("Failed"), DEPLOY("Deploy");
 
 	private final String value;
 

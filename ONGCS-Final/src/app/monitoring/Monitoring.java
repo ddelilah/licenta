@@ -1,12 +1,5 @@
 package app.monitoring;
 
-import app.constants.VMState;
-import app.model.CPU;
-import app.model.HDD;
-import app.model.RAM;
-import app.model.Server;
-import app.model.VirtualMachine;
-
 
 
 public class Monitoring {
@@ -15,7 +8,6 @@ public class Monitoring {
 
 	public Monitoring() {
 		queue = new Queue();
-	//	queue.start();
 	}
 
 	public void addToQueue(Object type, String command) {
@@ -27,19 +19,5 @@ public class Monitoring {
 	public void startMonitoring(){
 		queue.start();
 	}
-	/*
-	public static void main(String []args){
-		Monitoring monitoring = new Monitoring();
-		
-		Server server = new Server();
-		
-		VirtualMachine vm = new VirtualMachine();
-				
-		monitoring.addToQueue( vm, "CREATE");
-		monitoring.addToQueue(server, "CREATE");		
-		monitoring.addToQueue(server, "DELETE");
-		monitoring.addToQueue(vm, "CREATE");
-		
-	}*/
-
+	
 }
