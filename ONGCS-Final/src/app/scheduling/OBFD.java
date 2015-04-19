@@ -26,9 +26,9 @@ public class OBFD {
 		
 		schedulingUtil = new SchedulingUtil();
 	}
-
+	
 	/** returns the most appropriate server and the corresponding power consumption and cooling */
-	public Map<Server, List<Double>> findAppropriateServer(VirtualMachine vm,Map<VirtualMachine, Server> allocation) {
+	public Map<Server, List<Double>> findAppropriateServer(VirtualMachine vm, Map<VirtualMachine, Server> allocation) {
 		double minPower = Float.MAX_VALUE;
 		double cooling = 0;
 		double power = 0;
@@ -50,17 +50,8 @@ public class OBFD {
 					underutilizedServers.add(server);
 
 				else {
-					/** if server has enough resources */
+					/* non underutilized server */
 					if (schedulingUtil.enoughResources(server, vm,allocation)) {
-						// float power = K*MAXIMUM_POWER + (1-K)*MAXIMUM_POWER*
-						// server.getUtilization();
-						// float power =
-						// server.getCpu().getCpu_utilization()*MAXIMUM_POWER+server.getIdleEnergy();
-
-						/*** !!!!!!!!!!!!!!!!!! 
-						 *  take into account the previously scheduled vms when computing utilization ????????
-						 *  ????????????????????????????
-						 *  *********/
 						utilization = computeUtilization(server);
 						power = server.getIdleEnergy()
 								+ (MAXIMUM_POWER - server.getIdleEnergy())
@@ -90,6 +81,7 @@ public class OBFD {
 					}
 				}
 			}
+		}
 
 			if (allocatedServers.isEmpty()) {
 				for (Server sEmpty : emptyServers) {
@@ -107,7 +99,6 @@ public class OBFD {
 					}
 				}
 			}
-		}
 
 		if(!allocatedServers.isEmpty()) {
 			correspondingValues.add(power);

@@ -36,7 +36,7 @@ public class Execution {
 			List<Rack> allRacks) {
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = nur.placeVMsInNoneUnderutilizedRack(allVMs, allRacks);
-
+		
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			int serverId = entry.getValue().getServerId();
 			System.out.println("[NUR]vm " + entry.getKey().getName()
@@ -46,13 +46,10 @@ public class Execution {
 			vm.setServer(s);
 			vm.setState(VMState.RUNNING.getValue());
 			mergeSessionsForExecution(vm);
-			// vmDAO.updateInstance(vm);
 		}
 
 		Utilization util = new Utilization();
 		util.setServerUtilization();
-
-	//	turnOffUnusedServersAndRacks();
 		
 		PowerConsumption power = new PowerConsumption();
 		power.setServerPowerConsumption();
@@ -276,12 +273,13 @@ public void initialConsolidationNUR(){
 		
 		Utilization util = new Utilization();
 		util.setServerUtilization();
-	//	executeRBR(allVMs, allRacks);
+		
 
 
 		allRacks = rackDAO.getAllRacks();
 		// rackScheduling = new RackScheduling(allRacks, allVMs);
 		executeNUR(allVMs, allRacks);
+	//	executeRBR(allVMs, allRacks);
 		// executeRBR();
 	
 	

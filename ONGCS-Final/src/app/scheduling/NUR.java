@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
+import app.constants.RackState;
 import app.constants.VMState;
 import app.model.Rack;
 import app.model.Server;
@@ -36,6 +37,7 @@ public class NUR {
 				.getUnderUtilizedRacks(racks);
 		List<Server> serversInNonUnderUtilizedRacks = new ArrayList<Server>();
 		List<Server> serversInUnderUtilizedRacks = new ArrayList<Server>();
+		List<Server> serversInOffRacks = new ArrayList<Server>();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		
 		Map<Server, List<Double>> resultOfOBFD = new HashMap<Server, List<Double>>();
@@ -51,7 +53,10 @@ public class NUR {
 
 		for (Rack r : underUtilizedRacks) {
 			for (Server s : r.getServers()) {
-				serversInUnderUtilizedRacks.add(s);
+				if (s.getUtilization() > 0) {
+					serversInUnderUtilizedRacks.add(s);
+				} else
+					serversInOffRacks.add(s);
 			}
 
 		}
@@ -66,44 +71,57 @@ public class NUR {
 				
 				for(Entry<Server, List<Double>> entry : resultOfOBFD.entrySet()) {
 					allocatedServer = entry.getKey();
-					System.out.println("allocated server non under utilized serverId" + allocatedServer.getServerId() + "name:"+allocatedServer.getName());
-					
+					System.out.println("[Allocated VM on a server from a non underutilized rack] VM " + v.getVmId() + " is allocated on server " + allocatedServer.getServerId() + " hosted by rack " + allocatedServer.getRack().getRackId());
 				}
-				//allocatedServer = (Server) obfdNonUnderUtilized
-				//		.findAppropriateServer(v).get(0);
-
-				if (allocatedServer == null) {
-					OBFD obfdUnderUtilized = new OBFD(
-							serversInUnderUtilizedRacks);
+				
+				if (allocatedServer != null) {
+					allocation.put(v, allocatedServer);
+				}
+				
+			} else {
+					//TODO: modify allocation
+					OBFD obfdUnderUtilized = new OBFD(serversInUnderUtilizedRacks);
 					if (!obfdUnderUtilized.findAppropriateServer(v,allocation).isEmpty()) {
 						resultOfOBFD = obfdUnderUtilized.findAppropriateServer(v,allocation);
 						
 						for(Entry<Server, List<Double>> entry : resultOfOBFD.entrySet()) {
 							allocatedServer = entry.getKey();
-							System.out.println("allocated server under utilized serverId" + allocatedServer.getServerId() + "name:"+allocatedServer.getName());
-							
+							System.out.println("[Allocated VM on a server from an underutilized rack] VM " + v.getVmId() + " is allocated on server " + allocatedServer.getServerId() + " hosted by rack " + allocatedServer.getRack().getRackId());
 						}
-
+						
 						if (allocatedServer != null) {
 							allocation.put(v, allocatedServer);
 						}
-					}
 
-				} else {
-					allocation.put(v, allocatedServer);
-				}
-			} else {
+						
+					} else {
+						//if all racks are off
+						OBFD obfdOff = new OBFD(serversInOffRacks);
+						if (!obfdOff.findAppropriateServer(v,allocation).isEmpty()) {
+							resultOfOBFD = obfdOff.findAppropriateServer(v,allocation);
+							
+							for(Entry<Server, List<Double>> entry : resultOfOBFD.entrySet()) {
+								allocatedServer = entry.getKey();
+								System.out.println("[Allocated VM on a server from an off rack] VM " + v.getVmId() + " is allocated on server " + allocatedServer.getServerId() + " hosted by rack " + allocatedServer.getRack().getRackId());
+								allocatedServer.getRack().setState(RackState.ON.getValue());
+								dao.updateInstance(allocatedServer.getRack());
+							}
+							
+							if (allocatedServer != null) {
+								allocation.put(v, allocatedServer);
+							}
+						}
+
+							
+					}
+			} 	
+			
+			if(!allocation.keySet().contains(v)) {
+				System.out.println("[Allocation failed] VM " + v.getVmId() + v.getState());
 				v.setState(VMState.FAILED.getValue());
 				dao.updateInstance(v);
 			}
 			
-			
-			
-
-		}
-		
-		for(Entry<VirtualMachine, Server> alloc : allocation.entrySet()) {
-			System.out.println("VmId " + alloc.getKey().getVmId() + " Vm name " + alloc.getKey().getName() + " has state " + alloc.getKey().getState());
 		}
 
 		return allocation;
