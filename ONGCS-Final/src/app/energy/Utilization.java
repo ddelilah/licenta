@@ -41,4 +41,46 @@ public void setServerUtilization(){
 		return sum / server.getServerMIPS();
 
 	}
+	
+public void setRackUtilization(){
+		
+		float maxRackPowerConsumption;
+		float currentPowerConsumption=0;
+		int maximumServerPowerConsumption=500;
+		
+		List<Rack> allRacks = new ArrayList<Rack>();
+		List<Server> allServers = new ArrayList<Server>();
+		GenericDAOImpl genericDAO = new GenericDAOImpl();
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		
+		allRacks = rackDAO.getAllRacks();
+				
+		System.out.println("\n\n\n\n"+allRacks);
+		for(Rack rack: allRacks){
+			
+			currentPowerConsumption = 0;
+			allServers = rack.getServers();
+			System.out.println("\n Rack"+rack + "\n" +allServers);
+			maxRackPowerConsumption =(float) allServers.size() * maximumServerPowerConsumption;
+			
+			if(!allServers.isEmpty()){
+				for(Server server: allServers){
+					currentPowerConsumption += server.getPowerValue();
+				}
+				
+				float utilization = currentPowerConsumption / maxRackPowerConsumption *100;
+				
+				rack.setUtilization(utilization);
+				genericDAO.updateInstance(rack);
+			}
+			else {
+				rack.setUtilization(0);
+				genericDAO.updateInstance(rack);
+			}
+		}
+		
+		
+		
+	}
+
 }

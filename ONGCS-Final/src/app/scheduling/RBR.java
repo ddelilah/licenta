@@ -1,5 +1,9 @@
 package app.scheduling;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +17,7 @@ import app.access.impl.RackDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.algorithm.FFD;
 import app.execution.Execution;
+import app.execution.History;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -43,21 +48,18 @@ public class RBR implements Serializable {
 		vmList = vmProcessor.sortVMListDescending();
 		Rack rack = new Rack();
 
+		System.out.println("........... RBR ...................."+vmList.size());
+	
+		
 		for (VirtualMachine vm : vmList) {
 			
-			if(selectSuitableRack(rackList, vm,allocation) != null)
+			if(selectSuitableRack(rackList, vm,allocation) != null){
 				rack = selectSuitableRack(rackList, vm, allocation);
-			else 
-			{		allocation.put(null, null);
-			/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-			}
-				
+
 			serverList = rack.getServers();
 			
-			for(Server serv : serverList)
-				System.out.print(serv.getServerId()+" ");
-			/* find appropriate sever */
 
+			allocatedServer = null;
 			OBFD obfd = new OBFD(serverList);
 			if (!obfd.findAppropriateServer(vm,allocation).isEmpty()) {
 				resultOfOBFD = obfd.findAppropriateServer(vm, allocation);
@@ -68,17 +70,19 @@ public class RBR implements Serializable {
 				}
 
 			}
+			
 
 			if (allocatedServer != null) {
 				allocation.put(vm, allocatedServer);
 
 			}
-
-		}
 		
+		}
+		}
 		return allocation;
 	}
 
+	
 	public Rack selectSuitableRack(List<Rack> rackList, VirtualMachine vm, Map<VirtualMachine, Server> allocation) {
 		List<Server> serverList = new ArrayList<Server>();
 
@@ -91,4 +95,20 @@ public class RBR implements Serializable {
 		return null;
 	}
 	
+	
+	public static void main(String []args){
+		RackDAO rackDAO = new RackDAOImpl();
+		List<Rack> allRacks  = new ArrayList<Rack>();
+		List<VirtualMachine> allVMs  = new ArrayList<VirtualMachine>();
+		allRacks = rackDAO.getAllRacks();
+		
+		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+
+		allVMs = vmDAO.getAllVMs();
+		allRacks = rackDAO.getAllRacks();
+		
+		RBR rbr = new RBR();
+		rbr.placeVMsRackByRack(allVMs, allRacks);
+		
+	}
 }

@@ -45,7 +45,7 @@ public class Queue extends Thread {
 			while (!receivedMessage.isEmpty()) {
 				try {
 			
-					Thread.sleep(1000);
+					//Thread.sleep(1000);
 				} catch (Exception e) {}
 				
 				ContextData message = receivedMessage.pollFirst();

@@ -52,14 +52,16 @@ public class Analysis {
 	public void performAnalysis(List<VirtualMachine> vmList) {
 		/* evaluate all policies */
 		boolean isViolated = false;
-
+		boolean shouldStartScheduler = false;
+		
 			/** If there are undeployed VMs learning algorithm should be started */
 			for (VirtualMachine vm : vmList) {
 				VmPolicy vmPolicy = new VmPolicy(p.VM_POLICY, false, vm);
 				if (vmPolicy.evaluatePolicy() == true){
 					System.out.println("\n\n\n.....VM policy violated........");
 					isViolated = true;
-					checkPlanning((float) 1, vmList);
+					shouldStartScheduler = true;
+					checkPlanning(1, vmList);
 					break;
 				}
 			}
@@ -71,7 +73,8 @@ public class Analysis {
 				if (serverPolicy.evaluatePolicy() == true && !isViolated){
 					System.out.println("\n\n\n............Server policy violated.............");
 					isViolated = true;
-					checkPlanning((float) 1, vmList);
+					shouldStartScheduler = true;
+					checkPlanning(1, vmList);
 					break;
 					
 				}
@@ -83,50 +86,40 @@ public class Analysis {
 						rack);
 				if (rackPolicy.evaluatePolicy() == true && !isViolated){
 					System.out.println("\n\n\n..........Rack policy violated........");
-					checkPlanning((float) 1, vmList);
+					checkPlanning(1, vmList);
 					isViolated = true;
+					shouldStartScheduler = true;
 					break;
 				}
 			}
-
+			
+			if(!shouldStartScheduler)
+				checkPlanning(0, vmList);
 }
 
-	public void checkPlanning(Float entropy,List<VirtualMachine> allVMs) {
+	public void checkPlanning(int value,List<VirtualMachine> allVMs) {
 
-		if (entropy > THRESHOLD) {
-			System.out.println("\n\n\n ...........Starting Learning Algorithm...........\n\n");
-			Execution execution = new Execution();
-			RackDAO rackDAO = new RackDAOImpl();
-			List<Rack> allRacks  = new ArrayList<Rack>();
-			allRacks = rackDAO.getAllRacks();
-		
-			List<VirtualMachine> allVMs1 = new ArrayList<VirtualMachine>();
-			List<VirtualMachine> allVMs2 = new ArrayList<VirtualMachine>();
-
-		/*	for(int i=0; i<allVMs.size(); i++){
-				if(i < allVMs.size()/2)
-				{
-					allVMs.get(i).setName("NUR");
-					allVMs1.add(allVMs.get(i));}
-				else {
-					allVMs.get(i).setName("RBR");
-					allVMs2.add(allVMs.get(i));
-				}
-			}*/
-
-
+		System.out.println("\n\n\n ...........Starting Learning Algorithm...........\n\n");
+		Execution execution = new Execution();
+		RackDAO rackDAO = new RackDAOImpl();
+		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+		List<Rack> allRacks  = new ArrayList<Rack>();
+		allRacks = rackDAO.getAllRacks();
+			
+		allVMs = vmDAO.getAllVMs();
+		if(value == 1){
 			Utilization util = new Utilization();
 			util.setServerUtilization();
-	/*		execution.initialConsolidationNUR();
+		/*	execution.initialConsolidationNUR();
 			execution.executeNUR(allVMs, allRacks);*/
-			/*execution.initialConsolidationRBR();
-			execution.executeRBR(allVMs, allRacks);*/
-			execution.initialConsolidationFFD();
-			execution.performFFD(allVMs);
-			
+	//		execution.initialConsolidationRBR();
+			execution.executeRBR(allVMs, allRacks);
+			/*execution.initialConsolidationFFD();
+			execution.performFFD(allVMs);*/
+				
 			
 		} else {
-			System.out.println("System is Optimal");
+			System.out.println("............System is Optimal.............");
 		}
 	}
 

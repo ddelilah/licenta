@@ -58,7 +58,8 @@ public class Execution {
 		CoolingSimulation cooling = new CoolingSimulation();
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
-		
+		util.setRackUtilization();
+
 		System.out.println("[NUR] map size: " + allocation.size());
 		history.writeToFile(allocation, "historyNUR.txt");
 	}
@@ -67,17 +68,15 @@ public class Execution {
 			List<Rack> allRacks) {
 		
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
-		// create new instance of rackScheduling when having the vms required
-/*		System.out.println(" size rbr"
-				+ rackScheduling.placeVMsRackByRack(allVMs, allRacks).size());
-	*/	allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
+		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			int serverId = entry.getValue().getServerId();
-	/*		System.out.println("[RBR]vm " + entry.getKey().getName()
+			System.out.println("[RBR]vm " + entry.getKey().getName()
 					+ " should be assigned to server with id " + serverId);
-	*/		Server s = entry.getValue();
+			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
+			vm.setState(VMState.RUNNING.getValue());
 			mergeSessionsForExecution(vm);
 
 		}
@@ -97,6 +96,8 @@ public class Execution {
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
 		
+		turnOffUnusedServersAndRacks();
+		util.setRackUtilization();
 		History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");
 	}
