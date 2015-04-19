@@ -110,7 +110,7 @@ public class Analysis {
 			Utilization util = new Utilization();
 			util.setServerUtilization();
 		//	execution.executeNUR(allVMs, allRacks);
-			execution.executeRBR(allVMs, allRacks);
+		//	execution.executeRBR(allVMs, allRacks);
 			//execution.performFFD(allVMs);
 				
 			

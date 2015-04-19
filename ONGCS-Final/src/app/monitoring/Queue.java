@@ -1,7 +1,10 @@
 package app.monitoring;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import org.hibernate.Session;
@@ -30,6 +33,10 @@ public class Queue extends Thread {
 	private List<ContextData> msg;
 	List<VirtualMachine> newlyCreatedVmList = new ArrayList<VirtualMachine>();
 	List<VirtualMachine> toBeDeployedVmList = new ArrayList<VirtualMachine>();
+	List<VirtualMachine> toBeDeletedVmList = new ArrayList<VirtualMachine>();
+
+	Map<String, List<VirtualMachine>> map = new HashMap<>();
+	
 	List<VirtualMachine> newlyCreatedVmListTestDelete = new ArrayList<VirtualMachine>();
 	List<VirtualMachine> newlyCreatedVmListTestShutdown = new ArrayList<VirtualMachine>();
 	List<VirtualMachine> newlyCreatedVmListTestDeploy = new ArrayList<VirtualMachine>();
@@ -55,7 +62,7 @@ public class Queue extends Thread {
 				ContextData message = receivedMessage.pollFirst();
 				System.out.println("\n\n\n.............Monitoring " + message.toString()+".........");
 				
-				toBeDeployedVmList = updateDB(message);
+				map = updateDB(message);
 			
 				Thread.yield();
 				statesChanged = true;
@@ -69,12 +76,27 @@ public class Queue extends Thread {
 		}
 		Analysis analysis = new Analysis();
 		
+		for (Entry<String, List<VirtualMachine>> entry : map.entrySet()) {
+			if(entry.getKey().equals("toBeDeployedVmList")){
+				toBeDeployedVmList = entry.getValue();
+			}
+			else{
+				toBeDeletedVmList = entry.getValue();
+			}
+		}
 		
+		System.out.println("To be deployed");
+		for(VirtualMachine vm: toBeDeployedVmList)
+			System.out.println(vm.getVmId());
+		
+		System.out.println("To be deleted");
+		for(VirtualMachine vm: toBeDeletedVmList)
+			System.out.println(vm.getVmId());
 	//	analysis.performAnalysis(toBeDeployedVmList);
 		
 	}
 
-	private List<VirtualMachine> updateDB(ContextData message) {
+	private Map<String,List<VirtualMachine>> updateDB(ContextData message) {
 		
 		 VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 		
@@ -190,23 +212,36 @@ public class Queue extends Thread {
 						vmToDelete.setVmId(virtualM.getVmId());
 						System.out.println("virtualM is "+ virtualM.getVmId());
 						startDelete = true;
+						toBeDeletedVmList.add(vmToDelete);
 						break;
 					}
 				}
 				
 				int removeFromDeploy =-1;
 				int removeFromShutdown=-1;
+				int removeFromToBeDeployedVmList=-1;
 				/* delete from the other lists too */
 				for(VirtualMachine virtualM: newlyCreatedVmListTestDeploy){
 					removeFromDeploy++;
-					if(virtualM.getVmId() == vm.getVmId()){
+					if(virtualM.getVmId() == vmToDelete.getVmId()){
 						break;
 					}}
 				if(removeFromDeploy!=-1)
 					newlyCreatedVmListTestDeploy.remove(removeFromDeploy);
+				
+				
+				for(VirtualMachine virtualM: toBeDeployedVmList){
+					removeFromToBeDeployedVmList++;
+					if(virtualM.getVmId() == vmToDelete.getVmId()){
+						break;
+					}}
+				if(removeFromToBeDeployedVmList!=-1)
+					toBeDeployedVmList.remove(removeFromToBeDeployedVmList);
+				
+				
 				for(VirtualMachine virtualM: newlyCreatedVmListTestShutdown){
 					removeFromShutdown++;
-					if(virtualM.getVmId() == vm.getVmId()){
+					if(virtualM.getVmId() == vmToDelete.getVmId()){
 						break;
 					}}
 				if(removeFromShutdown!=-1)
@@ -217,6 +252,7 @@ public class Queue extends Thread {
 				else{
 					if(vmDAO.getVirtualMachineById(vm.getVmId()) != null){
 						vmToDelete.setVmId(vm.getVmId());
+						toBeDeletedVmList.add(vmToDelete);
 						startDelete = true;
 					}
 					else {
@@ -232,7 +268,11 @@ public class Queue extends Thread {
 				System.out.println("Preparing to delete VM");
 			}
 		}
-		return toBeDeployedVmList;
+		
+		
+		map.put("toBeDeployedVmList",toBeDeployedVmList);
+		map.put("toBeDeletedVmList",toBeDeletedVmList);
+		return map;
 	}
 
 

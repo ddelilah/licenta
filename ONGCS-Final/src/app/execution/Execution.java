@@ -100,7 +100,7 @@ public class Execution {
 		util.setRackUtilization();
 		
 		displayPowerConsumptionAndCooling("RBR");
-		System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
+		System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency2(allocation.size()));
 //		History history = new History();
 //		history.writeToFile(allocation, "historyRBR.txt");
 	}
@@ -289,29 +289,17 @@ public void initialConsolidationNUR(){
 		util.setServerUtilization();
 		executeNUR(allVMs, allRacks);
 	}
-//	
-//	public static void main(String[] args) {
-//		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
-//		List<Rack> allRacks = new ArrayList<Rack>();
-//		RackDAOImpl rackDAO = new RackDAOImpl();
-//
-//		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
-//		allVMs = vmDAO.getAllVMs();
-//		
-//		
-//		Utilization util = new Utilization();
-//		util.setServerUtilization();
-//		
-//
-//
-//		allRacks = rackDAO.getAllRacks();
-//		// rackScheduling = new RackScheduling(allRacks, allVMs);
-//		executeNUR(allVMs, allRacks);
-//	//	executeRBR(allVMs, allRacks);
-//		// executeRBR();
-//	
-//	
-//		
-//	}
+
+	public static void main(String []args){
+		Execution execution = new Execution();
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		VirtualMachineDAOImpl vmDAO= new VirtualMachineDAOImpl();
+		
+		List<Rack> rackList = rackDAO.getAllRacks();
+		List<VirtualMachine> vmList = vmDAO.getAllVMs();
+		
+		execution.executeRBR(vmList, rackList);
+		
+	}
 
 }
