@@ -70,7 +70,7 @@ public class Queue extends Thread {
 		Analysis analysis = new Analysis();
 		
 		
-		analysis.performAnalysis(toBeDeployedVmList);
+	//	analysis.performAnalysis(toBeDeployedVmList);
 		
 	}
 
@@ -202,13 +202,15 @@ public class Queue extends Thread {
 					if(virtualM.getVmId() == vm.getVmId()){
 						break;
 					}}
-				newlyCreatedVmListTestDeploy.remove(removeFromDeploy);
+				if(removeFromDeploy!=-1)
+					newlyCreatedVmListTestDeploy.remove(removeFromDeploy);
 				for(VirtualMachine virtualM: newlyCreatedVmListTestShutdown){
 					removeFromShutdown++;
 					if(virtualM.getVmId() == vm.getVmId()){
 						break;
 					}}
-				newlyCreatedVmListTestShutdown.remove(removeFromDeploy);
+				if(removeFromShutdown!=-1)
+					newlyCreatedVmListTestShutdown.remove(removeFromShutdown);
 				
 				if(pos!=-1)
 					newlyCreatedVmListTestDelete.remove(pos);
