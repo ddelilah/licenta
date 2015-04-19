@@ -46,7 +46,7 @@ public class Queue extends Thread {
 			while (!receivedMessage.isEmpty()) {
 				try {
 			
-					Thread.sleep(4000);
+			//		Thread.sleep(4000);
 				} catch (Exception e) {}
 				
 				ContextData message = receivedMessage.pollFirst();
@@ -106,6 +106,7 @@ public class Queue extends Thread {
 				toBeDeployedVmList.add(vm);
 				modifyNewlyCreated = true;
 				System.out.println("Found in list");
+				break;
 				}
 			}
 			

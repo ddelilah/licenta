@@ -16,6 +16,7 @@ import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.algorithm.FFD;
+import app.constants.VMState;
 import app.execution.Execution;
 import app.execution.History;
 import app.model.Rack;
@@ -30,6 +31,7 @@ public class RBR implements Serializable {
 	private VMProcessor vmProcessor= new VMProcessor(); 
 	private RackProcessor rackProcessor = new RackProcessor();
 	private SchedulingUtil schedulingUtil= new SchedulingUtil();
+	public GenericDAOImpl dao = new GenericDAOImpl();
 
 	public RBR(){}
 
@@ -75,6 +77,10 @@ public class RBR implements Serializable {
 			if (allocatedServer != null) {
 				allocation.put(vm, allocatedServer);
 
+			}
+			else{
+				vm.setState(VMState.FAILED.getValue());
+				dao.updateInstance(vm);
 			}
 		
 		}

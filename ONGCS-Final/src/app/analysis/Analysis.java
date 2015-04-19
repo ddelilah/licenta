@@ -113,6 +113,8 @@ public class Analysis {
 		/*	execution.initialConsolidationNUR();
 			execution.executeNUR(allVMs, allRacks);*/
 	//		execution.initialConsolidationRBR();
+			System.out.println(allVMs.size()+"SIZE");
+			System.exit(0);
 			execution.executeRBR(allVMs, allRacks);
 			/*execution.initialConsolidationFFD();
 			execution.performFFD(allVMs);*/
