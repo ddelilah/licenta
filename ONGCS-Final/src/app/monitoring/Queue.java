@@ -139,6 +139,7 @@ public class Queue extends Thread {
 				vm.setVmId(virtualM.getVmId());
 				modifyNewlyCreated = true;
 				System.out.println("Found in list");
+				break;
 				}
 			}
 			
