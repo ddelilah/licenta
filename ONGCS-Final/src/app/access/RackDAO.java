@@ -9,5 +9,7 @@ public interface RackDAO {
 	public List<Rack> getAllRacks();
 
 	public Rack getRackById(int rackId);
+	
+	public String mergeSessionsForRack(Rack r);
 
 }

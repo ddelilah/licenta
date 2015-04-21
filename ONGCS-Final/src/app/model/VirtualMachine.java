@@ -15,7 +15,6 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Proxy;
 
-import app.constants.VMState;
 
 @Entity
 @Table(name = "vm")

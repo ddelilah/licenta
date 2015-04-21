@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -112,6 +113,37 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 
 	}
 	
+	public String mergeSessionsForVirtualMachine(VirtualMachine vm) {
+		Session session = SessionFactoryUtil.getInstance().openSession();
+		Query query = session
+				.createQuery("from VirtualMachine vm where vm.vmId=:vm_id");
+		List<VirtualMachine> queryList = query.setParameter("vm_id",
+				vm.getVmId()).list();
+		session.close();
+		Session session2 = SessionFactoryUtil.getInstance().openSession();
+		try {
+			if (queryList.size() > 0) {
+				session2.beginTransaction();
+				VirtualMachine v = (VirtualMachine) session2.get(
+						VirtualMachine.class, new Integer(213));
+				session2.merge(vm);
+				// session2.update(vm);
+			} else {
+				session2.beginTransaction();
+				session2.save(vm);
+			}
+		} catch (HibernateException e) {
+			session2.getTransaction().rollback();
+			System.out
+					.println("Getting Exception : " + e.getLocalizedMessage());
+		} finally {
+			session2.getTransaction().commit();
+			session2.close();
+		}
+
+		return "Successfully data updated into table";
+
+	}
 
 	public static void main(String []args){
 		

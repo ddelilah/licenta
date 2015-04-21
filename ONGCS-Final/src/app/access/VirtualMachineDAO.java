@@ -11,4 +11,6 @@ public interface VirtualMachineDAO {
 	public VirtualMachine getVirtualMachineById(int virtualMachineId);
 	
 	public List<VirtualMachine> getAllVMsByState(String state);
+	
+	public String mergeSessionsForVirtualMachine(VirtualMachine vm);
 }

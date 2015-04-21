@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
@@ -89,6 +90,38 @@ public class ServerDAOImpl extends GenericDAOImpl implements ServerDAO {
 	    }
 	    
 	    return identified;
+	}
+	
+	public String mergeSessionsForServer(Server s) {
+		Session session = SessionFactoryUtil.getInstance().openSession();
+		Query query = session
+				.createQuery("from Server s where s.serverId=:server_id");
+		List<Server> queryList = query.setParameter("server_id",
+				s.getServerId()).list();
+		session.close();
+		Session session2 = SessionFactoryUtil.getInstance().openSession();
+		try {
+			if (queryList.size() > 0) {
+				session2.beginTransaction();
+				Server srv = (Server) session2.get(
+						Server.class, new Integer(213));
+				session2.merge(s);
+				// session2.update(vm);
+			} else {
+				session2.beginTransaction();
+				session2.save(s);
+			}
+		} catch (HibernateException e) {
+			session2.getTransaction().rollback();
+			System.out
+					.println("Getting Exception : " + e.getLocalizedMessage());
+		} finally {
+			session2.getTransaction().commit();
+			session2.close();
+		}
+
+		return "Successfully data updated into table";
+
 	}
 
 }

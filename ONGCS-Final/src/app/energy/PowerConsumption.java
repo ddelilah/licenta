@@ -16,6 +16,30 @@ public class PowerConsumption {
 	/** fraction of power consumption of an idle server */
 	private static final int K = 70/100;
 	
+	public float computeSingleServerPowerConsumption(Server s) {
+		float power = 0;
+		float utilization = s.getUtilization();
+		power = s.getIdleEnergy()
+				+ (MAXIMUM_POWER - s.getIdleEnergy())
+				* utilization;
+		
+		return power;
+	}
+	
+	public float computeSingleRackPowerConsumption(Rack r) {
+		float power = 0;
+		List<Server> allServers = new ArrayList<Server>();
+		
+		allServers = r.getServers();
+		if(!allServers.isEmpty()) {
+			for(Server server: allServers){
+				power += server.getPowerValue();
+			}
+		}
+		
+		return power;
+	}
+	
 	public void setServerPowerConsumption(){
 	
 		List<Rack> allRacks = new ArrayList<Rack>();
@@ -30,7 +54,7 @@ public class PowerConsumption {
 			allServers = rack.getServers();
 			if(!allServers.isEmpty())
 				for(Server server: allServers){
-					if(server.getState().equals("on") || server.getState().equals("On")){
+					if(server.getState().equalsIgnoreCase("ON")) {
 						float utilization = server.getUtilization();
 						float power = server.getIdleEnergy()
 								+ (MAXIMUM_POWER - server.getIdleEnergy())

@@ -32,6 +32,13 @@ public class Execution {
 	private static RBR rackScheduling = new RBR();
 	private static History history = new History();
 	
+	public static List<VirtualMachine> addVmsToServer(Server s, VirtualMachine vm) {
+		List<VirtualMachine> result = new ArrayList<VirtualMachine>();
+		result = s.getCorrespondingVMs();
+		result.add(vm);
+		return result;
+	}
+	
 	public static void executeNUR(List<VirtualMachine> allVMs,
 			List<Rack> allRacks) {
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
@@ -45,7 +52,10 @@ public class Execution {
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
 			vm.setState(VMState.RUNNING.getValue());
+			s.setCorrespondingVMs(addVmsToServer(s, vm));
+			System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
 			mergeSessionsForExecution(vm);
+	
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
 
@@ -62,7 +72,7 @@ public class Execution {
 		util.setRackUtilization();
 		System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
 		System.out.println("[NUR] map size: " + allocation.size());
-		history.writeToFile(allocation, "historyNUR.txt");
+	//	history.writeToFile(allocation, "historyNUR.txt");
 	}
 
 	public void executeRBR(List<VirtualMachine> allVMs,
@@ -139,7 +149,7 @@ public class Execution {
 			vm.setServer(s);
 			mergeSessionsForExecution(vm);
 		}
-		MigrationEfficiency mEff = new MigrationEfficiency();
+		//MigrationEfficiency mEff = new MigrationEfficiency();
 
 		Utilization util = new Utilization();
 		util.setServerUtilization();
@@ -154,7 +164,7 @@ public class Execution {
 		CoolingSimulation cooling = new CoolingSimulation();
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
-		System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
+	//	System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
 
 	/*	History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");

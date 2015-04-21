@@ -13,6 +13,21 @@ public class CoolingSimulation {
 	/* suppose temperature is 25 degrees */
 	private static final float COP = (float) (0.0068 * Math.pow(25, 2) + 0.0008 * 25 + 0.458);
 	
+	public float computeSingleServerCooling(Server s) {
+		return s.getPowerValue() / COP;
+	}
+	
+	public float computeSingleRackCooling(Rack r) {
+		float cooling = 0;
+		List<Server> allServers = new ArrayList<Server>();
+		
+		allServers = r.getServers();
+		for(Server server: allServers){
+			cooling += server.getCoolingValue();
+		}
+		return cooling;
+	}
+	
 	public void setServerCoolingValue(){
 		
 		List<Rack> allRacks = new ArrayList<Rack>();

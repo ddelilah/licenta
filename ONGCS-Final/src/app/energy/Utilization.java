@@ -33,6 +33,7 @@ public void setServerUtilization(){
 	}
 
 	public float computeUtilization(Server server) {
+		System.out.println("Server for which we compute the utilization: " + server.getServerId());
 		List<VirtualMachine> vmList = server.getCorrespondingVMs();
 		float sum = 0;
 		for (VirtualMachine vm : vmList) {
@@ -42,7 +43,30 @@ public void setServerUtilization(){
 
 	}
 	
-public void setRackUtilization(){
+	public float computeSingleRackUtilization(Rack r) {
+		
+		float maxRackPowerConsumption;
+		float currentPowerConsumption=0;
+		int maximumServerPowerConsumption=500;
+		
+		List<Server> allServers = new ArrayList<Server>();
+		GenericDAOImpl genericDAO = new GenericDAOImpl();
+		
+		allServers = r.getServers();
+		maxRackPowerConsumption =(float) allServers.size() * maximumServerPowerConsumption;
+		
+		for(Server server: allServers) {
+			currentPowerConsumption += server.getPowerValue();
+		}
+		
+		float utilization = currentPowerConsumption / maxRackPowerConsumption *100;
+		
+		return utilization;
+		
+		
+	}
+	
+public void setRackUtilization() {
 		
 		float maxRackPowerConsumption;
 		float currentPowerConsumption=0;
