@@ -143,12 +143,6 @@ public class Queue extends Thread {
 				if (virtualM.getName().equals(vm.getName())) {// &&
 																// !virtualM.getState().equals(VMState.SHUT_DOWN.getValue())){
 					vmToDeploy.setVmId(virtualM.getVmId());
-					vmToDeploy.setCpu(virtualM.getCpu());
-					vmToDeploy.setHdd(virtualM.getHdd());
-					vmToDeploy.setName(virtualM.getName());
-					vmToDeploy.setRam(virtualM.getRam());
-					vmToDeploy.setState(virtualM.getState());
-					vmToDeploy.setVmMips(virtualM.getVmMips());
 					toBeDeployedVmList.add(vmToDeploy);
 					modifyNewlyCreated = true;
 					System.out.println("Found in list");
@@ -223,12 +217,6 @@ public class Queue extends Thread {
 					if (virtualM.getName().equals(vm.getName())) {// &&
 																	// !virtualM.getState().equals(VMState.SHUT_DOWN.getValue())){
 						vmToDelete.setVmId(virtualM.getVmId());
-						vmToDelete.setCpu(virtualM.getCpu());
-						vmToDelete.setHdd(virtualM.getHdd());
-						vmToDelete.setName(virtualM.getName());
-						vmToDelete.setRam(virtualM.getRam());
-						vmToDelete.setState(virtualM.getState());
-						vmToDelete.setVmMips(virtualM.getVmMips());
 						System.out.println("virtualM is " + virtualM.getVmId());
 						startDelete = true;
 						toBeDeletedVmList.add(vmToDelete);
