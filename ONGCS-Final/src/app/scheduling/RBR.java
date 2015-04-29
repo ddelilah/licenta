@@ -42,7 +42,7 @@ public class RBR implements Serializable {
 		
 		rackProcessor = new RackProcessor(rackList);
 		vmProcessor = new VMProcessor(vmList);
-		Map<Server, List<Double>> resultOfOBFD = new HashMap<Server, List<Double>>();
+		Map<Server, List<Float>> resultOfOBFD = new HashMap<Server, List<Float>>();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		
 		Server allocatedServer = new Server();
@@ -66,7 +66,7 @@ public class RBR implements Serializable {
 			if (!obfd.findAppropriateServer(vm,allocation).isEmpty()) {
 				resultOfOBFD = obfd.findAppropriateServer(vm, allocation);
 
-				for (Entry<Server, List<Double>> entry : resultOfOBFD
+				for (Entry<Server, List<Float>> entry : resultOfOBFD
 						.entrySet()) {
 					allocatedServer = entry.getKey();
 				}

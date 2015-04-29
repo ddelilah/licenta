@@ -16,8 +16,8 @@ public class ServerPolicy extends Policy {
 	 * private static final int OPTIMAL_STORAGE_UTIL 50;
 	 */
 	
-	private static final double MIN_SERVER_UTIL = 0.2;
-	private static final double MAX_SERVER_UTIL = 0.8;
+	private static final float MIN_SERVER_UTIL = 0.2f;
+	private static final float MAX_SERVER_UTIL = 0.8f;
 
 	private Server server;
 
@@ -36,12 +36,12 @@ public class ServerPolicy extends Policy {
 
 	@Override
 	public boolean evaluatePolicy() {
-		double totalRequestedMips = 0;
+		float totalRequestedMips = 0;
 		
 		for (VirtualMachine vm : server.getCorrespondingVMs()) {
 			totalRequestedMips += vm.getVmMips();
 		}
-		double utilization = totalRequestedMips / server.getServerMIPS();
+		float utilization = totalRequestedMips / server.getServerMIPS();
 		if (server.getState().equalsIgnoreCase("ON") && utilization < MAX_SERVER_UTIL && utilization > MIN_SERVER_UTIL) {
 			isViolated = false;
 		} else {

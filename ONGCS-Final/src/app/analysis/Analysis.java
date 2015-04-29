@@ -106,11 +106,11 @@ public class Analysis {
 		List<Rack> allRacks  = new ArrayList<Rack>();
 		allRacks = rackDAO.getAllRacks();
 			
-		if(value == 1){
+		if(value == 1) {
 			
 			//why set server utilization before any allocation is made?? -> useless
-			Utilization util = new Utilization();
-			util.setServerUtilization();
+		//	Utilization util = new Utilization();
+		//	util.setServerUtilization();
 			execution.executeNUR(allVMs, allRacks);
 		//	execution.executeRBR(allVMs, allRacks);
 			//execution.performFFD(allVMs);

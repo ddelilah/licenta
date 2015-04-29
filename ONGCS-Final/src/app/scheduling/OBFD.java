@@ -6,14 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import app.constants.ServerState;
-import app.model.*;
+import app.energy.Utilization;
+import app.model.Server;
+import app.model.VirtualMachine;
 
 public class OBFD {
 
 	private List<Server> serverList;
 	private SchedulingUtil schedulingUtil;
 	
-	private static final int UNDERUTILIZED = 20;
+	private static final float UNDERUTILIZED = 0.2f;
 	/** Pmax = 500W */
 	private static final int MAXIMUM_POWER = 500;
 	/** fraction of power consumption of an idle server */
@@ -28,16 +30,17 @@ public class OBFD {
 	}
 	
 	/** returns the most appropriate server and the corresponding power consumption and cooling */
-	public Map<Server, List<Double>> findAppropriateServer(VirtualMachine vm, Map<VirtualMachine, Server> allocation) {
-		double minPower = Float.MAX_VALUE;
-		double cooling = 0;
-		double power = 0;
-		double utilization;
-		Map<Server, List<Double>> returnValue = new HashMap<Server, List<Double>>();
-		List<Double> correspondingValues = new ArrayList<Double>();
+	public Map<Server, List<Float>> findAppropriateServer(VirtualMachine vm, Map<VirtualMachine, Server> allocation) {
+		float minPower = Float.MAX_VALUE;
+		float cooling = 0;
+		float power = 0;
+		float utilization;
+		Map<Server, List<Float>> returnValue = new HashMap<Server, List<Float>>();
+		List<Float> correspondingValues = new ArrayList<Float>();
 		List<Server> allocatedServers = new ArrayList<Server>();
 		List<Server> emptyServers = new ArrayList<Server>();
 		List<Server> underutilizedServers = new ArrayList<Server>();
+		Utilization util = new Utilization();
 
 		for (Server server : serverList) {
 			/* if server is empty = server is OFF */
@@ -51,8 +54,8 @@ public class OBFD {
 
 				else {
 					/* non underutilized server */
-					if (schedulingUtil.enoughResources(server, vm,allocation)) {
-						utilization = computeUtilization(server);
+					if (schedulingUtil.enoughResources(server, vm, allocation)) {
+						utilization = util.computePotentialUtilizationForAServer(server, vm, allocation);
 						power = server.getIdleEnergy()
 								+ (MAXIMUM_POWER - server.getIdleEnergy())
 								* utilization;
@@ -69,8 +72,8 @@ public class OBFD {
 		
 		if (allocatedServers.isEmpty()) {
 			for (Server sUnderutilized : underutilizedServers) {
-				if (schedulingUtil.enoughResources(sUnderutilized, vm,allocation)) {
-					utilization = computeUtilization(sUnderutilized);
+				if (schedulingUtil.enoughResources(sUnderutilized, vm, allocation)) {
+					utilization = util.computePotentialUtilizationForAServer(sUnderutilized, vm, allocation);
 					power = sUnderutilized.getIdleEnergy()
 							+ (MAXIMUM_POWER - sUnderutilized.getIdleEnergy())
 							* utilization;
@@ -81,12 +84,11 @@ public class OBFD {
 					}
 				}
 			}
-		}
-
+			
 			if (allocatedServers.isEmpty()) {
 				for (Server sEmpty : emptyServers) {
 					if (schedulingUtil.enoughResources(sEmpty, vm,allocation)) {
-						utilization = computeUtilization(sEmpty);
+						utilization = util.computePotentialUtilizationForAServer(sEmpty, vm, allocation);
 						power = sEmpty.getIdleEnergy()
 								+ (MAXIMUM_POWER - sEmpty.getIdleEnergy())
 								* utilization;
@@ -99,27 +101,20 @@ public class OBFD {
 					}
 				}
 			}
+			
+		}
+
+			
 
 		if(!allocatedServers.isEmpty()) {
 			correspondingValues.add(power);
 			correspondingValues.add(cooling);
 			returnValue.put(allocatedServers.get(0), correspondingValues);
+		} else {
+			System.out.println("[ERROR] No server has enough resources");
 		}
 		
 		return returnValue;
 
 	}
-
-
-
-	public float computeUtilization(Server server) {
-		List<VirtualMachine> vmList = server.getCorrespondingVMs();
-		float sum = 0;
-		for (VirtualMachine vm : vmList) {
-			sum += vm.getVmMips();
-		}
-		return sum / server.getServerMIPS();
-
-	}
-
 }

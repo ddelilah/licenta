@@ -17,7 +17,7 @@ public class RackPolicy extends Policy {
 
 	@Override
 	public boolean evaluatePolicy() {
-		double totalRequestedUtilization = 0;
+		float totalRequestedUtilization = 0;
 
 		for (Server s : rack.getServers()) {
 			totalRequestedUtilization += s.getUtilization();

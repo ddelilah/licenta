@@ -2,34 +2,35 @@ package app.energy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
+import app.access.impl.ServerDAOImpl;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
 
 public class Utilization {
 	
-public void setServerUtilization(){
+	private static final int MAXIMUM_POWER = 500;
+	
+public void setServerUtilization() {
 		
-		List<Rack> allRacks = new ArrayList<Rack>();
 		List<Server> allServers = new ArrayList<Server>();
 		GenericDAOImpl genericDAO = new GenericDAOImpl();
-		RackDAOImpl rackDAO = new RackDAOImpl();
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
 		
-		allRacks = rackDAO.getAllRacks();
+		allServers = serverDAO.getAllServers();
 		
-		for(Rack rack: allRacks){
-			allServers = rack.getServers();
-			if(!allServers.isEmpty()){
-				for(Server server: allServers){
+			if(!allServers.isEmpty()) {
+				for(Server server: allServers) {
 					float utilization = computeUtilization(server);
 					server.setUtilization(utilization);
 					genericDAO.updateInstance(server);
 				}
 		}
-	}
 	}
 
 	public float computeUtilization(Server server) {
@@ -43,6 +44,23 @@ public void setServerUtilization(){
 
 	}
 	
+	public float computePotentialUtilizationForAServer(Server server, VirtualMachine vmToCheck, Map<VirtualMachine, Server> map) {
+		float potentialUtilization = 0;
+		float totalRequiredMips = 0;
+		
+		if(!map.isEmpty())
+			for (Entry<VirtualMachine, Server> entry : map.entrySet()) {
+				if(entry.getValue() != null)
+				if (server.getServerId() == entry.getValue().getServerId()) {
+					totalRequiredMips += entry.getKey().getVmMips();
+				}
+			}
+			
+			potentialUtilization = (totalRequiredMips + vmToCheck.getVmMips()) / server.getServerMIPS();
+
+		return potentialUtilization;
+	}
+	
 	public float computeSingleRackUtilization(Rack r) {
 		
 		float maxRackPowerConsumption;
@@ -50,7 +68,6 @@ public void setServerUtilization(){
 		int maximumServerPowerConsumption=500;
 		
 		List<Server> allServers = new ArrayList<Server>();
-		GenericDAOImpl genericDAO = new GenericDAOImpl();
 		
 		allServers = r.getServers();
 		maxRackPowerConsumption =(float) allServers.size() * maximumServerPowerConsumption;
@@ -59,7 +76,7 @@ public void setServerUtilization(){
 			currentPowerConsumption += server.getPowerValue();
 		}
 		
-		float utilization = currentPowerConsumption / maxRackPowerConsumption *100;
+		float utilization = currentPowerConsumption / maxRackPowerConsumption;
 		
 		return utilization;
 		
@@ -70,7 +87,6 @@ public void setRackUtilization() {
 		
 		float maxRackPowerConsumption;
 		float currentPowerConsumption=0;
-		int maximumServerPowerConsumption=500;
 		
 		List<Rack> allRacks = new ArrayList<Rack>();
 		List<Server> allServers = new ArrayList<Server>();
@@ -80,19 +96,19 @@ public void setRackUtilization() {
 		allRacks = rackDAO.getAllRacks();
 				
 		System.out.println("\n\n\n\n"+allRacks);
-		for(Rack rack: allRacks){
+		for(Rack rack: allRacks) {
 			
 			currentPowerConsumption = 0;
 			allServers = rack.getServers();
 			System.out.println("\n Rack"+rack + "\n" +allServers);
-			maxRackPowerConsumption =(float) allServers.size() * maximumServerPowerConsumption;
+			maxRackPowerConsumption =(float) allServers.size() * MAXIMUM_POWER;
 			
-			if(!allServers.isEmpty()){
-				for(Server server: allServers){
+			if(!allServers.isEmpty()) {
+				for(Server server: allServers) {
 					currentPowerConsumption += server.getPowerValue();
 				}
 				
-				float utilization = currentPowerConsumption / maxRackPowerConsumption *100;
+				float utilization = currentPowerConsumption / maxRackPowerConsumption;
 				
 				rack.setUtilization(utilization);
 				genericDAO.updateInstance(rack);

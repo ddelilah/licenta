@@ -57,20 +57,32 @@ public class Execution {
 			mergeSessionsForExecution(vm);
 	
 		}
-		MigrationEfficiency mEff = new MigrationEfficiency();
+	//	MigrationEfficiency mEff = new MigrationEfficiency();
 
+		//trebuie ca de dinainte sa fie valorile ok
+		
+		System.out.println("\n\n Utilization Computation for all servers..............");
 		Utilization util = new Utilization();
 		util.setServerUtilization();
 		
+		System.out.println("\n\n Power consumption Computation for all servers..............");
 		PowerConsumption power = new PowerConsumption();
 		power.setServerPowerConsumption();
+		
+		System.out.println("\n\n Power consumption Computation for all racks..............");
 		power.setRackPowerConsumption();
 		
+		
 		CoolingSimulation cooling = new CoolingSimulation();
+		System.out.println("\n\n Cooling Computation for all servers..............");
 		cooling.setServerCoolingValue();
+		
+		System.out.println("\n\n Cooling Computation for all racks..............");
 		cooling.setRackCoolingPower();
+		
+		System.out.println("\n\n Utilization Computation for all racks..............");
 		util.setRackUtilization();
-		System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
+	//	System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
 		System.out.println("[NUR] map size: " + allocation.size());
 	//	history.writeToFile(allocation, "historyNUR.txt");
 	}

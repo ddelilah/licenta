@@ -5,6 +5,7 @@ import java.util.List;
 
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
+import app.access.impl.ServerDAOImpl;
 import app.constants.ServerState;
 import app.model.Rack;
 import app.model.Server;
@@ -40,38 +41,33 @@ public class PowerConsumption {
 		return power;
 	}
 	
-	public void setServerPowerConsumption(){
-	
+	public void setServerPowerConsumption() {
+
 		List<Rack> allRacks = new ArrayList<Rack>();
 		List<Server> allServers = new ArrayList<Server>();
 		GenericDAOImpl genericDAO = new GenericDAOImpl();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		Utilization util = new Utilization();
-		
-		allRacks = rackDAO.getAllRacks();
-		
-		for(Rack rack: allRacks){
-			allServers = rack.getServers();
-			if(!allServers.isEmpty())
-				for(Server server: allServers){
-					if(server.getState().equalsIgnoreCase("ON")) {
-						float utilization = server.getUtilization();
-						float power = server.getIdleEnergy()
-								+ (MAXIMUM_POWER - server.getIdleEnergy())
-								* utilization;
-						
-						server.setPowerValue(power);
-						genericDAO.updateInstance(server);
-					}
-					else{
-						server.setPowerValue(0);
-						genericDAO.updateInstance(server);
-					}
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+
+		allServers = serverDAO.getAllServers();
+
+		if (!allServers.isEmpty())
+			for (Server server : allServers) {
+				if (server.getState().equalsIgnoreCase("ON")) {
+					float utilization = server.getUtilization();
+					float power = server.getIdleEnergy()
+							+ (MAXIMUM_POWER - server.getIdleEnergy())
+							* utilization;
+
+					server.setPowerValue(power);
+					genericDAO.updateInstance(server);
+				} else {
+					server.setPowerValue(0);
+					genericDAO.updateInstance(server);
 				}
-		}
+			}
 	}
 	
-	public void setRackPowerConsumption(){
+	public void setRackPowerConsumption() {
 		
 		List<Rack> allRacks = new ArrayList<Rack>();
 		List<Server> allServers = new ArrayList<Server>();
@@ -80,12 +76,12 @@ public class PowerConsumption {
 		float power = 0;
 		
 		allRacks = rackDAO.getAllRacks();
-		for(Rack rack: allRacks){
+		for(Rack rack: allRacks) {
 			power=0;
 			allServers = rack.getServers();
-			if(!allServers.isEmpty()){
-				for(Server server: allServers){
-					power+= server.getPowerValue();
+			if(!allServers.isEmpty()) {
+				for(Server server: allServers) {
+					power += server.getPowerValue();
 				}
 			}
 			rack.setPowerValue(power);

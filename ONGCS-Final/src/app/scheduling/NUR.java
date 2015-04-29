@@ -49,7 +49,7 @@ public class NUR {
 		List<Server> serversInOffRacks = new ArrayList<Server>();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 
-		Map<Server, List<Double>> resultOfOBFD = new HashMap<Server, List<Double>>();
+		Map<Server, List<Float>> resultOfOBFD = new HashMap<Server, List<Float>>();
 
 		Server allocatedServer = new Server();
 
@@ -80,7 +80,7 @@ public class NUR {
 				resultOfOBFD = obfdNonUnderUtilized.findAppropriateServer(v,
 						allocation);
 
-				for (Entry<Server, List<Double>> entry : resultOfOBFD
+				for (Entry<Server, List<Float>> entry : resultOfOBFD
 						.entrySet()) {
 					allocatedServer = entry.getKey();
 					System.out
@@ -104,7 +104,7 @@ public class NUR {
 					resultOfOBFD = obfdUnderUtilized.findAppropriateServer(v,
 							allocation);
 
-					for (Entry<Server, List<Double>> entry : resultOfOBFD
+					for (Entry<Server, List<Float>> entry : resultOfOBFD
 							.entrySet()) {
 						allocatedServer = entry.getKey();
 						System.out
@@ -127,7 +127,7 @@ public class NUR {
 						resultOfOBFD = obfdOff.findAppropriateServer(v,
 								allocation);
 
-						for (Entry<Server, List<Double>> entry : resultOfOBFD
+						for (Entry<Server, List<Float>> entry : resultOfOBFD
 								.entrySet()) {
 							allocatedServer = entry.getKey();
 							System.out
