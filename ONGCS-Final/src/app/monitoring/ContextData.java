@@ -5,9 +5,10 @@ public class ContextData {
 
 	private Object type;
 	private String command; 
+	private int numberOfInstances;
 	
-	public ContextData(Object type, String command) {
-		
+	public ContextData(Object type, int numberOfInstances, String command) {
+		this.numberOfInstances = numberOfInstances;
 		this.type = type;
 		this.command = command;
 	}
@@ -26,6 +27,14 @@ public class ContextData {
 
 	public void setCommand(String command) {
 		this.command = command;
+	}
+
+	public int getNumberOfInstances() {
+		return numberOfInstances;
+	}
+
+	public void setNumberOfInstances(int numberOfInstances) {
+		this.numberOfInstances = numberOfInstances;
 	}
 
 	@Override

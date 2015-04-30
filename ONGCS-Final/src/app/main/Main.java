@@ -52,26 +52,29 @@ public class Main {
 	     
 	}
 	
-	public void startMonitoring() throws Exception{
+public void startMonitoring() throws Exception{
 		
 		VirtualMachineDAO vmDAO = new VirtualMachineDAOImpl();
-		ServerDAO serverDAO = new ServerDAOImpl();
-		String command;
+		
 		  Data data = new Data();
 		  Monitoring monitoring = new Monitoring();
 		  int length = data.getData().length();
 		     String[] toParse = new String[length];
 		     toParse = data.getData().split("\\r?\\n");
-		     for(int i=0; i<toParse.length; i++)
-		    	 System.out.println(toParse[i]);
+
 		     for(int i=0; i<toParse.length; i++){
-		    	 VirtualMachine vm = null;
-		    	 Server server = null;
-		    	 
-		    	 if(((toParse[i].split(" "))[0]).equals("VM")){
-		    		vm = vmDAO.getVirtualMachineById(Integer.parseInt(toParse[i].split(" ")[1]));
-		    		command = toParse[i].split(" ")[2];
-		    		monitoring.addToQueue(vm, command);
+		    	 if(((toParse[i].split(" "))[0]).equalsIgnoreCase("VM")){
+		    		String[] task = toParse[i].split(" "); 
+		    		try{
+			    		VirtualMachine	vm = vmDAO.getVirtualMachineById(Integer.parseInt(task[1]));
+			    		int numberOfInstances = Integer.parseInt(task[2]);
+			    		String command = task[3];
+			    		monitoring.addToQueue(vm,  numberOfInstances, command);
+		    		}
+		    		catch(NumberFormatException e){
+		    			System.out.println("Bad format for "+ toParse[i]);
+		    		}
+		    		
 		    	 }
 		    	 
 		   /* 	 else if(((toParse[i].split(" "))[0]).equals("SERVER")){
@@ -83,7 +86,7 @@ public class Main {
 		     }
 		     monitoring.startMonitoring();
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		
 		Main main = new Main();

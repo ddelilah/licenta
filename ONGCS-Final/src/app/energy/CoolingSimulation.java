@@ -66,4 +66,17 @@ public class CoolingSimulation {
 			genericDAO.updateInstance(rack);
 		}
 	}
+
+
+	public float getRackCoolingValueGivenInletTemperatureAndPowerValue(float inletTemperature, float powerValue){
+		
+		float coefficientOfPerformance = (float) (0.0068 * Math.pow(inletTemperature, 2) + 0.0008 * inletTemperature + 0.458);
+		
+		float cooling = powerValue / coefficientOfPerformance;
+					
+		return cooling;
+		
+	}
+
+
 }
