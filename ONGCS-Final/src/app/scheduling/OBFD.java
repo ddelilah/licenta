@@ -29,6 +29,39 @@ public class OBFD {
 		schedulingUtil = new SchedulingUtil();
 	}
 	
+	
+	public Server findAppropriateServerForConsolidationStep(VirtualMachine vm, Map<VirtualMachine, Server> allocation) {
+		Server result = new Server();
+		Utilization util = new Utilization();
+
+
+		float minPower = Float.MAX_VALUE;
+		float power = 0;
+		float utilization;
+		
+		for (Server server : serverList) {
+			if (schedulingUtil.enoughResources(server, vm, allocation)) {
+				utilization = util.computePotentialUtilizationForAServer(server, vm, allocation);
+				power = server.getIdleEnergy()
+						+ (MAXIMUM_POWER - server.getIdleEnergy())
+						* utilization;
+
+				if (power < minPower) {
+					result = server;
+					break;
+				}
+			} else {
+				System.out.println("[ERROR 404: Server not found] Virtual machine" + vm.getVmId() + vm.getName() + " can't be placed anywhere" );
+			}
+		}
+		
+		/*
+		 * 
+		 * if no underutilized server can be found, leave the workload on the existing server
+		 */
+		
+		return result;
+	}
 	/** returns the most appropriate server and the corresponding power consumption and cooling */
 	public Map<Server, List<Float>> findAppropriateServer(VirtualMachine vm, Map<VirtualMachine, Server> allocation) {
 		float minPower = Float.MAX_VALUE;

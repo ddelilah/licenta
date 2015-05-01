@@ -77,16 +77,16 @@ public class Queue extends Thread {
 			}
 		}
 		
-		System.out.println("To be deployed");
-		for(VirtualMachine vm: toBeDeployedVmList)
-			System.out.println(vm.toString());
-		System.out.println("To be deleted");
-		for(VirtualMachine vm: toBeDeletedVmList)
-			System.out.println(vm.toString());
-//		analysis.performAnalysis(toBeDeployedVmList);
-		System.out.println("........\n\n End of deployment..........");
+//		System.out.println("To be deployed");
+//		for(VirtualMachine vm: toBeDeployedVmList)
+//			System.out.println(vm.toString());
+//		System.out.println("To be deleted");
+//		for(VirtualMachine vm: toBeDeletedVmList)
+//			System.out.println(vm.toString());
+		analysis.performAnalysis(toBeDeployedVmList);
+//		System.out.println("........\n\n End of deployment..........");
 		
-//		c.consolidationOnDelete(toBeDeletedVmList);
+		c.consolidationOnDelete(toBeDeletedVmList);
 		
 	}
 
@@ -322,27 +322,18 @@ public class Queue extends Thread {
 							deleteFromDeployedList = true;
 							break;
 						}}
-					if(removeFromToBeDeployedVmList!=-1 && deleteFromDeployedList)
-						toBeDeployedVmList.remove(removeFromToBeDeployedVmList);
+//					if(removeFromToBeDeployedVmList!=-1 && deleteFromDeployedList)
+//						toBeDeployedVmList.remove(removeFromToBeDeployedVmList);
+	
+//						if (vmDAO.getVirtualMachineById(vm.getVmId()) != null) {
+//							vmToDelete = vmDAO.getVirtualMachineById(vm.getVmId());
+//							toBeDeletedVmList.add(vmToDelete);
+//					//		startDelete = true;
+//							System.out.println("Found in db"+ vmToDelete);
+//						} else
+//							System.out.println("Not Found in db");
+	
 					
-					if (startDelete){
-						vmToDelete.setState(VMState.DONE.getValue());
-						dao.updateInstance(vmToDelete);
-					}
-					else {
-						System.out.println("Not found in list");
-	
-						if (vmDAO.getVirtualMachineById(vm.getVmId()) != null) {
-							vmToDelete = vmDAO.getVirtualMachineById(vm.getVmId());
-							toBeDeletedVmList.add(vmToDelete);
-							startDelete = true;
-							System.out.println("Found in db"+ vmToDelete);
-							vmToDelete.setState(VMState.DONE.getValue());
-							dao.updateInstance(vmToDelete);
-						} else
-							System.out.println("Not Found in db");
-	
-					}
 		
 				System.out.println("\n\n\n...........VM "+ vmToDelete.getVmId()+" has been deleted............");
 				System.out.println("toBeDeployedVmList "+toBeDeployedVmList);
