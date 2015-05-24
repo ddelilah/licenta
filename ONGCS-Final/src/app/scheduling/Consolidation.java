@@ -17,6 +17,7 @@ import app.constants.RackState;
 import app.constants.ServerState;
 import app.constants.VMState;
 import app.energy.CoolingSimulation;
+import app.energy.MigrationEfficiency;
 import app.energy.PowerConsumption;
 import app.energy.Utilization;
 import app.execution.Execution;
@@ -34,6 +35,9 @@ public class Consolidation {
 	private VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 	private ServerDAOImpl serverDAO = new ServerDAOImpl();
 	private static VMProcessor vmProcessor;
+	
+	private int numberOfReleasedNodes = 0;
+	private int numberOfSuccessfulMigrations = 0;
 
 	private ConsolidationUtil consolidationUtil = new ConsolidationUtil();
 
@@ -45,6 +49,7 @@ public class Consolidation {
 		Server resultOfOBFD = new Server();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		VirtualMachine vmToBeMoved = new VirtualMachine();
+		List<Server> releasedNodes = new ArrayList<Server>();
 		Server serverToBePlacedOn = new Server();
 		int numberOfVms = 0;
 
@@ -84,8 +89,11 @@ public class Consolidation {
 
 				vmToBeMoved.setServer(serverToBePlacedOn);
 				vmDAO.mergeSessionsForVirtualMachine(vmToBeMoved);
+				numberOfSuccessfulMigrations++;
 				serverToBePlacedOn.setCorrespondingVMs(SchedulingUtil.addVmsToServer(serverToBePlacedOn, vmToBeMoved));
 				consolidationUtil.turnOffServer(oldServer);
+				releasedNodes.add(oldServer);
+				
 				consolidationUtil.updatesToServerValues(serverToBePlacedOn);
 				System.out.println("Added VMs server's list of VMs: "
 						+ serverToBePlacedOn.getCorrespondingVMs());
@@ -97,6 +105,21 @@ public class Consolidation {
 
 		} else {
 			System.out.println("[SERVER CAN'T BE TURNED OFF => LET IT BE]");
+		}
+		
+		int firstId = 0;
+		
+		if(releasedNodes.get(0) != null) {
+			firstId = releasedNodes.get(0).getServerId();
+			if(firstId != 0) {
+				numberOfReleasedNodes = 1;
+			}
+		}
+		
+		for(Server s: releasedNodes) {
+			if(firstId != s.getServerId()) {
+				numberOfReleasedNodes++;
+			}
 		}
 	}
 
@@ -141,6 +164,7 @@ public class Consolidation {
 				.serverCategory(allServersInDataCenter);
 
 		serversThatAreOff = serverTaxonomy.get(0);
+		
 		serversThatBreakPolicy = serverTaxonomy.get(1);
 		serversThatDontBreakPolicy = serverTaxonomy.get(2);
 
@@ -224,9 +248,9 @@ public class Consolidation {
 			selectedVm.setState(VMState.DONE.getValue());
 			selectedVm.setServer(null);
 			vmDAO.mergeSessionsForVirtualMachine(selectedVm);
-			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
-					+ correspondingServer.getServerId() + " with vms: "
-					+ correspondingServer.getCorrespondingVMs());
+//			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
+//					+ correspondingServer.getServerId() + " with vms: "
+//					+ correspondingServer.getCorrespondingVMs());
 
 			for (Server sr : allServers) {
 				if (sr.getServerId() == correspondingServer.getServerId()) {
@@ -328,5 +352,8 @@ public class Consolidation {
 				}
 			}
 		}
+		
+		MigrationEfficiency mEff = new MigrationEfficiency();
+		System.out.println("Migration efficiency: "+ mEff.computeMigrationEfficiency(numberOfReleasedNodes, numberOfSuccessfulMigrations));		
 	}
 }
