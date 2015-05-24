@@ -16,5 +16,6 @@ public class MigrationEfficiency {
 		
 		return (float) successfulMigrations/noVMsToBeMigrated * 100;
 		
+
 	}
 }

@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import app.scheduling.*;
 import app.access.RackDAO;
 import app.access.impl.RackDAOImpl;
-import app.access.impl.ServerDAOImpl;
-import app.access.impl.VirtualMachineDAOImpl;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -33,7 +31,7 @@ public class FFD {
 		
 		for(VirtualMachine vm: vmList){
 			 foundServer = false;
-	//		System.out.println("Searching for vm: "+ vm.getVmId());
+			System.out.println("Searching for vm: "+ vm.getName());
 			
 			for(Rack rack: allRacks){
 				if(!foundServer){

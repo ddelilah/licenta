@@ -78,9 +78,9 @@ VMs to be deployed
 2 vm1.medium
 3 vm1.large
 2 vm1.xlarge
-20 off servers initially
+19 off servers initially
 -------------------- Initial Servers --------------------
-Server [serverId=1, state=off, name=host01, coolingValue=0.0, powerValue=0.0, utilization=0.0, idleEnergy=350.0, cpu=CPU [cpuId=5, nr_cores=16, frequency=1000.0, cpu_utilization=1.0, name=cpu5], ram=RAM [ramId=6, capacity=131072.0, name=ram5], hdd=HDD [hddId=3, capacity=163840.0, name=hdd3], rack=1, correspondingVMs=[]]
+Server [serverId=1, state=off, name=host01, coolingValue=0.0, powerValue=0.0, utilization=10.0, idleEnergy=350.0, cpu=CPU [cpuId=5, nr_cores=16, frequency=1000.0, cpu_utilization=1.0, name=cpu5], ram=RAM [ramId=6, capacity=131072.0, name=ram5], hdd=HDD [hddId=3, capacity=163840.0, name=hdd3], rack=1, correspondingVMs=[]]
 Server [serverId=2, state=off, name=host02, coolingValue=0.0, powerValue=0.0, utilization=0.0, idleEnergy=350.0, cpu=CPU [cpuId=6, nr_cores=32, frequency=1000.0, cpu_utilization=1.0, name=cpu6], ram=RAM [ramId=6, capacity=131072.0, name=ram5], hdd=HDD [hddId=3, capacity=163840.0, name=hdd3], rack=2, correspondingVMs=[]]
 Server [serverId=3, state=off, name=host03, coolingValue=0.0, powerValue=0.0, utilization=0.0, idleEnergy=350.0, cpu=CPU [cpuId=6, nr_cores=32, frequency=1000.0, cpu_utilization=1.0, name=cpu6], ram=RAM [ramId=6, capacity=131072.0, name=ram5], hdd=HDD [hddId=3, capacity=163840.0, name=hdd3], rack=1, correspondingVMs=[]]
 Server [serverId=4, state=off, name=host04, coolingValue=0.0, powerValue=0.0, utilization=0.0, idleEnergy=350.0, cpu=CPU [cpuId=5, nr_cores=16, frequency=1000.0, cpu_utilization=1.0, name=cpu5], ram=RAM [ramId=6, capacity=131072.0, name=ram5], hdd=HDD [hddId=3, capacity=163840.0, name=hdd3], rack=4, correspondingVMs=[]]

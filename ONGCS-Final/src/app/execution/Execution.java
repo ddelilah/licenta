@@ -39,8 +39,34 @@ public class Execution {
 		return result;
 	}
 	
-	public static void executeNUR(List<VirtualMachine> allVMs,
+	public void executeNUR(List<VirtualMachine> allVMs,
 			List<Rack> allRacks) {
+		
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+		List<Server> allServers = serverDAO.getAllServers();
+
+		int initialNumberOnServers = serverDAO.getAllServersByState("on").size();
+		int initialNumberOffServers = allServers.size() - initialNumberOnServers;
+		
+		Learning l = new Learning();
+		boolean foundLearning = false;
+		try {
+			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
+		
+		if(foundLearning){
+			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
+			displayPowerConsumptionAndCooling("NUR");
+			}
+		
+	else{
+			System.out.println("\n\n\n ----------------- Performing experiment! --------------------------");
+		
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = nur.placeVMsInNoneUnderutilizedRack(allVMs, allRacks);
 		
@@ -80,18 +106,54 @@ public class Execution {
 		System.out.println("\n\n Cooling Computation for all racks..............");
 		cooling.setRackCoolingPower();
 		
+		History history = new History();
+		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyRBR.txt");
+		
 		System.out.println("\n\n Utilization Computation for all racks..............");
 		util.setRackUtilization();
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
+
 		System.out.println("[NUR] map size: " + allocation.size());
-	//	history.writeToFile(allocation, "historyNUR.txt");
+		
+
+	}
+		
 	}
 
 	public void executeRBR(List<VirtualMachine> allVMs,
 			List<Rack> allRacks) {
 		
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+		List<Server> allServers = serverDAO.getAllServers();
+
+		int initialNumberOnServers = serverDAO.getAllServersByState("on").size();
+		int initialNumberOffServers = allServers.size() - initialNumberOnServers;
+		
+		Learning l = new Learning();
+		boolean foundLearning = false;
+		try {
+			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
+		
+
+		if(foundLearning){
+			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
+			displayPowerConsumptionAndCooling("RBR");
+			}
+		
+	else{
+			System.out.println("\n\n\n ----------------- Performing experiment! --------------------------");
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
+		
+		int unsuccessfulMigrations = allVMs.size() - allocation.size();
+		int successfulMigrations = allocation.size();
+		
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			int serverId = entry.getValue().getServerId();
 			System.out.println("[RBR]vm " + entry.getKey().getName()
@@ -102,11 +164,10 @@ public class Execution {
 			vm.setState(VMState.RUNNING.getValue());
 			mergeSessionsForExecution(vm);
 		}
-	
 		MigrationEfficiency mEff = new MigrationEfficiency();
 		Utilization util = new Utilization();
 		util.setServerUtilization();
-		
+
 		PowerConsumption power = new PowerConsumption();
 		power.setServerPowerConsumption();
 		power.setRackPowerConsumption();
@@ -114,13 +175,18 @@ public class Execution {
 		CoolingSimulation cooling = new CoolingSimulation();
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
-		
 		util.setRackUtilization();
 		
+		
+		History history = new History();
+		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyRBR.txt");
 		displayPowerConsumptionAndCooling("RBR");
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 //		History history = new History();
 //		history.writeToFile(allocation, "historyRBR.txt");
+
+	}	
+
 	}
 
 	public static void displayPowerConsumptionAndCooling(String algorithm){

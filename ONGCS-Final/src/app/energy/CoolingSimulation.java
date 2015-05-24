@@ -68,6 +68,11 @@ public class CoolingSimulation {
 	}
 
 
+	public float getCOP(float temperature){
+		
+		return (float) (0.0068 * Math.pow(temperature, 2) + 0.0008 * temperature + 0.458);
+	}
+	
 	public float getRackCoolingValueGivenInletTemperatureAndPowerValue(float inletTemperature, float powerValue){
 		
 		float coefficientOfPerformance = (float) (0.0068 * Math.pow(inletTemperature, 2) + 0.0008 * inletTemperature + 0.458);
@@ -78,5 +83,13 @@ public class CoolingSimulation {
 		
 	}
 
+	public float getSystemCoolingPower(List<Rack> rackList, float temperature){
+		float totalPower = 0;
+		for(Rack rack: rackList)
+			totalPower += rack.getPowerValue();
+		
+		return (float) totalPower/getCOP(temperature);
+	}
+	
 
 }

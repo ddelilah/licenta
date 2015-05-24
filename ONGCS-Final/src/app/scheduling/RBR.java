@@ -76,7 +76,8 @@ public class RBR implements Serializable {
 
 			if (allocatedServer != null) {
 				allocation.put(vm, allocatedServer);
-
+				System.out.println("Virtual machine "+ vm.getVmId()+" "+vm.getName() +" allocated to server "+allocatedServer);
+				getServerRemainingResources(allocatedServer, allocation);
 			}
 			else{
 				System.out.println("Allocation failed "+ vm.getName()+ vm.getVmId()+ vm.getState());
@@ -107,7 +108,31 @@ public class RBR implements Serializable {
 		return null;
 	}
 	
-	
+	public void getServerRemainingResources(Server server, Map<VirtualMachine, Server> allocation){
+		
+		List<VirtualMachine> vmList = server.getCorrespondingVMs();
+		int remainingMIPS = server.getServerMIPS();
+		int remainingCores = server.getCpu().getNr_cores();
+		float remainingHDD = server.getHdd().getCapacity();
+		float remainingRam = server.getRam().getCapacity();
+		System.out.println("Server's resources before allocation are: \n MIPS "+remainingMIPS+"\n Cores "+ remainingCores +"\n HDD "+remainingHDD+" MB \n Ram"
+				+remainingRam);
+		for(VirtualMachine vm: vmList){
+			remainingMIPS -= vm.getVmMips();
+			remainingCores -= vm.getCpu().getNr_cores();
+			remainingHDD -= vm.getHdd().getCapacity();
+			remainingRam -= vm.getRam().getCapacity();
+		}
+		for(Entry<VirtualMachine, Server> entry: allocation.entrySet()){
+			if(entry.getValue().getServerId() == server.getServerId())
+				remainingMIPS -= entry.getKey().getVmMips();
+				remainingCores -= entry.getKey().getCpu().getNr_cores();
+				remainingHDD -= entry.getKey().getHdd().getCapacity();
+				remainingRam -= entry.getKey().getRam().getCapacity();
+		}
+		System.out.println("Server's remaining resources after allocation are: \n MIPS "+remainingMIPS+"\n Cores "+ remainingCores +"\n HDD "+remainingHDD+" MB \n Ram"
+				+remainingRam);
+	}
 	public static void main(String []args){
 		RackDAO rackDAO = new RackDAOImpl();
 		List<Rack> allRacks  = new ArrayList<Rack>();

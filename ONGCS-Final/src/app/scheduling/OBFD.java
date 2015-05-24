@@ -16,8 +16,8 @@ public class OBFD {
 	private SchedulingUtil schedulingUtil;
 	
 	private static final float UNDERUTILIZED = 0.2f;
-	/** Pmax = 500W */
-	private static final int MAXIMUM_POWER = 500;
+	/** Pmax = 1023W */
+	private static final int MAXIMUM_POWER = 1023;
 	/** fraction of power consumption of an idle server */
 	private static final int K = 70;
 	/* suppose temperature is 25 degrees */

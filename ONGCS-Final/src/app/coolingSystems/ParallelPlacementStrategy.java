@@ -1,81 +1,130 @@
 package app.coolingSystems;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import app.access.impl.RackDAOImpl;
 import app.energy.*;
 import app.model.Rack;
+import app.model.VirtualMachine;
+
+import java.util.Arrays;
 
 public class ParallelPlacementStrategy {
-
-	// Ce se intampla cand unul din racks are utilization=0?
 	
+	private static final float T_MAX = 25; // [degrees Celsius]
+	private static final float SPECIFIC_HEAT = 1005; // [ J/(kg* C) ] Specific Heat
+	private static final float DENSITY = (float) 1.225; // [ kg/m^3 ] air density
+	private static final float AREA = 36;
 	
 	private RackDAOImpl rackDAO = new RackDAOImpl();
 	private List<Rack> rackList = new ArrayList<>();
-	private static final float Tmax = 27;
-	private CoolingSimulation coolingSimulation = new CoolingSimulation() ;
+
+//	private float tIn; 
+	private float tOut;
+	private float powerConsumption; // [W]
+	private float airMassFlowRate;		// [kg/s]
+	private float airVelocity;		// [m/s]
+	private float fanPowerConsumption; // [W]
+	private float volumeFlowRate;	   // [m^3/s]
+	private float area;				   // [m^2]
+	
 	public ParallelPlacementStrategy(){
 		this.rackList = rackDAO.getAllRacks();
 	}
 	
-	/** Suppose the user already has a parallel alignment of racks*/
-	/**
-	 * Standard recommended inlet temperature [18C,27C] 
-	 * */
-	public void findMinAirMass(float inletTemperature){
+	private float computeMinMassFlowRate(float tIn){
+		boolean conditionSatisfied = false;
+		float m=(float) 0.1;
 		
-		float airMass = Float.MAX_VALUE;
-		boolean conditionSatisfied = true;
-		float tOut = inletTemperature + 1;
-		float newTout = tOut;
-		float tIn;
-		List<Float> tOUTs = new ArrayList<>();
-		List<Float> finalTout = new ArrayList<>();
-		while(conditionSatisfied ){
-			tIn = inletTemperature;
-			float cooling = coolingSimulation.getRackCoolingValueGivenInletTemperatureAndPowerValue(tIn, rackList.get(0).getPowerValue());
-			float m = (float) rackList.get(0).getPowerValue()/((float)cooling * ( tOut - tIn));
-			tOUTs = new ArrayList<>();
-			for(int i=0; i<rackList.size() ; i++){
-				if(rackList.get(i).getPowerValue() != 0){
-					cooling = coolingSimulation.getRackCoolingValueGivenInletTemperatureAndPowerValue(tIn, rackList.get(i).getPowerValue());
-					newTout =(float) (rackList.get(i).getPowerValue() / (float)(m * cooling)) + tIn;
-					tIn = (float) Math.ceil(newTout);
-					tOUTs.add(tIn);
-				}
-				// else what happens????????
-				// ----------------------------	  ---------------------------	  --------------------------
-				// |PowerConsumptionRack1 > 0 |&& |PowerConsumptionRack2 == 0| && |PowerConsumptionRack3 > 0|
-				// ----------------------------	   --------------------------	  --------------------------
+		do{
+			float newTin = tIn;
+			float tOut = tIn;
+			System.out.println("\n\n\n\n----------- m is "+ (float)m+" -----------------------");
+			for(int i =0; i<rackList.size() && tOut < T_MAX; i++ ){
+				System.out.println("tIn is "+newTin);
+				powerConsumption = rackList.get(i).getPowerValue();
+				tOut = (float)(powerConsumption / (m*SPECIFIC_HEAT)) + newTin;
+				newTin = tOut;				
+				System.out.println("powerConsumption is "+powerConsumption);
+				System.out.println("tOut is "+tOut);
 			}
-			
-// [Ask Marcel] modifica conditia => utlimul Tin sa fie in range, nu ultimul Tout!
-			if(newTout > Tmax){
-				conditionSatisfied = false;
+
+			if(tOut < T_MAX){
+				airMassFlowRate = m;
+				conditionSatisfied =  true;
 			}
-			else {
-				if(m < airMass){
-					airMass = m;
-					tOut ++;
-					finalTout = tOUTs;
-				}
-			}	
-		}
+			else
+				m = (float)(m+(float)0.01);
+		}while(!conditionSatisfied);
 		
-		// ----- ce unitate de masura? --------------------
-		System.out.println("-------------------------------------------- \n[Rack Layout][Parallel alignment]\nThe minimum needed air mass = "+airMass);
-		System.out.print("Exhaust temperatures are ");
-		for(int i=0; i< finalTout.size(); i++){
-			System.out.print(finalTout.get(i)+" ");
-		}
-		System.out.println("\n--------------------------------------------");
+		System.out.println("Min m is "+ m +"[kg/s]");
+		return m;
 	}
 	
-	public static void main(String [] args){
-		ParallelPlacementStrategy pp = new ParallelPlacementStrategy();
-		pp.findMinAirMass(18);
-		
+	private float computeVolumetricAirFlow(float airMassFlowRate){
+		System.out.println("volumetricAirFlow="+(float)(airMassFlowRate / DENSITY)+"[m^3/s]");
+		return (float)(airMassFlowRate/DENSITY);
 	}
+	private float computeAirVelocity(float volumetricAirFLow){
+		System.out.println("airVelocity = "+ (float)(volumetricAirFLow/AREA)+"[m/s]");
+		return (float) volumetricAirFLow/AREA;
+ 	}
+	
+	public void computeFanPowerConsumption(float tIn){
+		
+		float airMassFlowRate = computeMinMassFlowRate(tIn);
+		float volumetricAirFlow = computeVolumetricAirFlow(airMassFlowRate);
+		float airVelocity = computeAirVelocity(volumetricAirFlow);
+		
+		//----------- COMPUTE FAN POWER CONSUMPTION ----------------------------
+	}
+	
+	public float computeHeatRecirculation(float airLossPercentage, float tIn){
+		
+		float idealSystemAirMassFlowRate = computeMinMassFlowRate(tIn);
+		
+		float recirculatedTin = (float)(tIn + (float)(1/ (1-airLossPercentage)) * ( (float)(rackList.get(0).getPowerValue()/ (idealSystemAirMassFlowRate * SPECIFIC_HEAT))));
+		
+		boolean conditionSatisfied = false;
+		float m=(float) 0.1;
+		
+		do{
+			float newTin = recirculatedTin;
+			float tOut = recirculatedTin;
+			System.out.println("\n\n\n\n----------- m is "+ (float)m+" -----------------------");
+			for(int i =0; i<rackList.size() && tOut < T_MAX; i++ ){
+				System.out.println("tIn is "+newTin);
+				powerConsumption = rackList.get(i).getPowerValue();
+				tOut = (float)(powerConsumption / (m*SPECIFIC_HEAT)) + newTin;
+				newTin = (float)(tOut + (float)(1/ (1-airLossPercentage)) * ( (float)(rackList.get(i).getPowerValue()/ (m * SPECIFIC_HEAT))));				
+				System.out.println("powerConsumption is "+powerConsumption);
+				System.out.println("tOut is "+tOut);
+			}
+
+			if(tOut < T_MAX){
+				airMassFlowRate = m;
+				conditionSatisfied =  true;
+			}
+			else
+				m = (float)(m+(float)0.01);
+		}while(!conditionSatisfied);
+		
+		System.out.println("Min m is "+ m +"[kg/s]");
+		
+		return (float)(tIn + (float)(1/ (1-airLossPercentage)) * ( (float)(rackList.get(0).getPowerValue()/ (idealSystemAirMassFlowRate * SPECIFIC_HEAT))));
+	}
+	public static void main(String []args){
+		
+		ParallelPlacementStrategy pp = new ParallelPlacementStrategy();
+		
+//		pp.computeFanPowerConsumption(20);
+//		pp.computeMinMassFlowRate(20);
+		System.out.println(pp.computeHeatRecirculation( (float)0.5, 20));
+	}
+	
+	
 }

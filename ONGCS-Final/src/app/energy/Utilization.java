@@ -14,8 +14,8 @@ import app.model.VirtualMachine;
 
 public class Utilization {
 	
-	private static final int MAXIMUM_POWER = 500;
 	private float totalUtilization = 0;
+	private static final int MAXIMUM_POWER = 1023;
 	
 public void setServerUtilization() {
 		

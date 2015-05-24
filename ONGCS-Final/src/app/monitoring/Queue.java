@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import app.access.GenericDAO;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.analysis.Analysis;
 import app.constants.VMState;
+import app.execution.Time;
 import app.model.Server;
 import app.model.VirtualMachine;
 import app.scheduling.Consolidation;
@@ -42,11 +44,14 @@ public class Queue extends Thread {
 	@Override
 	public void run() {
 
+		Time t = new Time();
+		t.setStartTime(System.nanoTime());
+		
 		while (true) {
 			while (!receivedMessage.isEmpty()) {
 				try {
 
-					// Thread.sleep(4000);
+					 Thread.sleep(4000);
 				} catch (Exception e) {
 				}
 
@@ -93,6 +98,24 @@ public class Queue extends Thread {
 		}
 			
 		
+		System.out.println("To be deployed");
+		for(VirtualMachine vm: toBeDeployedVmList)
+			System.out.println(vm.toString());
+		System.out.println("To be deleted");
+		for(VirtualMachine vm: toBeDeletedVmList)
+			System.out.println(vm.toString());
+		
+
+		
+		
+//		analysis.performAnalysis(toBeDeployedVmList);
+		System.out.println("\n\n........ End of deployment..........");
+		
+//		c.consolidationOnDelete(toBeDeletedVmList);
+		t.setEndTime(System.nanoTime());
+		long elapsedTime = t.getExecutionTime();
+		System.out.println("[Execution Time] "+ t.getExecutionTime()+" nanoseconds");
+		System.out.println("[Execution Time] "+TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS)+" sec");
 	}
 
 	
@@ -327,17 +350,27 @@ public class Queue extends Thread {
 							deleteFromDeployedList = true;
 							break;
 						}}
-//					if(removeFromToBeDeployedVmList!=-1 && deleteFromDeployedList)
-//						toBeDeployedVmList.remove(removeFromToBeDeployedVmList);
-	
+
+					if(removeFromToBeDeployedVmList!=-1 && deleteFromDeployedList)
+						toBeDeployedVmList.remove(removeFromToBeDeployedVmList);
+					
+//					if (startDelete){
+//						vmToDelete.setState(VMState.DONE.getValue());
+//			//			dao.updateInstance(vmToDelete);
+//					}
+//					else {
+//						System.out.println("Not found in list");
+//					if(!startDelete){
 //						if (vmDAO.getVirtualMachineById(vm.getVmId()) != null) {
 //							vmToDelete = vmDAO.getVirtualMachineById(vm.getVmId());
 //							toBeDeletedVmList.add(vmToDelete);
-//					//		startDelete = true;
+//							startDelete = true;
 //							System.out.println("Found in db"+ vmToDelete);
+//							vmToDelete.setState(VMState.DONE.getValue());
+//				//			dao.updateInstance(vmToDelete);
 //						} else
 //							System.out.println("Not Found in db");
-	
+//	
 					
 		
 				System.out.println("\n\n\n...........VM "+ vmToDelete.getVmId()+" has been deleted............");

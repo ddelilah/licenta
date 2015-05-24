@@ -102,7 +102,6 @@ public class Analysis {
 		System.out.println("\n\n\n ...........Starting Learning Algorithm...........\n\n");
 		Execution execution = new Execution();
 		RackDAO rackDAO = new RackDAOImpl();
-		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 		List<Rack> allRacks  = new ArrayList<Rack>();
 		allRacks = rackDAO.getAllRacks();
 			
@@ -111,9 +110,9 @@ public class Analysis {
 			//why set server utilization before any allocation is made?? -> useless
 		//	Utilization util = new Utilization();
 		//	util.setServerUtilization();
-			execution.executeNUR(allVMs, allRacks);
-		//	execution.executeRBR(allVMs, allRacks);
-			//execution.performFFD(allVMs);
+	//		execution.executeNUR(allVMs, allRacks);
+			execution.executeRBR(allVMs, allRacks);
+	//		execution.performFFD(allVMs);
 				
 			
 		} else {
