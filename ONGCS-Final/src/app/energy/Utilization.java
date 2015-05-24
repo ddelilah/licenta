@@ -15,6 +15,7 @@ import app.model.VirtualMachine;
 public class Utilization {
 	
 	private static final int MAXIMUM_POWER = 500;
+	private float totalUtilization = 0;
 	
 public void setServerUtilization() {
 		
@@ -46,7 +47,12 @@ public void setServerUtilization() {
 	
 	public float computePotentialUtilizationForAServer(Server server, VirtualMachine vmToCheck, Map<VirtualMachine, Server> map) {
 		float potentialUtilization = 0;
-		float totalRequiredMips = 0;
+		float totalRequiredMips = 0;	
+		List<VirtualMachine> vmList = server.getCorrespondingVMs();
+		
+		for (VirtualMachine vm : vmList) {
+			totalRequiredMips += vm.getVmMips();
+		}
 		
 		if(!map.isEmpty())
 			for (Entry<VirtualMachine, Server> entry : map.entrySet()) {
@@ -62,32 +68,24 @@ public void setServerUtilization() {
 	}
 	
 	public float computeSingleRackUtilization(Rack r) {
-		
-		float maxRackPowerConsumption;
-		float currentPowerConsumption=0;
-		int maximumServerPowerConsumption=500;
-		
+
 		List<Server> allServers = new ArrayList<Server>();
+		float utilization = 0;
 		
 		allServers = r.getServers();
-		maxRackPowerConsumption =(float) allServers.size() * maximumServerPowerConsumption;
 		
 		for(Server server: allServers) {
-			currentPowerConsumption += server.getPowerValue();
+			utilization += server.getUtilization();
 		}
-		
-		float utilization = currentPowerConsumption / maxRackPowerConsumption;
-		
-		return utilization;
+	
+		return utilization/allServers.size();
 		
 		
 	}
 	
 public void setRackUtilization() {
 		
-		float maxRackPowerConsumption;
-		float currentPowerConsumption=0;
-		
+
 		List<Rack> allRacks = new ArrayList<Rack>();
 		List<Server> allServers = new ArrayList<Server>();
 		GenericDAOImpl genericDAO = new GenericDAOImpl();
@@ -98,18 +96,11 @@ public void setRackUtilization() {
 		System.out.println("\n\n\n\n"+allRacks);
 		for(Rack rack: allRacks) {
 			
-			currentPowerConsumption = 0;
 			allServers = rack.getServers();
 			System.out.println("\n Rack"+rack + "\n" +allServers);
-			maxRackPowerConsumption =(float) allServers.size() * MAXIMUM_POWER;
 			
 			if(!allServers.isEmpty()) {
-				for(Server server: allServers) {
-					currentPowerConsumption += server.getPowerValue();
-				}
-				
-				float utilization = currentPowerConsumption / maxRackPowerConsumption;
-				
+				float utilization = computeSingleRackUtilization(rack);
 				rack.setUtilization(utilization);
 				genericDAO.updateInstance(rack);
 			}

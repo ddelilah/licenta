@@ -1,5 +1,10 @@
 package app.policies;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import app.constants.PolicyType;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -34,6 +39,16 @@ public class ServerPolicy extends Policy {
 		this.server = server;
 	}
 
+	public boolean checkServerUtilizationViolation(float utilization) {
+		if (server.getState().equalsIgnoreCase("ON") && utilization <= MAX_SERVER_UTIL && utilization >= MIN_SERVER_UTIL) {
+			isViolated = false;
+		} else {
+			isViolated = true;
+		}
+		
+		return isViolated;
+	}
+
 	@Override
 	public boolean evaluatePolicy() {
 		float totalRequestedMips = 0;
@@ -42,13 +57,15 @@ public class ServerPolicy extends Policy {
 			totalRequestedMips += vm.getVmMips();
 		}
 		float utilization = totalRequestedMips / server.getServerMIPS();
-		if (server.getState().equalsIgnoreCase("ON") && utilization < MAX_SERVER_UTIL && utilization > MIN_SERVER_UTIL) {
+		
+		if (server.getState().equalsIgnoreCase("ON") && utilization <= MAX_SERVER_UTIL && utilization >= MIN_SERVER_UTIL) {
 			isViolated = false;
 		} else {
 			isViolated = true;
 		}
 		
 		return isViolated;
+	
 			
 	}
 

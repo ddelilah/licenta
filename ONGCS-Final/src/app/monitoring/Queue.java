@@ -77,16 +77,21 @@ public class Queue extends Thread {
 			}
 		}
 		
-		System.out.println("To be deployed");
-		for(VirtualMachine vm: toBeDeployedVmList)
-			System.out.println(vm.toString());
-		System.out.println("To be deleted");
-		for(VirtualMachine vm: toBeDeletedVmList)
-			System.out.println(vm.toString());
-//		analysis.performAnalysis(toBeDeployedVmList);
-		System.out.println("........\n\n End of deployment..........");
+//		System.out.println("To be deployed");
+//		for(VirtualMachine vm: toBeDeployedVmList)
+//			System.out.println(vm.toString());
+//		System.out.println("To be deleted");
+//		for(VirtualMachine vm: toBeDeletedVmList)
+//			System.out.println(vm.toString());
+		analysis.performAnalysis(toBeDeployedVmList);
+//		System.out.println("........\n\n End of deployment..........");
 		
-//		c.consolidationOnDelete(toBeDeletedVmList);
+		if(!toBeDeletedVmList.isEmpty()) {
+			c.consolidationOnDelete(toBeDeletedVmList);
+		} else {
+			System.out.println("No workload to be deleted.");
+		}
+			
 		
 	}
 
@@ -289,7 +294,7 @@ public class Queue extends Thread {
 				.println("\n\n\n...........Preparing to delete "+message.getNumberOfInstances()+
 						" VMs...........");
 				
-				for(int i=0; i<message.getNumberOfInstances(); i++){
+				for(int i=0; i<message.getNumberOfInstances(); i++) {
 				
 					VirtualMachine vm = (VirtualMachine) message.getType();
 					System.out.println("\n\n\n...........Preparing to delete VM............"+ vm.getVmId());
@@ -297,9 +302,9 @@ public class Queue extends Thread {
 	
 					boolean startDelete = false;
 					int pos=-1;
-					for(VirtualMachine virtualM: taskList){
+					for(VirtualMachine virtualM: taskList) {
 						pos++;
-					if(virtualM.getName().equals(vm.getName())){
+					if(virtualM.getName().equals(vm.getName())) {
 							vmToDelete = virtualM;
 							System.out.println("virtualM is "+ virtualM.getVmId());
 							startDelete = true;
@@ -322,27 +327,18 @@ public class Queue extends Thread {
 							deleteFromDeployedList = true;
 							break;
 						}}
-					if(removeFromToBeDeployedVmList!=-1 && deleteFromDeployedList)
-						toBeDeployedVmList.remove(removeFromToBeDeployedVmList);
+//					if(removeFromToBeDeployedVmList!=-1 && deleteFromDeployedList)
+//						toBeDeployedVmList.remove(removeFromToBeDeployedVmList);
+	
+//						if (vmDAO.getVirtualMachineById(vm.getVmId()) != null) {
+//							vmToDelete = vmDAO.getVirtualMachineById(vm.getVmId());
+//							toBeDeletedVmList.add(vmToDelete);
+//					//		startDelete = true;
+//							System.out.println("Found in db"+ vmToDelete);
+//						} else
+//							System.out.println("Not Found in db");
+	
 					
-					if (startDelete){
-						vmToDelete.setState(VMState.DONE.getValue());
-						dao.updateInstance(vmToDelete);
-					}
-					else {
-						System.out.println("Not found in list");
-	
-						if (vmDAO.getVirtualMachineById(vm.getVmId()) != null) {
-							vmToDelete = vmDAO.getVirtualMachineById(vm.getVmId());
-							toBeDeletedVmList.add(vmToDelete);
-							startDelete = true;
-							System.out.println("Found in db"+ vmToDelete);
-							vmToDelete.setState(VMState.DONE.getValue());
-							dao.updateInstance(vmToDelete);
-						} else
-							System.out.println("Not Found in db");
-	
-					}
 		
 				System.out.println("\n\n\n...........VM "+ vmToDelete.getVmId()+" has been deleted............");
 				System.out.println("toBeDeployedVmList "+toBeDeployedVmList);
