@@ -2,8 +2,11 @@ package app.scheduling;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
@@ -20,51 +23,148 @@ import app.execution.Execution;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
+import app.policies.RackPolicy;
+import app.policies.ServerPolicy;
 
 public class Consolidation {
 
 	private Utilization utilization = new Utilization();
-	private PowerConsumption powerConsumption = new PowerConsumption();
-	private CoolingSimulation coolingSimulation = new CoolingSimulation();
 	private PolicyType p;
-	private GenericDAOImpl dao = new GenericDAOImpl();
 	private RackDAOImpl rackDAO = new RackDAOImpl();
 	private VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 	private ServerDAOImpl serverDAO = new ServerDAOImpl();
-	
-	private SchedulingUtil schedulingUtil;
-	
-	private static int OFF_SERVER_UTILIZATION = 0;
-	private static int OFF_SERVER_COOLING = 0;
-	private static int OFF_SERVER_POWER = 0;
-	private static int OFF_RACK_UTILIZATION = 0;
-	private static int OFF_RACK_COOLING = 0;
-	private static int OFF_RACK_POWER = 0;
-	
-	
-	
-	public List<VirtualMachine> consolidationForServers(Server s) {
-		float newRackUtilizationAfterServerTurnOff, newRackPowerConsumptionAfterAfterServerTurnOff, newRackEstimatedCoolingAfterAfterServerTurnOff;
+	private static VMProcessor vmProcessor;
+
+	private ConsolidationUtil consolidationUtil = new ConsolidationUtil();
+
+	private static List<Server> resultOfServerAllocation = new ArrayList<Server>();
+
+	public void canMoveAllVMsSomewhereElse(List<VirtualMachine> VMs,
+			List<Server> servers) {
+		boolean canMove = false;
+		Server resultOfOBFD = new Server();
+		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
+		VirtualMachine vmToBeMoved = new VirtualMachine();
+		Server serverToBePlacedOn = new Server();
+		int numberOfVms = 0;
+
+		List<VirtualMachine> sortedVMs = new ArrayList<VirtualMachine>();
+
+		vmProcessor = new VMProcessor(VMs);
+		sortedVMs = vmProcessor.sortVMListDescending();
+
+		numberOfVms = sortedVMs.size();
+
+		for (VirtualMachine selectedVm : sortedVMs) {
+			OBFD obfd = new OBFD(servers);
+			resultOfOBFD = obfd.findAppropriateServerForConsolidationStep(selectedVm, allocation);
+
+			if (resultOfOBFD != null && resultOfOBFD.getServerId() != 0) {
+				allocation.put(selectedVm, resultOfOBFD);
+				canMove = true;
+			} else {
+				canMove = false;
+			}
+
+		}
+
+		if (canMove && allocation.entrySet().size() == numberOfVms) {
+			for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
+				vmToBeMoved = entry.getKey();
+				serverToBePlacedOn = entry.getValue();
+
+				System.out.println("[RACK CONSOLIDATION] virtual Machine "
+						+ vmToBeMoved.getVmId() + vmToBeMoved.getName()
+						+ " should be placed on server "
+						+ serverToBePlacedOn.getServerId()
+						+ serverToBePlacedOn.getName());
+
+				Rack oldRack = vmToBeMoved.getServer().getRack();
+				Server oldServer = vmToBeMoved.getServer();
+
+				vmToBeMoved.setServer(serverToBePlacedOn);
+				vmDAO.mergeSessionsForVirtualMachine(vmToBeMoved);
+				serverToBePlacedOn.setCorrespondingVMs(SchedulingUtil.addVmsToServer(serverToBePlacedOn, vmToBeMoved));
+				consolidationUtil.turnOffServer(oldServer);
+				consolidationUtil.updatesToServerValues(serverToBePlacedOn);
+				System.out.println("Added VMs server's list of VMs: "
+						+ serverToBePlacedOn.getCorrespondingVMs());
+				resultOfServerAllocation.add(serverToBePlacedOn);
+				Rack newRack = serverToBePlacedOn.getRack();
+				consolidationUtil.updatesToRackValues(oldRack);
+				consolidationUtil.updatesToRackValues(newRack);
+			}
+
+		} else {
+			System.out.println("[SERVER CAN'T BE TURNED OFF => LET IT BE]");
+		}
+	}
+
+	public void tryToMoveAllVMsFromARack(Rack r) {
+		List<Server> serversList = r.getServers();
+
+		for (Server s : serversList) {
+			if (s.getState().equalsIgnoreCase("ON")) {
+				tryToMoveAllVMsFromAServer(s);
+			}
+		}
+	}
+
+	public void tryToMoveAllVMsFromAServer(Server s) {
+
 		List<VirtualMachine> allVmsOnServer = new ArrayList<VirtualMachine>();
 		List<VirtualMachine> allVmsOnServerToBeMigrated = new ArrayList<VirtualMachine>();
-		
-		s.setUtilization(OFF_SERVER_UTILIZATION);
-		s.setCoolingValue(OFF_SERVER_COOLING);
-		s.setPowerValue(OFF_SERVER_UTILIZATION);
-		s.setState(ServerState.OFF.getValue());
-		serverDAO.mergeSessionsForServer(s);
-		
-		Rack r = s.getRack();
-		
-		newRackUtilizationAfterServerTurnOff = utilization.computeSingleRackUtilization(r);
-		newRackEstimatedCoolingAfterAfterServerTurnOff = coolingSimulation.computeSingleRackCooling(r);
-		newRackPowerConsumptionAfterAfterServerTurnOff = powerConsumption.computeSingleRackPowerConsumption(r);
-		r.setUtilization(newRackUtilizationAfterServerTurnOff);
-		r.setCoolingValue(newRackEstimatedCoolingAfterAfterServerTurnOff);
-		r.setPowerValue(newRackPowerConsumptionAfterAfterServerTurnOff);
-		rackDAO.mergeSessionsForRack(r);
+		List<VirtualMachine> allVMsOnRackToBeMigrated = new ArrayList<VirtualMachine>();
+		List<Server> allServersInDataCenter = new ArrayList<Server>();
+		List<Server> serversThatAreOff = new ArrayList<Server>();
+		List<Server> serversThatBreakPolicy = new ArrayList<Server>();
+		List<Server> serversThatDontBreakPolicy = new ArrayList<Server>();
+		List<Server> serversThatAreOffOnRack = new ArrayList<Server>();
+		List<Server> serversThatBreakPolicyOnRack = new ArrayList<Server>();
+		List<Server> serversThatDontBreakPolicyOnRack = new ArrayList<Server>();
+		List<Server> serversOnTheSameRack = new ArrayList<Server>();
 
-		/* apply our algorithms on all VMs from the turned off server */
+		Map<Integer, List<Server>> serverTaxonomy = new HashMap<Integer, List<Server>>();
+		Map<Integer, List<Server>> serverTaxonomyOnRack = new HashMap<Integer, List<Server>>();
+
+		allServersInDataCenter = serverDAO.getAllServers();
+		for (Server srv : allServersInDataCenter) {
+			if (srv.getServerId() == s.getServerId()) {
+				srv.setUtilization(s.getUtilization());
+				srv.setCoolingValue(s.getCoolingValue());
+				srv.setState(s.getState());
+				break;
+			}
+		}
+
+		serverTaxonomy = consolidationUtil
+				.serverCategory(allServersInDataCenter);
+
+		serversThatAreOff = serverTaxonomy.get(0);
+		serversThatBreakPolicy = serverTaxonomy.get(1);
+		serversThatDontBreakPolicy = serverTaxonomy.get(2);
+
+		Rack r = s.getRack();
+		serversOnTheSameRack = r.getServers();
+		serverTaxonomyOnRack = consolidationUtil.serverCategory(serversOnTheSameRack);
+		serversThatAreOffOnRack = serverTaxonomyOnRack.get(0);
+		serversThatBreakPolicyOnRack = serverTaxonomyOnRack.get(1);
+		serversThatDontBreakPolicyOnRack = serverTaxonomyOnRack.get(2);
+
+		Iterator<Server> iterator = serversThatDontBreakPolicy.iterator();
+		// Iterator<Server> rackIterator =
+		// serversThatDontBreakPolicyOnRack.iterator();
+		while (iterator.hasNext()) {
+			Server sr1 = iterator.next();
+			for (Server sr2 : serversThatDontBreakPolicyOnRack) {
+				if (sr1.getServerId() == sr2.getServerId()) {
+					iterator.remove();
+				}
+			}
+		}
+
+		RackPolicy rackPolicy = new RackPolicy(p.RACK_POLICY, false, r);
+
 		allVmsOnServer = s.getCorrespondingVMs();
 		System.out.println("[SERVER CONSOLIDATION].........");
 		for (VirtualMachine vmm : allVmsOnServer) {
@@ -73,208 +173,160 @@ public class Consolidation {
 			}
 		}
 
-		return allVmsOnServerToBeMigrated;
+		for (VirtualMachine vmm : allVmsOnServerToBeMigrated) {
+			s.setCorrespondingVMs(SchedulingUtil.updateVmsOnServer(s, vmm));
+		}
 
+		for (Server s1 : serversOnTheSameRack) {
+			List<VirtualMachine> virtualMachinesOnServersFromTheSameRack = s1.getCorrespondingVMs();
+			for (VirtualMachine v1 : virtualMachinesOnServersFromTheSameRack) {
+				allVMsOnRackToBeMigrated.add(v1);
+			}
+		}
+
+		if (r.getState().equalsIgnoreCase("ON") && rackPolicy.checkRackUtilizationViolation(r.getUtilization())) {
+			System.out.println("[RACK POLICY IS VIOLATED => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON OTHER RACKS");
+			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicy);
+		} else {
+			System.out.println("[RACK POLICY IS NOT VIOLATED => MIGRATE ALL VMS TO OTHER SERVERS ON THE SAME RACK");
+			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicyOnRack);
+		}
 	}
-	
+
 	public void consolidationOnDelete(List<VirtualMachine> vmsToBeDeleted) {
-	
-		float newServerUtilizationAfterVMDelete, newServerPowerConsumptionAfterVMDelete, newServerEstimatedCoolingAfterVMDelete;
-		float newRackUtilizationAfterVMDelete, newRackPowerConsumptionAfterVMDelete, newRackEstimatedCoolingAfterVMDelete;
-		
-		List<VirtualMachine> allVmsOnServerToBeMigrated = new ArrayList<VirtualMachine>();
-		List<VirtualMachine> allVmsOnRack = new ArrayList<VirtualMachine>();
-		List<Server> allServersOnRack = new ArrayList<Server>();
-		List<Server> allServersInDataCenter = new ArrayList<Server>();
-		List<Server> serversThatBreakPolicy = new ArrayList<Server>();
-		List<Server> serversThatAreOff = new ArrayList<Server>();
-		List<Server> serversThatDontBreakPolicy = new ArrayList<Server>();
-		List<Rack> allRacks = new ArrayList<Rack>();
-		List<Rack> racksThatAreOnAndDontBreakPolicy = new ArrayList<Rack>();
-		List<Rack> racksThatBreakPolicy = new ArrayList<Rack>();
-		List<Rack> racksThatDontBreakPolicy = new ArrayList<Rack>();
 
-		allRacks = rackDAO.getAllRacks();
-		allServersInDataCenter = serverDAO.getAllServers();
-		
-		for(VirtualMachine v: vmsToBeDeleted) {
-			System.out.println("vmId:" + v.getVmId());
-			
-			//trebuie get-ul asta pentru ca sa stiu pe ce server a fost alocat vm-ul
-			VirtualMachine selectedVm = new VirtualMachine();
-			selectedVm = vmDAO.getVirtualMachineById(v.getVmId());
-			System.out.println(selectedVm.getName());
-			Server s = selectedVm.getServer();
-			System.out.println("Server id:" + s.getServerId());
-			System.out.println("Rack id: "+ s.getRack().getRackId());
-			System.out.println("Server " + s.getServerId() + " placed on rack " + selectedVm.getServer().getRack().getRackId());
-			Rack r = selectedVm.getServer().getRack();
-		
+		float newServerUtilizationAfterVMDelete, newRackUtilizationAfterVMDelete;
+		List<Server> allServers = serverDAO.getAllServers();
+		List<Server> allModifiedServers = new ArrayList<Server>();
+		List<Rack> allRacks = rackDAO.getAllRacks();
+		Server underUtilizedServerFromAllocationStep = new Server();
+		Rack underUtilizedRackFromAllocationStep = new Rack();
+
+		for (Server sr : allServers) {
+			ServerPolicy serverPolicy = new ServerPolicy(p.SERVER_POLICY, false, sr);
+			if (serverPolicy.checkServerUtilizationViolation(sr.getUtilization())) {
+				underUtilizedServerFromAllocationStep = sr;
+				break;
+			}
+		}
+
+		for (Rack r : allRacks) {
+			RackPolicy rackPolicy = new RackPolicy(p.RACK_POLICY, false, r);
+			if (rackPolicy.checkRackUtilizationViolation(r.getUtilization())) {
+				underUtilizedRackFromAllocationStep = r;
+				break;
+			}
+		}
+
+		for (VirtualMachine selectedVm : vmsToBeDeleted) {
+			Server correspondingServer = selectedVm.getServer();
+
 			selectedVm.setState(VMState.DONE.getValue());
-//			vmDAO.mergeSessionsForVirtualMachine(selectedVm);
-			
-//			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]VM STATE " + selectedVm.getState());	
-//			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server " + s.getServerId() + " with vms: " + s.getCorrespondingVMs());	
+			selectedVm.setServer(null);
+			vmDAO.mergeSessionsForVirtualMachine(selectedVm);
+			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
+					+ correspondingServer.getServerId() + " with vms: "
+					+ correspondingServer.getCorrespondingVMs());
 
-			//remove VM to be deleted from server's corresponding VM list
-			//TODO: !!!!!!!!figure out another way if possible. very very ugly
-			//dar referintele in memorie sunt diferite, deci era necesar
-			s.setCorrespondingVMs(schedulingUtil.updateVmsOnServer(s, selectedVm));
-			for(Server sr: allServersInDataCenter) {
-				if(sr.getServerId() == s.getServerId()) {
-					sr.setCorrespondingVMs(s.getCorrespondingVMs());
-					newServerUtilizationAfterVMDelete = utilization.computeUtilization(sr);
-					newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumption(sr);
-					newServerEstimatedCoolingAfterVMDelete = coolingSimulation.computeSingleServerCooling(sr);
-					sr.setUtilization(newServerUtilizationAfterVMDelete);
-					sr.setPowerValue(newServerPowerConsumptionAfterVMDelete);
-					sr.setCoolingValue(newServerEstimatedCoolingAfterVMDelete);
-					serverDAO.mergeSessionsForServer(sr);
+			for (Server sr : allServers) {
+				if (sr.getServerId() == correspondingServer.getServerId()) {
+					sr.setCorrespondingVMs(SchedulingUtil.updateVmsOnServer(correspondingServer, selectedVm));
+					allModifiedServers.add(sr);
+					break;
+
+					// System.out.println("[AFTER VM DELETE FROM SERVER's LIST]Server "
+					// + correspondingServer.getServerId() + " with vms: " +
+					// correspondingServer.getCorrespondingVMs());
+				}
+
+				ListIterator<Server> iter = allModifiedServers.listIterator();
+				while (iter.hasNext()) {
+					if (iter.next().getServerId() == sr.getServerId()) {
+						iter.set(sr);
+					}
+				}
+			}
+		}
+
+		for (Server sr : allModifiedServers) {
+
+			// System.out.println("[BEFORE VM DELETE FROM SERVER]: " + sr.getUtilization());
+			newServerUtilizationAfterVMDelete = utilization.computeUtilization(sr);
+			sr.setUtilization(newServerUtilizationAfterVMDelete);
+			if (newServerUtilizationAfterVMDelete == 0) {
+				consolidationUtil.turnOffServer(sr);
+			} else {
+				serverDAO.mergeSessionsForServer(sr);
+			}
+
+			// System.out.println("[AFTER VM DELETE FROM SERVER]: " + sr.getUtilization());
+
+			Rack correspondingRack = sr.getRack();
+
+			// System.out.println("[OLD UTILIZATION]" + correspondingRack.toString());
+
+			newRackUtilizationAfterVMDelete = utilization
+					.computeSingleRackUtilization(correspondingRack);
+			correspondingRack.setUtilization(newRackUtilizationAfterVMDelete);
+
+			if (newRackUtilizationAfterVMDelete == 0) {
+				consolidationUtil.turnOffRack(correspondingRack);
+			} else {
+				rackDAO.mergeSessionsForRack(correspondingRack);
+			}
+			// System.out.println("[NEW UTILIZATION]" + correspondingRack.toString());
+		}
+
+		// RECONSOLIDATION FOR SERVERS
+		if (underUtilizedServerFromAllocationStep != null
+				&& !underUtilizedServerFromAllocationStep.getState().equalsIgnoreCase(ServerState.OFF.getValue())) {
+			// move all vms from that server on other servers
+			System.out.println("[SERVER RECONSOLIDATION]");
+			tryToMoveAllVMsFromAServer(underUtilizedServerFromAllocationStep);
+		}
+
+		// RECONSOLIDATION FOR RACKS
+		if (underUtilizedRackFromAllocationStep != null
+				&& !underUtilizedRackFromAllocationStep.getState().equalsIgnoreCase(RackState.OFF.getValue())) {
+			for (Server srv : underUtilizedRackFromAllocationStep.getServers()) {
+				for (Server sr2 : resultOfServerAllocation) {
+					if (srv.getServerId() == sr2.getServerId()) {
+						srv.setCorrespondingVMs(sr2.getCorrespondingVMs());
+						srv.setUtilization(sr2.getUtilization());
+						break;
+					}
+				}
+			}
+			// move all vms from that rack on other servers from other racks
+			System.out.println("[RACK RECONSOLIDATION]");
+			tryToMoveAllVMsFromARack(underUtilizedRackFromAllocationStep);
+		}
+
+		for (Server sr : allModifiedServers) {
+			for (Server sr2 : resultOfServerAllocation) {
+				if (sr.getServerId() == sr2.getServerId()) {
+					sr.setCorrespondingVMs(sr2.getCorrespondingVMs());
+					sr.setUtilization(sr2.getUtilization());
 					break;
 				}
 			}
 
-			selectedVm.setServer(null);
-			vmDAO.mergeSessionsForVirtualMachine(selectedVm);
-			
-			
-		
-		/* compute new resource state (for both server and rack) after vm is deleted  */
-//		System.out.println("[AFTER VM DELETE FROM SERVER's LIST]Server " + s.getServerId() + " with vms: " + s.getCorrespondingVMs());	
+			ServerPolicy serverPolicy = new ServerPolicy(p.SERVER_POLICY, false, sr);
+			Rack correspondingRack = sr.getRack();
+			RackPolicy rackPolicy = new RackPolicy(p.RACK_POLICY, false, correspondingRack);
 
-		
-		newRackPowerConsumptionAfterVMDelete = powerConsumption.computeSingleRackPowerConsumption(r);
-		newRackUtilizationAfterVMDelete = utilization.computeSingleRackUtilization(r);
-		newRackEstimatedCoolingAfterVMDelete = coolingSimulation.computeSingleRackCooling(r);
-		r.setPowerValue(newRackPowerConsumptionAfterVMDelete);
-		r.setCoolingValue(newRackEstimatedCoolingAfterVMDelete);
-		r.setUtilization(newRackUtilizationAfterVMDelete);
-		rackDAO.mergeSessionsForRack(r);
-		}
-		
-		for(Server s: allServersInDataCenter) {
-			if(s.getUtilization() == 0.0 && s.getState().equalsIgnoreCase("off")) {
-				serversThatAreOff.add(s);
-			} else if ((s.getUtilization() < 0.2 || s.getUtilization() > 0.8) && s.getState().equalsIgnoreCase("on")) {
-				serversThatBreakPolicy.add(s);
+			if (sr.getState().equalsIgnoreCase("ON") && serverPolicy.checkServerUtilizationViolation(sr.getUtilization())) {
+				System.out.println("[SERVER POLICY IS VIOLATED => MIGRATE ALL VMS FROM SERVER TO OTHER SERVERS]");
+				tryToMoveAllVMsFromAServer(sr);
 			} else {
-				serversThatDontBreakPolicy.add(s);
-			}
-		}
-		
-		System.out.println("Servers that break policy: " + serversThatBreakPolicy.size());
-//		System.out.println("Servers that don't break policy: " + serversThatDontBreakPolicy.size());
-		
-
-		Server resultOfOBFD = new Server();
-		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
-	
-
-		
-		for(Server brokenPolicy: serversThatBreakPolicy) {
-			
-			allVmsOnServerToBeMigrated = consolidationForServers(brokenPolicy);
-			
-			for(VirtualMachine vm: allVmsOnServerToBeMigrated) {
-				
-				//trebuie get-ul asta pentru ca sa stiu pe ce server a fost alocat vm-ul
-				VirtualMachine selectedVm = new VirtualMachine();
-				selectedVm = vmDAO.getVirtualMachineById(vm.getVmId());
-				System.out.println(selectedVm.getName());
-				Server serverOnWhichTheVmIs = selectedVm.getServer();
-				
-				
-				
-				serverOnWhichTheVmIs.setCorrespondingVMs(schedulingUtil.updateVmsOnServer(serverOnWhichTheVmIs, selectedVm));
-				for(Server sr: allServersInDataCenter) {
-					if(sr.getServerId() == serverOnWhichTheVmIs.getServerId()) {
-						sr.setCorrespondingVMs(serverOnWhichTheVmIs.getCorrespondingVMs());
-						newServerUtilizationAfterVMDelete = utilization.computeUtilization(sr);
-					//	newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumption(sr);
-					//	newServerEstimatedCoolingAfterVMDelete = coolingSimulation.computeSingleServerCooling(sr);
-						sr.setUtilization(newServerUtilizationAfterVMDelete);
-					//	sr.setPowerValue(newServerPowerConsumptionAfterVMDelete);
-					//	sr.setCoolingValue(newServerEstimatedCoolingAfterVMDelete);
-						serverDAO.mergeSessionsForServer(sr);
-						break;
-					}
+				// Server does not break policy => check rack
+				if (correspondingRack.getState().equalsIgnoreCase("ON") && rackPolicy.checkRackUtilizationViolation(correspondingRack.getUtilization())) {
+					System.out.println("[RACK POLICY IS VIOLATED => MIGRATE ALL VMS FROM THE RACK TO OTHER RACKS");
+					tryToMoveAllVMsFromARack(correspondingRack);
+				} else {
+					System.out.println("[HAPPY FLOW]");
 				}
-				
-				OBFD obfd = new OBFD(serversThatDontBreakPolicy);
-				resultOfOBFD = obfd.findAppropriateServerForConsolidationStep(selectedVm, allocation);
-				
-				System.out.println("[CONSOLIDATION] virtual Machine " + selectedVm.getVmId() + selectedVm.getName() + " should be placed on server " + resultOfOBFD.getServerId() + resultOfOBFD.getName());
-
-				selectedVm.setServer(resultOfOBFD);
-				vmDAO.mergeSessionsForVirtualMachine(selectedVm);
-
-				resultOfOBFD.setCorrespondingVMs(schedulingUtil.addVmsToServer(resultOfOBFD, selectedVm));
-				newServerUtilizationAfterVMDelete = utilization.computeUtilization(resultOfOBFD);
-				newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumption(resultOfOBFD);
-				newServerEstimatedCoolingAfterVMDelete = coolingSimulation.computeSingleServerCooling(resultOfOBFD);
-				resultOfOBFD.setUtilization(newServerUtilizationAfterVMDelete);
-				resultOfOBFD.setPowerValue(newServerPowerConsumptionAfterVMDelete);
-				resultOfOBFD.setCoolingValue(newServerEstimatedCoolingAfterVMDelete);
-				serverDAO.mergeSessionsForServer(resultOfOBFD);
-				System.out.println("Added VMs server's list of VMs: " + resultOfOBFD.getCorrespondingVMs());
-
-			}
-			
-		//daca policy-ul serverului nu e broken => policy-ul rack-ului nu e broken ??? cred ca nu tot timpul
-		//trebuie vazut dupa ce se calculeaza bine utilization peste tot
-		//daca nu, iau rack-urile care sunt pornite si daca nu exsita niciunul, le iau pe toate
-//		for(Server srv : serversThatDontBreakPolicy) {
-//			racksThatAreOnAndDontBreakPolicy.add(srv.getRack());
-//		}
-		
-//		for(Rack rack : racksThatAreOnAndDontBreakPolicy) {
-//			System.out.println("racksThatAreOnAndDontBreakPolicy" + rack.toString());
-//		}
-
-		}
-		
-		boolean singleRackOn = false;
-		int i;
-		
-		String first = allRacks.get(0).getState();
-//		System.out.println("State of the first:" + first);
-		for(i = 1; i < allRacks.size(); i++) {
-			if(!allRacks.get(i).getState().equalsIgnoreCase(first)) {
-				singleRackOn = true;
 			}
 		}
-		
-	
-		for(Rack r: allRacks) {
-			if(r.getUtilization() < 40 && r.getState().equalsIgnoreCase("on") && singleRackOn) {
-				System.out.println("Current case => no migration");
-				racksThatDontBreakPolicy.add(r);
-			} else if ((r.getUtilization() < 40 || r.getUtilization() > 80) && r.getState().equalsIgnoreCase("on")) {
-				racksThatBreakPolicy.add(r);
-			} else {
-				racksThatDontBreakPolicy.add(r);
-			}
-		}
-		
-		for(Rack r: racksThatBreakPolicy) {
-	//		System.out.println("Rack utilization before rack turn off:" + r.getUtilization());
-		r.setUtilization(OFF_RACK_UTILIZATION);
-		r.setState(RackState.OFF.getValue());
-		rackDAO.mergeSessionsForRack(r);
-		allServersOnRack = r.getServers();
-		
-	//	System.out.println("Rack utilization after rack turn off:" + r.getUtilization());
-		for(Server srv : allServersOnRack) {
-			allVmsOnRack = consolidationForServers(srv);
-			
-			Execution execution = new Execution();
-			execution.executeNUR(allVmsOnRack, racksThatAreOnAndDontBreakPolicy);
-		}
-		
-		}
-	
-		
 	}
 }
-		
-

@@ -86,7 +86,12 @@ public class Queue extends Thread {
 		analysis.performAnalysis(toBeDeployedVmList);
 //		System.out.println("........\n\n End of deployment..........");
 		
-		c.consolidationOnDelete(toBeDeletedVmList);
+		if(!toBeDeletedVmList.isEmpty()) {
+			c.consolidationOnDelete(toBeDeletedVmList);
+		} else {
+			System.out.println("No workload to be deleted.");
+		}
+			
 		
 	}
 
@@ -289,7 +294,7 @@ public class Queue extends Thread {
 				.println("\n\n\n...........Preparing to delete "+message.getNumberOfInstances()+
 						" VMs...........");
 				
-				for(int i=0; i<message.getNumberOfInstances(); i++){
+				for(int i=0; i<message.getNumberOfInstances(); i++) {
 				
 					VirtualMachine vm = (VirtualMachine) message.getType();
 					System.out.println("\n\n\n...........Preparing to delete VM............"+ vm.getVmId());
@@ -297,9 +302,9 @@ public class Queue extends Thread {
 	
 					boolean startDelete = false;
 					int pos=-1;
-					for(VirtualMachine virtualM: taskList){
+					for(VirtualMachine virtualM: taskList) {
 						pos++;
-					if(virtualM.getName().equals(vm.getName())){
+					if(virtualM.getName().equals(vm.getName())) {
 							vmToDelete = virtualM;
 							System.out.println("virtualM is "+ virtualM.getVmId());
 							startDelete = true;

@@ -57,7 +57,7 @@ public class Execution {
 			mergeSessionsForExecution(vm);
 	
 		}
-	//	MigrationEfficiency mEff = new MigrationEfficiency();
+		MigrationEfficiency mEff = new MigrationEfficiency();
 
 		//trebuie ca de dinainte sa fie valorile ok
 		
@@ -82,7 +82,7 @@ public class Execution {
 		
 		System.out.println("\n\n Utilization Computation for all racks..............");
 		util.setRackUtilization();
-	//	System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
+		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 		System.out.println("[NUR] map size: " + allocation.size());
 	//	history.writeToFile(allocation, "historyNUR.txt");
 	}
@@ -101,14 +101,11 @@ public class Execution {
 			vm.setServer(s);
 			vm.setState(VMState.RUNNING.getValue());
 			mergeSessionsForExecution(vm);
-
 		}
 	
 		MigrationEfficiency mEff = new MigrationEfficiency();
 		Utilization util = new Utilization();
 		util.setServerUtilization();
-		
-		turnOffUnusedServersAndRacks();
 		
 		PowerConsumption power = new PowerConsumption();
 		power.setServerPowerConsumption();
@@ -118,11 +115,10 @@ public class Execution {
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
 		
-		turnOffUnusedServersAndRacks();
 		util.setRackUtilization();
 		
 		displayPowerConsumptionAndCooling("RBR");
-		System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency2(allocation.size()));
+		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 //		History history = new History();
 //		history.writeToFile(allocation, "historyRBR.txt");
 	}
@@ -149,7 +145,7 @@ public class Execution {
 		
 	}
 
-	public void performFFD(List<VirtualMachine> allVMs){
+	public void performFFD(List<VirtualMachine> allVMs) {
 		FFD ffd = new FFD();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = ffd.performFFD(allVMs);
@@ -161,12 +157,10 @@ public class Execution {
 			vm.setServer(s);
 			mergeSessionsForExecution(vm);
 		}
-		//MigrationEfficiency mEff = new MigrationEfficiency();
+		MigrationEfficiency mEff = new MigrationEfficiency();
 
 		Utilization util = new Utilization();
 		util.setServerUtilization();
-		
-		turnOffUnusedServersAndRacks();
 		
 		PowerConsumption power = new PowerConsumption();
 		power.setServerPowerConsumption();
@@ -176,39 +170,11 @@ public class Execution {
 		CoolingSimulation cooling = new CoolingSimulation();
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
-	//	System.out.println("Migration Efficiency: "+ mEff.computeMigrationEfficiency());
+		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 
 	/*	History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");
 	*/	
-	}
-
-	private static void turnOffUnusedServersAndRacks(){
-		
-		List<Rack> allRacks = new ArrayList<Rack>();
-		List<Server> allServers = new ArrayList<Server>();
-		GenericDAOImpl genericDAO = new GenericDAOImpl();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		
-		allRacks = rackDAO.getAllRacks();
-		
-		for(Rack rack: allRacks){
-			allServers = rack.getServers();
-			for(Server server: allServers){
-					if(server.getUtilization() == 0){
-						server.setState("off");
-						genericDAO.updateInstance(server);
-					}
-					else{
-						server.setState("on");
-						genericDAO.updateInstance(server);
-					}
-				}
-			if(rack.getPowerValue()!=0){
-				rack.setState("on");
-				genericDAO.updateInstance(rack);
-			}
-		}
 	}
 	
 	private static String mergeSessionsForExecution(VirtualMachine vm) {
