@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>LiveGraph version 1.0.1. DataFileSettings.</comment>
+<entry key="ShowOnlyTailData">0</entry>
+<entry key="DataFile">C:\Users\Ade\Desktop\GitHub\licenta\ONGCS-Final/Airflow %.15.05.26-19.27.08.dat</entry>
+<entry key="UpdateFrequency">1000</entry>
+<entry key="DoNotCacheData">0</entry>
+</properties>

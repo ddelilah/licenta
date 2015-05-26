@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+import app.GUI.Charts;
 import app.access.GenericDAO;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
@@ -20,6 +21,7 @@ import app.scheduling.Consolidation;
 import app.scheduling.ConsolidationUtil;
 
 public class Queue extends Thread {
+	public Charts chart = new Charts();
 
 	private LinkedBlockingDeque<ContextData> receivedMessage;
 	private Analysis analysis;
@@ -83,6 +85,7 @@ public class Queue extends Thread {
 				toBeDeletedVmList = entry.getValue();
 			}
 		}
+		
 
 		System.out.println("To be deployed");
 		for (VirtualMachine vm : toBeDeployedVmList)
@@ -91,13 +94,13 @@ public class Queue extends Thread {
 		for (VirtualMachine vm : toBeDeletedVmList)
 			System.out.println(vm.toString());
 
-		analysis.performAnalysis(toBeDeployedVmList, algorithm);
+		analysis.performAnalysis(toBeDeployedVmList, algorithm, chart);
 
 		if (!toBeDeletedVmList.isEmpty()) {
 			if (algorithm.equalsIgnoreCase("FFD")) {
-				cUtil.deleteForFFD(toBeDeletedVmList);
+				cUtil.deleteForFFD(toBeDeletedVmList, chart);
 			} else {
-				c.consolidationOnDelete(toBeDeletedVmList);
+				c.consolidationOnDelete(toBeDeletedVmList, chart);
 			}
 		} else {
 			System.out.println("No workload to be deleted.");
@@ -115,6 +118,8 @@ public class Queue extends Thread {
 		System.out.println("[Execution Time] "
 				+ TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS)
 				+ " sec");
+		
+		chart.finishChartExecution();
 	}
 
 	private boolean checkIfInstanceAlreadyAdded(VirtualMachine vmToCheck,

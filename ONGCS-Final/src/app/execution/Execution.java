@@ -10,12 +10,16 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 
+import app.GUI.Charts;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.algorithm.FFD;
 import app.constants.VMState;
+import app.coolingSystems.CACS;
+import app.coolingSystems.HACS;
+import app.coolingSystems.ParallelPlacementStrategy;
 import app.energy.*;
 import app.hibernate.SessionFactoryUtil;
 import app.model.Rack;
@@ -34,6 +38,9 @@ public class Execution {
 	private static RBR rackScheduling = new RBR();
 	private static History history = new History();
 	private static final float CRAC_SUPPLIED_TEMPERATURE = 20;
+	private Utilization util = new Utilization();
+	private PowerConsumption power = new PowerConsumption();
+	private CoolingSimulation cooling = new CoolingSimulation(CRAC_SUPPLIED_TEMPERATURE);
 	
 	public static List<VirtualMachine> addVmsToServer(Server s, VirtualMachine vm) {
 		List<VirtualMachine> result = new ArrayList<VirtualMachine>();
@@ -43,7 +50,7 @@ public class Execution {
 	}
 	
 	public void executeNUR(List<VirtualMachine> allVMs,
-			List<Rack> allRacks) {
+			List<Rack> allRacks, Charts chart) {
 		
 		ServerDAOImpl serverDAO = new ServerDAOImpl();
 		List<Server> allServers = serverDAO.getAllServers();
@@ -69,11 +76,12 @@ public class Execution {
 //		
 //	else{
 			System.out.println("\n\n\n ----------------- Performing experiment! --------------------------");
-		
+
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = nur.placeVMsInNoneUnderutilizedRack(allVMs, allRacks);
-		
+		int ct=0;
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
+			ct++;
 			int serverId = entry.getValue().getServerId();
 			System.out.println("[NUR]vm " + entry.getKey().getName()
 					+ " should be assigned to server with id " + serverId);
@@ -85,24 +93,29 @@ public class Execution {
 			System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
 			mergeSessionsForExecution(vm);
 			
+			util.setServerUtilization();
+			util.setRackUtilization();
+			power.setServerPowerConsumption();
+			power.setRackPowerConsumption();
+			cooling.setServerCoolingValue();
+			cooling.setRackCoolingPower();
+	//		chart.updateChart(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
+
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
 
 		//trebuie ca de dinainte sa fie valorile ok
 		
 		System.out.println("\n\n Utilization Computation for all servers..............");
-		Utilization util = new Utilization();
 		util.setServerUtilization();
 		
 		System.out.println("\n\n Power consumption Computation for all servers..............");
-		PowerConsumption power = new PowerConsumption();
 		power.setServerPowerConsumption();
 		
 		System.out.println("\n\n Power consumption Computation for all racks..............");
 		power.setRackPowerConsumption();
 		
 		
-		CoolingSimulation cooling = new CoolingSimulation(CRAC_SUPPLIED_TEMPERATURE);
 		System.out.println("\n\n Cooling Computation for all servers..............");
 		cooling.setServerCoolingValue();
 		
@@ -124,7 +137,7 @@ public class Execution {
 //	}
 
 	public void executeRBR(List<VirtualMachine> allVMs,
-			List<Rack> allRacks) {
+			List<Rack> allRacks, Charts chart) {
 		
 		ServerDAOImpl serverDAO = new ServerDAOImpl();
 		List<Server> allServers = serverDAO.getAllServers();
@@ -154,8 +167,10 @@ public class Execution {
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
 		
-		
+		int ct =0;
+
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
+			ct++;
 			int serverId = entry.getValue().getServerId();
 			System.out.println("[RBR]vm " + entry.getKey().getName()
 					+ " should be assigned to server with id " + serverId);
@@ -165,16 +180,22 @@ public class Execution {
 			vm.setState(VMState.RUNNING.getValue());
 			s.setCorrespondingVMs(addVmsToServer(s, vm));
 			mergeSessionsForExecution(vm);
+			
+			util.setServerUtilization();
+			util.setRackUtilization();
+			power.setServerPowerConsumption();
+			power.setRackPowerConsumption();
+			cooling.setServerCoolingValue();
+			cooling.setRackCoolingPower();
+	//		chart.updateChart(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
+
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
-		Utilization util = new Utilization();
 		util.setServerUtilization();
 
-		PowerConsumption power = new PowerConsumption();
 		power.setServerPowerConsumption();
 		power.setRackPowerConsumption();
 
-		CoolingSimulation cooling = new CoolingSimulation(CRAC_SUPPLIED_TEMPERATURE);
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
 		util.setRackUtilization();
@@ -225,31 +246,36 @@ public class Execution {
 			allServers = rack.getServers();
 			for(Server server: allServers){
 				power+=server.getPowerValue();
-//			/	cooling += server.getCoolingValue();
 			}
 			
 		}
 		return power;
 	}
-	public void performFFD(List<VirtualMachine> allVMs) {
+	
+	public float getCurrentCoolingPowerConsumption(){
+		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
+		List<Rack> allRacks = new ArrayList<Rack>();
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		List<Server> allServers = new ArrayList<Server>();
+		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
+		allRacks = rackDAO.getAllRacks();
+		float cooling=0;
+		for(Rack rack: allRacks){
+			allServers = rack.getServers();
+			for(Server server: allServers){
+				cooling += server.getCoolingValue();
+			}
+			
+		}
+		return cooling;
+	}
+	public void performFFD(List<VirtualMachine> allVMs, Charts chart) {
 		FFD ffd = new FFD();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = ffd.performFFD(allVMs);
 		
-		DataStreamWriter out = DataStreamWriterFactory.createDataWriter(DEMO_DIR,
-                "FFDtest");
-
-		// Set a values separator:
-		out.setSeparator(";");
 		
-		// Add a file description line:
-		out.writeFileInfo("FFD demo file.");
 		
-		// Set-up the data series:
-		out.addDataSeries("PowerConsumption");
-		out.addDataSeries("Nb of deployed VMs");
-		Utilization util = new Utilization();
-		PowerConsumption power = new PowerConsumption();
 		int ct=0;
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			ct++;
@@ -260,30 +286,38 @@ public class Execution {
 			s.setCorrespondingVMs(addVmsToServer(s, vm));
 			mergeSessionsForExecution(vm);
 			
-			
 			util.setServerUtilization();
-
+			util.setRackUtilization();
 			ffd.setServerPowerConsumption();
 			power.setRackPowerConsumption();
+			cooling.setServerCoolingValue();
+			cooling.setRackCoolingPower();
 			
-			out.setDataValue(getCurrentPowerConsumption());
-		    out.setDataValue(ct);
+			HACS hacs = new HACS();
+			CACS cacs = new CACS();
+			ParallelPlacementStrategy pp = new ParallelPlacementStrategy();
+
+			float hacsAirMassFlowRate = hacs.computeMinMassFlowRate(CRAC_SUPPLIED_TEMPERATURE);
+			float hacsVolumetricAirFlow = hacs.computeVolumetricAirFlow(hacsAirMassFlowRate);	
+			
+			float parallelAirMassFlowRate01 = pp.computeHeatRecirculation(0.1f, CRAC_SUPPLIED_TEMPERATURE);
+			float parallelVolumetricAirFlow01 = hacs.computeVolumetricAirFlow(parallelAirMassFlowRate01);	
+			float parallelAirMassFlowRate02 = pp.computeHeatRecirculation(0.2f, CRAC_SUPPLIED_TEMPERATURE);
+			float parallelVolumetricAirFlow02 = hacs.computeVolumetricAirFlow(parallelAirMassFlowRate02);	
+			float parallelAirMassFlowRate03 = pp.computeHeatRecirculation(0.3f, CRAC_SUPPLIED_TEMPERATURE);
+			float parallelVolumetricAirFlow03 = hacs.computeVolumetricAirFlow(parallelAirMassFlowRate03);	
+			float parallelAirMassFlowRate04 = pp.computeHeatRecirculation(0.4f, CRAC_SUPPLIED_TEMPERATURE);
+			float parallelVolumetricAirFlow04 = hacs.computeVolumetricAirFlow(parallelAirMassFlowRate04);	
+			float parallelAirMassFlowRate05 = pp.computeHeatRecirculation(0.5f, CRAC_SUPPLIED_TEMPERATURE);
+			float parallelVolumetricAirFlow05 = hacs.computeVolumetricAirFlow(parallelAirMassFlowRate05);	
+		
+			//chart.updateChartPowerConsumption(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
+		//	chart.updatChartAirflow(hacsVolumetricAirFlow, 0, parallelVolumetricAirFlow01, parallelVolumetricAirFlow02, parallelVolumetricAirFlow03, parallelVolumetricAirFlow04, parallelVolumetricAirFlow05);
+			System.out.println("\n\n\n\nCurrent power "+ getCurrentPowerConsumption());
+		    System.out.println(hacsVolumetricAirFlow+" parallel " +parallelVolumetricAirFlow01);
+		     Thread.yield();
+		//        try { Thread.sleep(3000); } catch (InterruptedException e) {}
 		      
-		    System.out.println("\n\n\n\nCurrent power "+ getCurrentPowerConsumption());
-		    
-		      // Write dataset to disk:
-		      out.writeDataSet();
-		      
-		      // Check for IOErrors:      
-		      if (out.hadIOException()) {
-		        out.getIOException().printStackTrace();
-		        out.resetIOException();
-		      }
-		      // Pause:
-		      Thread.yield();
-		   
-		//      try { Thread.sleep(3000); } catch (InterruptedException e) {}
-		      Thread.yield();
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
 
@@ -293,14 +327,11 @@ public class Execution {
 		power.setRackPowerConsumption();
 	//	power.comparePowerValues();
 		
-		CoolingSimulation cooling = new CoolingSimulation(CRAC_SUPPLIED_TEMPERATURE);
-		cooling.setServerCoolingValue();
-		cooling.setRackCoolingPower();
+		
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 		displayPowerConsumptionAndCooling("[BEFORE DELETE] FFD ");
-		 out.close();
-		  System.out.println("Demo finished. Cheers.");
 
+//		charts.finishChartExecution();
 	/*	History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");
 	*/	
@@ -338,27 +369,5 @@ public class Execution {
 
 	}
 
-	public void initialConsolidationRBR(){
-		
-		Utilization util = new Utilization();
-		util.setServerUtilization();
-		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
-		List<Rack> allRacks = new ArrayList<Rack>();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		List<Server> allServers = new ArrayList<Server>();
-		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
-		allRacks = rackDAO.getAllRacks();
-		
-		for(Rack rack: allRacks){
-			allServers = rack.getServers();
-			for(Server server: allServers){
-				vmList = server.getCorrespondingVMs();
-				for(VirtualMachine vm1: vmList)
-				allVMs.add(vm1);
-			}
-		}
-		
-		executeRBR(allVMs, allRacks);
-	}
 
 }

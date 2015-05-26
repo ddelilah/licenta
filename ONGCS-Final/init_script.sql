@@ -101,3 +101,24 @@ INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd
 INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(30,'host30','off',7,7,3,0,0,235,0,8,2660);
 INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(31,'host31','off',7,7,3,0,0,235,0,8,2660);
 INSERT INTO `licenta`.`server`(`server_id`,`name`,`state`,`cpu_id`,`ram_id`,`hdd_id`,`utilization`,`cooling_value`,`e_idle`,`power_value`,`rack_id`,`server_MIPS`)VALUES(32,'host32','off',7,7,3,0,0,235,0,8,2660);
+
+
+INSERT INTO `licenta`.`vm` (`vm_id`, `name`, `state`, `cpu_id`, `ram_id`, `hdd_id`, `server_id`, `vm_mips`) VALUES ('6', 'vm1.tiny', 'Running', '1', '1', '1', '1', '250');
+INSERT INTO `licenta`.`vm` (`name`, `state`, `cpu_id`, `ram_id`, `hdd_id`, `server_id`, `vm_mips`) VALUES ('vm1.tiny', 'Running', '1', '1', '1', '2', '250');
+INSERT INTO `licenta`.`vm` (`name`, `state`, `cpu_id`, `ram_id`, `hdd_id`, `server_id`, `vm_mips`) VALUES ('vm1.small', 'Running', '1', '2', '2', '2', '400');
+INSERT INTO `licenta`.`vm` (`name`, `state`, `cpu_id`, `ram_id`, `hdd_id`, `server_id`, `vm_mips`) VALUES ('vm1.tiny', 'Running', '1', '1', '1', '3', '250');
+INSERT INTO `licenta`.`vm` (`name`, `state`, `cpu_id`, `ram_id`, `hdd_id`, `server_id`, `vm_mips`) VALUES ('vm1.medium', 'Running', '3', '4', '2', '4', '600');
+INSERT INTO `licenta`.`vm` (`name`, `state`, `cpu_id`, `ram_id`, `hdd_id`, `server_id`, `vm_mips`) VALUES ('vm1.medium', 'Running', '3', '4', '2', '4', '600');
+INSERT INTO `licenta`.`vm` (`name`, `state`, `cpu_id`, `ram_id`, `hdd_id`, `server_id`, `vm_mips`) VALUES ('vm1.medium', 'Running', '3', '4', '2', '5', '600');
+INSERT INTO `licenta`.`vm` (`name`, `state`, `cpu_id`, `ram_id`, `hdd_id`, `server_id`, `vm_mips`) VALUES ('vm1.xlarge', 'Running', '4', '5', '2', '5', '1000');
+
+
+UPDATE `licenta`.`server` SET `state`='On', `utilization`='0.09398' WHERE `server_id`='1';
+UPDATE `licenta`.`server` SET `state`='On', `utilization`='0.24436' WHERE `server_id`='2';
+UPDATE `licenta`.`server` SET `state`='On', `utilization`='0.09398' WHERE `server_id`='3';
+UPDATE `licenta`.`server` SET `state`='On', `utilization`='0.45112' WHERE `server_id`='4';
+UPDATE `licenta`.`server` SET `state`='On', `utilization`='0.60150' WHERE `server_id`='5';
+
+UPDATE `licenta`.`rack` SET `state`='On', `utilization`='0.88344' WHERE `rack_id`='1';
+UPDATE `licenta`.`rack` SET `state`='On', `utilization`='0.6015' WHERE `rack_id`='2';
+

@@ -48,7 +48,10 @@ public class FFD {
 						for(Server server: allServers) {
 	//						System.out.println("Searching through servers for vm: "+ vm.getVmId());
 							if(schedulingUtil.enoughResources(server, vm, allocation)){
-								System.out.println("Found server : "+ server.getServerId() +" on rack: "+rack.getRackId()+" for vm: "+vm.getVmId());
+								System.out.println("Found server : "+ server.getServerId() +" on rack: "+rack.getRackId()+" for vm: "+vm.getVmId() +" "+vm.getName());
+//							Thread.yield();
+//							try { Thread.sleep(3000);} catch (InterruptedException e) {}
+//							Thread.yield();
 								allocation.put(vm, server);
 								foundServer = true;
 								break;

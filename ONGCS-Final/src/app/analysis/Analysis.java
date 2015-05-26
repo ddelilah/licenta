@@ -3,6 +3,7 @@ package app.analysis;
 import java.util.ArrayList;
 import java.util.List;
 
+import app.GUI.Charts;
 import app.access.*;
 import app.access.impl.*;
 import app.constants.PolicyType;
@@ -49,7 +50,7 @@ public class Analysis {
 		
 	}
 
-	public void performAnalysis(List<VirtualMachine> vmList, String algorithm) {
+	public void performAnalysis(List<VirtualMachine> vmList, String algorithm, Charts chart) {
 		/* evaluate all policies */
 		boolean isViolated = false;
 		boolean shouldStartScheduler = false;
@@ -61,7 +62,7 @@ public class Analysis {
 					System.out.println("\n\n\n.....VM policy violated........");
 					isViolated = true;
 					shouldStartScheduler = true;
-					checkPlanning(1, vmList, algorithm);
+					checkPlanning(1, vmList, algorithm, chart);
 					break;
 				}
 			}
@@ -74,7 +75,7 @@ public class Analysis {
 					System.out.println("\n\n\n............Server policy violated.............");
 					isViolated = true;
 					shouldStartScheduler = true;
-					checkPlanning(1, vmList, algorithm);
+					checkPlanning(1, vmList, algorithm, chart);
 					break;
 					
 				}
@@ -86,7 +87,7 @@ public class Analysis {
 						rack);
 				if (rackPolicy.evaluatePolicy() == true && !isViolated){
 					System.out.println("\n\n\n..........Rack policy violated........");
-					checkPlanning(1, vmList, algorithm);
+					checkPlanning(1, vmList, algorithm, chart);
 					isViolated = true;
 					shouldStartScheduler = true;
 					break;
@@ -94,10 +95,10 @@ public class Analysis {
 			}
 			
 			if(!shouldStartScheduler)
-				checkPlanning(0, vmList, algorithm);
+				checkPlanning(0, vmList, algorithm, chart);
 }
 
-	public void checkPlanning(int value,List<VirtualMachine> allVMs, String algorithm) {
+	public void checkPlanning(int value,List<VirtualMachine> allVMs, String algorithm, Charts chart) {
 
 		System.out.println("\n\n\n ...........Starting Learning Algorithm...........\n\n");
 		Execution execution = new Execution();
@@ -108,13 +109,13 @@ public class Analysis {
 		if(value == 1) {
 			switch(algorithm) {
 				case "RBR":
-					execution.executeRBR(allVMs, allRacks);
+					execution.executeRBR(allVMs, allRacks, chart);
 					break;
 				case "NUR":
-					execution.executeNUR(allVMs, allRacks);
+					execution.executeNUR(allVMs, allRacks, chart);
 					break;
 				case "FFD":
-					execution.performFFD(allVMs);
+					execution.performFFD(allVMs, chart);
 					break;
 					
 			}	

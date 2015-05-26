@@ -8,6 +8,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import app.GUI.Charts;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
@@ -245,7 +246,7 @@ public class Consolidation {
 		}
 	}
 
-	public void consolidationOnDelete(List<VirtualMachine> vmsToBeDeleted) {
+	public void consolidationOnDelete(List<VirtualMachine> vmsToBeDeleted, Charts chart) {
 
 		float newServerUtilizationAfterVMDelete, newRackUtilizationAfterVMDelete, newServerPowerConsumptionAfterVMDelete, newServerCoolingAfterVMDelete, newRackPowerConsumptionAfterVMDelete, newRackCoolingAfterVMDelete;
 		List<Server> allServers = serverDAO.getAllServers();
