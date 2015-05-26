@@ -71,8 +71,8 @@ public class ConsolidationUtil {
 
 			// System.out.println("[BEFORE VM DELETE FROM SERVER]: " + sr.getUtilization());
 			newServerUtilizationAfterVMDelete = utilization.computeUtilization(sr);
-			newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumption(sr);
-			newServerCoolingAfterVMDelete = coolingSimulation.computeSingleServerCooling(sr);
+			newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumptionGivenUtilization(sr, newServerUtilizationAfterVMDelete);
+			newServerCoolingAfterVMDelete = coolingSimulation.computeSingleServerCoolingGivenPowerValue(sr, newServerPowerConsumptionAfterVMDelete);
 			sr.setPowerValue(newServerPowerConsumptionAfterVMDelete);
 			sr.setCoolingValue(newServerCoolingAfterVMDelete);
 			sr.setUtilization(newServerUtilizationAfterVMDelete);

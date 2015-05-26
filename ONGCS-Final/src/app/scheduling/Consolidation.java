@@ -148,6 +148,11 @@ public class Consolidation {
 		List<Server> serversThatBreakPolicyOnRack = new ArrayList<Server>();
 		List<Server> serversThatDontBreakPolicyOnRack = new ArrayList<Server>();
 		List<Server> serversOnTheSameRack = new ArrayList<Server>();
+		
+		List<Rack> allRacks = rackDAO.getAllRacks();
+		Server underUtilizedServerFromAllocationStep = new Server();
+		Rack underUtilizedRackFromAllocationStep = new Rack();
+
 
 		Map<Integer, List<Server>> serverTaxonomy = new HashMap<Integer, List<Server>>();
 		Map<Integer, List<Server>> serverTaxonomyOnRack = new HashMap<Integer, List<Server>>();
@@ -156,8 +161,25 @@ public class Consolidation {
 		for (Server srv : allServersInDataCenter) {
 			if (srv.getServerId() == s.getServerId()) {
 				srv.setUtilization(s.getUtilization());
+				srv.setPowerValue(s.getPowerValue());
 				srv.setCoolingValue(s.getCoolingValue());
 				srv.setState(s.getState());
+				break;
+			}
+		}
+		
+		for (Server sr : allServersInDataCenter) {
+			ServerPolicy serverPolicy = new ServerPolicy(p.SERVER_POLICY, false, sr);
+			if (serverPolicy.checkServerUtilizationViolation(sr.getUtilization())) {
+				underUtilizedServerFromAllocationStep = sr;
+				break;
+			}
+		}
+
+		for (Rack r : allRacks) {
+			RackPolicy rackPolicy = new RackPolicy(p.RACK_POLICY, false, r);
+			if (rackPolicy.checkRackUtilizationViolation(r.getUtilization())) {
+				underUtilizedRackFromAllocationStep = r;
 				break;
 			}
 		}
@@ -209,7 +231,11 @@ public class Consolidation {
 				allVMsOnRackToBeMigrated.add(v1);
 			}
 		}
-
+		
+		if(r.getRackId() == underUtilizedRackFromAllocationStep.getRackId()) {
+			System.out.println("[RACK POLICY IS VIOLATED, BUT THIS IS THE ONLY TURNED ON RACK => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON THE SAME RACK");
+			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicyOnRack);
+		} else
 		if (r.getState().equalsIgnoreCase("ON") && rackPolicy.checkRackUtilizationViolation(r.getUtilization())) {
 			System.out.println("[RACK POLICY IS VIOLATED => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON OTHER RACKS");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicy);
@@ -278,8 +304,8 @@ public class Consolidation {
 
 			// System.out.println("[BEFORE VM DELETE FROM SERVER]: " + sr.getUtilization());
 			newServerUtilizationAfterVMDelete = utilization.computeUtilization(sr);
-			newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumption(sr);
-			newServerCoolingAfterVMDelete = coolingSimulation.computeSingleServerCooling(sr);
+			newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumptionGivenUtilization(sr, newServerUtilizationAfterVMDelete);
+			newServerCoolingAfterVMDelete = coolingSimulation.computeSingleServerCoolingGivenPowerValue(sr, newServerPowerConsumptionAfterVMDelete);
 			sr.setPowerValue(newServerPowerConsumptionAfterVMDelete);
 			sr.setCoolingValue(newServerCoolingAfterVMDelete);
 			sr.setUtilization(newServerUtilizationAfterVMDelete);
@@ -319,29 +345,40 @@ public class Consolidation {
 			System.out.println("[SERVER RECONSOLIDATION]");
 			tryToMoveAllVMsFromAServer(underUtilizedServerFromAllocationStep);
 		}
-
-		// RECONSOLIDATION FOR RACKS
-		if (underUtilizedRackFromAllocationStep != null
-				&& !underUtilizedRackFromAllocationStep.getState().equalsIgnoreCase(RackState.OFF.getValue())) {
-			for (Server srv : underUtilizedRackFromAllocationStep.getServers()) {
-				for (Server sr2 : resultOfServerAllocation) {
-					if (srv.getServerId() == sr2.getServerId()) {
-						srv.setCorrespondingVMs(sr2.getCorrespondingVMs());
-						srv.setUtilization(sr2.getUtilization());
-						break;
+		
+		
+		if(underUtilizedServerFromAllocationStep.getRack().getRackId() != underUtilizedRackFromAllocationStep.getRackId()) {
+			// RECONSOLIDATION FOR RACKS
+			if (underUtilizedRackFromAllocationStep != null
+					&& !underUtilizedRackFromAllocationStep.getState().equalsIgnoreCase(RackState.OFF.getValue())) {
+				for (Server srv : underUtilizedRackFromAllocationStep.getServers()) {
+					for (Server sr2 : resultOfServerAllocation) {
+						if (srv.getServerId() == sr2.getServerId()) {
+							srv.setCorrespondingVMs(sr2.getCorrespondingVMs());
+							srv.setUtilization(sr2.getUtilization());
+							srv.setPowerValue(sr2.getPowerValue());
+							srv.setCoolingValue(sr2.getCoolingValue());
+							break;
+						}
 					}
 				}
+				// move all vms from that rack on other servers from other racks
+				System.out.println("[RACK RECONSOLIDATION]");
+				tryToMoveAllVMsFromARack(underUtilizedRackFromAllocationStep);
 			}
-			// move all vms from that rack on other servers from other racks
-			System.out.println("[RACK RECONSOLIDATION]");
-			tryToMoveAllVMsFromARack(underUtilizedRackFromAllocationStep);
+		} else {
+			System.out.println("[UNDERUTILIZED SERVER IS ON THE UNDERUTILIZED RACK => CORNER CASE PREVIOUSLY CHECKED]");
 		}
+
+		
 
 		for (Server sr : allModifiedServers) {
 			for (Server sr2 : resultOfServerAllocation) {
 				if (sr.getServerId() == sr2.getServerId()) {
 					sr.setCorrespondingVMs(sr2.getCorrespondingVMs());
 					sr.setUtilization(sr2.getUtilization());
+					sr.setPowerValue(sr2.getPowerValue());
+					sr.setCoolingValue(sr2.getCoolingValue());
 					break;
 				}
 			}

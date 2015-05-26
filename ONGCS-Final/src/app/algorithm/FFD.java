@@ -11,7 +11,9 @@ import app.access.RackDAO;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
+import app.access.impl.VirtualMachineDAOImpl;
 import app.constants.ServerState;
+import app.constants.VMState;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -19,6 +21,8 @@ import app.model.VirtualMachine;
 public class FFD {
 	
 	private SchedulingUtil schedulingUtil = new SchedulingUtil();
+	private static VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+
 	@SuppressWarnings("unchecked")
 	public Map<VirtualMachine, Server> performFFD(List<VirtualMachine> vmList) {
 	
@@ -32,16 +36,16 @@ public class FFD {
 		vmList = vmProcessor.sortVMListDescending();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		
-		for(VirtualMachine vm: vmList){
+		for(VirtualMachine vm: vmList) {
 			 foundServer = false;
 			System.out.println("Searching for vm: "+ vm.getName());
 			
-			for(Rack rack: allRacks){
+			for(Rack rack: allRacks) {
 				if(!foundServer){
 		//			System.out.println("Searching through racks for vm: "+ vm.getVmId());
 					allServers = rack.getServers();
 								
-						for(Server server: allServers){
+						for(Server server: allServers) {
 	//						System.out.println("Searching through servers for vm: "+ vm.getVmId());
 							if(schedulingUtil.enoughResources(server, vm, allocation)){
 								System.out.println("Found server : "+ server.getServerId() +" on rack: "+rack.getRackId()+" for vm: "+vm.getVmId());
@@ -52,6 +56,13 @@ public class FFD {
 					}
 	
 				}
+			}
+			
+			if (!allocation.keySet().contains(vm)) {
+				System.out.println("[Allocation failed] VM " + vm.getVmId()
+						+ vm.getState());
+				vm.setState(VMState.FAILED.getValue());
+				vmDAO.mergeSessionsForVirtualMachine(vm);
 			}
 			
 		}

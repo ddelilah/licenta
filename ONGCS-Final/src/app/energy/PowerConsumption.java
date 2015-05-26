@@ -28,6 +28,14 @@ public class PowerConsumption {
 		return power;
 	}
 	
+	public float computeSingleServerPowerConsumptionGivenUtilization(Server s, float utilization) {
+		float power = 0;
+		power = s.getIdleEnergy()
+				+ (MAXIMUM_POWER - s.getIdleEnergy())
+				* utilization;
+		return power;
+	}
+	
 	public float computeSingleRackPowerConsumption(Rack r) {
 		float power = 0;
 		List<Server> allServers = new ArrayList<Server>();

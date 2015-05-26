@@ -14,7 +14,7 @@ public class RackProcessor implements Comparator<Rack> {
 	
 	private RackDAOImpl rackDAO = new RackDAOImpl();
 	
-	private static int LOWER_BOUND_RACK_UTILIZATION = 40;
+	private static float LOWER_BOUND_RACK_UTILIZATION = 0.4f;
 	
 	public RackProcessor(List<Rack> rackList){
 		this.rackList=rackList;

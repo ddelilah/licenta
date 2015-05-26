@@ -28,6 +28,10 @@ public class CoolingSimulation {
 	public float computeSingleServerCooling(Server s) {
 		return s.getPowerValue() / COP;
 	}
+	
+	public float computeSingleServerCoolingGivenPowerValue(Server s, float power) {
+		return power / COP;
+	}
 
 	public float computeSingleRackCooling(Rack r) {
 		float cooling = 0;
