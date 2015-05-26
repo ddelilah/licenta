@@ -65,44 +65,36 @@ public class ParallelPlacementStrategy {
 		return m;
 	}
 	
-	private float computeVolumetricAirFlow(float airMassFlowRate){
+	public float computeVolumetricAirFlow(float airMassFlowRate){
 		System.out.println("volumetricAirFlow="+(float)(airMassFlowRate / DENSITY)+"[m^3/s]");
 		return (float)(airMassFlowRate/DENSITY);
 	}
-	private float computeAirVelocity(float volumetricAirFLow){
+	public float computeAirVelocity(float volumetricAirFLow){
 		System.out.println("airVelocity = "+ (float)(volumetricAirFLow/AREA)+"[m/s]");
 		return (float) volumetricAirFLow/AREA;
  	}
 	
-	public void computeFanPowerConsumption(float tIn){
-		
-		float airMassFlowRate = computeMinMassFlowRate(tIn);
-		float volumetricAirFlow = computeVolumetricAirFlow(airMassFlowRate);
-		float airVelocity = computeAirVelocity(volumetricAirFlow);
-		
-		//----------- COMPUTE FAN POWER CONSUMPTION ----------------------------
-	}
 	
-	public float computeHeatRecirculation(float airLossPercentage, float tIn){
-		
-		float idealSystemAirMassFlowRate = computeMinMassFlowRate(tIn);
-		
-		float recirculatedTin = (float)(tIn + (float)(1/ (1-airLossPercentage)) * ( (float)(rackList.get(0).getPowerValue()/ (idealSystemAirMassFlowRate * SPECIFIC_HEAT))));
-		
+public float computeHeatRecirculation(float airLossPercentage, float tCRACin){
 		boolean conditionSatisfied = false;
 		float m=(float) 0.1;
-		
 		do{
-			float newTin = recirculatedTin;
-			float tOut = recirculatedTin;
-			System.out.println("\n\n\n\n----------- m is "+ (float)m+" -----------------------");
+			float oldTout = tCRACin;
+			float tIn = (float)(tCRACin + (float)(airLossPercentage/ (1-airLossPercentage)) * ( (float)(rackList.get(0).getPowerValue()/ (m * SPECIFIC_HEAT))));
+			float tOut = tIn;
+		//	System.out.println("\n\n\n\n----------- m is "+ (float)m+" -----------------------");
 			for(int i =0; i<rackList.size() && tOut < T_MAX; i++ ){
-				System.out.println("tIn is "+newTin);
+		//		System.out.println("\n\ntIn is "+tIn);
+			//	System.out.println("oldtOut is "+oldTout);
+
 				powerConsumption = rackList.get(i).getPowerValue();
-				tOut = (float)(powerConsumption / (m*SPECIFIC_HEAT)) + newTin;
-				newTin = (float)(tOut + (float)(1/ (1-airLossPercentage)) * ( (float)(rackList.get(i).getPowerValue()/ (m * SPECIFIC_HEAT))));				
-				System.out.println("powerConsumption is "+powerConsumption);
-				System.out.println("tOut is "+tOut);
+				tOut = (float)(oldTout + (float)(1/ (1-airLossPercentage)) * ( (float)(rackList.get(i).getPowerValue()/ (m * SPECIFIC_HEAT))));	
+				
+				oldTout=tOut;
+				tIn = (float)(tOut + (float)(airLossPercentage/ (1-airLossPercentage)) * ( (float)(rackList.get(i).getPowerValue()/ (m * SPECIFIC_HEAT))));				
+		//		System.out.println("powerConsumption is "+powerConsumption);
+		//		System.out.println("tOut is "+tOut);
+
 			}
 
 			if(tOut < T_MAX){
@@ -111,19 +103,21 @@ public class ParallelPlacementStrategy {
 			}
 			else
 				m = (float)(m+(float)0.01);
+			
+		
 		}while(!conditionSatisfied);
-		
-		System.out.println("Min m is "+ m +"[kg/s]");
-		
-		return (float)(tIn + (float)(1/ (1-airLossPercentage)) * ( (float)(rackList.get(0).getPowerValue()/ (idealSystemAirMassFlowRate * SPECIFIC_HEAT))));
+	
+		return m;
 	}
+	 
 	public static void main(String []args){
 		
 		ParallelPlacementStrategy pp = new ParallelPlacementStrategy();
 		
 //		pp.computeFanPowerConsumption(20);
 //		pp.computeMinMassFlowRate(20);
-		System.out.println(pp.computeHeatRecirculation( (float)0.5, 20));
+//		System.out.println(pp.computeHeatRecirculation( (float)0.1, 20));
+	//	pp.computeDecreaseInFanPowerConsumption(20, 0.1f);
 	}
 	
 	

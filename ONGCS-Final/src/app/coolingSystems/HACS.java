@@ -33,10 +33,10 @@ public class HACS {
 		totalPowerConsumption=0;
 	}
 	
-	private float computeMinMassFlowRate(float tIn){
+	public float computeMinMassFlowRate(float tIn){
 		boolean conditionSatisfied = false;
 		float m=(float) 0.1;
-	
+		totalPowerConsumption=0;
 		for(Rack rack :rackList)
 			 totalPowerConsumption +=rack.getPowerValue();
 		
@@ -62,40 +62,12 @@ public class HACS {
 	}
 	
 	
-	private float computeMaxMassFlowRate(float tIn){
-		boolean conditionSatisfied = false;
-		float m= computeMinMassFlowRate(tIn);
-		totalPowerConsumption =0;
-		System.out.println("intial m is"+ m);
-		for(Rack rack :rackList)
-			 totalPowerConsumption +=rack.getPowerValue();
-		
-		do{
-			float newTin = tIn;
-			float tOut = tIn;
-			System.out.println("\n\n\n\n----------- m is "+ (float)m+" -----------------------");
-			tOut = (float)(totalPowerConsumption / (m*SPECIFIC_HEAT)) + newTin;
-			newTin = tOut;				
-			System.out.println("powerConsumption is "+totalPowerConsumption);
-			System.out.println("tOut is "+tOut);
-
-			if(tOut < tIn){
-				airMassFlowRate = m;
-				conditionSatisfied =  true;
-			}
-			else
-				m = (float)(m+(float)0.01);
-		}while(!conditionSatisfied);
-		
-		System.out.println("Min m is "+ m +"[kg/s]");
-		return m;
-	}
 	
-	private float computeVolumetricAirFlow(float airMassFlowRate){
+	public float computeVolumetricAirFlow(float airMassFlowRate){
 		System.out.println("volumetricAirFlow="+(float)(airMassFlowRate / DENSITY)+"[m^3/s]");
 		return (float)(airMassFlowRate/DENSITY);
 	}
-	private float computeAirVelocity(float volumetricAirFLow){
+	public float computeAirVelocity(float volumetricAirFLow){
 		System.out.println("airVelocity = "+ (float)(volumetricAirFLow/AREA)+"[m/s]");
 		return (float) volumetricAirFLow/AREA;
  	}

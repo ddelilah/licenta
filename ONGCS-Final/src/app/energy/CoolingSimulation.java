@@ -11,8 +11,19 @@ import app.model.Server;
 
 public class CoolingSimulation {
 
+	private float tSuppliedByCRAC;
+	private float COP;
+	
+	public CoolingSimulation(float tSuppliedByCRAC){
+		this.tSuppliedByCRAC = tSuppliedByCRAC;
+		COP = (float) (0.0068 * Math.pow(tSuppliedByCRAC, 2) + 0.0008 * tSuppliedByCRAC + 0.458);
+	}
+	public CoolingSimulation(){
+		COP = (float) (0.0068 * Math.pow(25, 2) + 0.0008 * 25 + 0.458);
+	}
+
 	/* suppose temperature is 25 degrees */
-	private static final float COP = (float) (0.0068 * Math.pow(25, 2) + 0.0008 * 25 + 0.458);
+	//private static final float COP = (float) (0.0068 * Math.pow(25, 2) + 0.0008 * 25 + 0.458);
 
 	public float computeSingleServerCooling(Server s) {
 		return s.getPowerValue() / COP;

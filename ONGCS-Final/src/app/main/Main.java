@@ -94,7 +94,6 @@ public void startMonitoring() throws Exception{
 		main.startInitialization();  
 		
 		main.startMonitoring();
-
 	}
 
 }

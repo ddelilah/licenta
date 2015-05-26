@@ -110,7 +110,6 @@ public class Analysis {
 	//		execution.executeNUR(allVMs, allRacks);
 			execution.executeRBR(allVMs, allRacks);
 	//		execution.performFFD(allVMs);
-				
 			
 		} else {
 			System.out.println("............System is Optimal.............");

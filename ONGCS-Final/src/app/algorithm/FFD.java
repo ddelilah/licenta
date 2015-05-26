@@ -8,14 +8,16 @@ import java.util.Map.Entry;
 
 import app.scheduling.*;
 import app.access.RackDAO;
+import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
+import app.access.impl.ServerDAOImpl;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
 
 public class FFD {
 	
-
+	private SchedulingUtil schedulingUtil = new SchedulingUtil();
 	@SuppressWarnings("unchecked")
 	public Map<VirtualMachine, Server> performFFD(List<VirtualMachine> vmList) {
 	
@@ -40,7 +42,7 @@ public class FFD {
 								
 						for(Server server: allServers){
 	//						System.out.println("Searching through servers for vm: "+ vm.getVmId());
-							if(enoughResources(server, vm, allocation)){
+							if(schedulingUtil.enoughResources(server, vm, allocation)){
 								System.out.println("Found server : "+ server.getServerId() +" on rack: "+rack.getRackId()+" for vm: "+vm.getVmId());
 								allocation.put(vm, server);
 								foundServer = true;
@@ -55,39 +57,65 @@ public class FFD {
 	
 		return allocation;
 	}
+	
+	private static final int MAXIMUM_POWER = 1023;
 
-	public boolean enoughResources(Server server, VirtualMachine vm, Map<VirtualMachine, Server> map){
-		
-		List<VirtualMachine> vmList = server.getCorrespondingVMs();
-		float totalMips = server.getServerMIPS();
-		float ramCapacity = server.getRam().getCapacity();
-		float hddCapacity = server.getHdd().getCapacity();
-		
-		for (VirtualMachine virtualMachine : vmList) {
-			totalMips -= virtualMachine.getVmMips();
-			ramCapacity -= virtualMachine.getRam().getCapacity();
-			hddCapacity -= virtualMachine.getHdd().getCapacity();
-			if(hddCapacity < 0 || ramCapacity <0 || totalMips <0)
-				return false;
-		}
-//		System.out.println("Server with id: "+server.getServerId()+"has cores: "+cpuCores+" ram: "+ramCapacity+" hdd: "+hddCapacity);
-		for (Entry<VirtualMachine, Server> entry : map.entrySet()) 
-			if (server.getServerId() == entry.getValue().getServerId()){
-				totalMips -= entry.getKey().getVmMips();
-				ramCapacity -= entry.getKey().getRam().getCapacity();
-				hddCapacity -= entry.getKey().getHdd().getCapacity();
+	public void setServerPowerConsumption() {
+
+		List<Rack> allRacks = new ArrayList<Rack>();
+		List<Server> allServers = new ArrayList<Server>();
+		GenericDAOImpl genericDAO = new GenericDAOImpl();
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+
+		allServers = serverDAO.getAllServers();
+
+		if (!allServers.isEmpty())
+			for (Server server : allServers) {
+					float utilization = server.getUtilization();
+					float power = server.getIdleEnergy()
+							+ (MAXIMUM_POWER - server.getIdleEnergy())
+							* utilization;
+
+					server.setPowerValue(power);
+					genericDAO.updateInstance(server);
+			
 			}
-		if(hddCapacity < 0 || ramCapacity <0 || totalMips <0)
-			return false;
-	//	System.out.println("Server with id: "+server.getServerId()+"has cores: "+cpuCores+" ram: "+ramCapacity+" hdd: "+hddCapacity);
-
-		if(totalMips - vm.getVmMips() >= 0 &&
-				ramCapacity - vm.getRam().getCapacity() >=0 &&
-				hddCapacity - vm.getHdd().getCapacity() >=0)
-			return true;
-		
-		return false;
 	}
 	
 	
+//
+//	public boolean enoughResources(Server server, VirtualMachine vm, Map<VirtualMachine, Server> map){
+//		
+//		List<VirtualMachine> vmList = server.getCorrespondingVMs();
+//		float totalMips = server.getServerMIPS();
+//		float ramCapacity = server.getRam().getCapacity();
+//		float hddCapacity = server.getHdd().getCapacity();
+//		
+//		for (VirtualMachine virtualMachine : vmList) {
+//			totalMips -= virtualMachine.getVmMips();
+//			ramCapacity -= virtualMachine.getRam().getCapacity();
+//			hddCapacity -= virtualMachine.getHdd().getCapacity();
+//			if(hddCapacity < 0 || ramCapacity <0 || totalMips <0)
+//				return false;
+//		}
+////		System.out.println("Server with id: "+server.getServerId()+"has cores: "+cpuCores+" ram: "+ramCapacity+" hdd: "+hddCapacity);
+//		for (Entry<VirtualMachine, Server> entry : map.entrySet()) 
+//			if (server.getServerId() == entry.getValue().getServerId()){
+//				totalMips -= entry.getKey().getVmMips();
+//				ramCapacity -= entry.getKey().getRam().getCapacity();
+//				hddCapacity -= entry.getKey().getHdd().getCapacity();
+//			}
+//		if(hddCapacity < 0 || ramCapacity <0 || totalMips <0)
+//			return false;
+//	//	System.out.println("Server with id: "+server.getServerId()+"has cores: "+cpuCores+" ram: "+ramCapacity+" hdd: "+hddCapacity);
+//
+//		if(totalMips - vm.getVmMips() >= 0 &&
+//				ramCapacity - vm.getRam().getCapacity() >=0 &&
+//				hddCapacity - vm.getHdd().getCapacity() >=0)
+//			return true;
+//		
+//		return false;
+//	}
+//	
+//	
 }

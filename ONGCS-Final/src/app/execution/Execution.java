@@ -16,8 +16,6 @@ import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.algorithm.FFD;
 import app.constants.VMState;
-import app.energy.CoolingSimulation;
-import app.energy.PowerConsumption;
 import app.energy.*;
 import app.hibernate.SessionFactoryUtil;
 import app.model.Rack;
@@ -26,11 +24,18 @@ import app.model.VirtualMachine;
 import app.scheduling.NUR;
 import app.scheduling.RBR;
 
-public class Execution {
+import org.LiveGraph.dataFile.write.DataStreamWriter;
+import org.LiveGraph.dataFile.write.DataStreamWriterFactory;
 
+public class Execution {
+	public static final String DEMO_DIR = System.getProperty("user.dir");
+	public static final int MIN_SLEEP = 0;
+	public static final int MAX_SLEEP = 1000;
+	
 	private static NUR nur = new NUR();
 	private static RBR rackScheduling = new RBR();
 	private static History history = new History();
+	private static final float CRAC_SUPPLIED_TEMPERATURE = 20;
 	
 	public static List<VirtualMachine> addVmsToServer(Server s, VirtualMachine vm) {
 		List<VirtualMachine> result = new ArrayList<VirtualMachine>();
@@ -81,7 +86,7 @@ public class Execution {
 			s.setCorrespondingVMs(addVmsToServer(s, vm));
 			System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
 			mergeSessionsForExecution(vm);
-	
+			
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
 
@@ -99,7 +104,7 @@ public class Execution {
 		power.setRackPowerConsumption();
 		
 		
-		CoolingSimulation cooling = new CoolingSimulation();
+		CoolingSimulation cooling = new CoolingSimulation(CRAC_SUPPLIED_TEMPERATURE);
 		System.out.println("\n\n Cooling Computation for all servers..............");
 		cooling.setServerCoolingValue();
 		
@@ -151,8 +156,6 @@ public class Execution {
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
 		
-		int unsuccessfulMigrations = allVMs.size() - allocation.size();
-		int successfulMigrations = allocation.size();
 		
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			int serverId = entry.getValue().getServerId();
@@ -162,6 +165,7 @@ public class Execution {
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
 			vm.setState(VMState.RUNNING.getValue());
+			s.setCorrespondingVMs(addVmsToServer(s, vm));
 			mergeSessionsForExecution(vm);
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
@@ -172,7 +176,7 @@ public class Execution {
 		power.setServerPowerConsumption();
 		power.setRackPowerConsumption();
 
-		CoolingSimulation cooling = new CoolingSimulation();
+		CoolingSimulation cooling = new CoolingSimulation(CRAC_SUPPLIED_TEMPERATURE);
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
 		util.setRackUtilization();
@@ -211,32 +215,88 @@ public class Execution {
 		
 	}
 
+	public float getCurrentPowerConsumption(){
+		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
+		List<Rack> allRacks = new ArrayList<Rack>();
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		List<Server> allServers = new ArrayList<Server>();
+		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
+		allRacks = rackDAO.getAllRacks();
+		float power=0, cooling=0;
+		for(Rack rack: allRacks){
+			allServers = rack.getServers();
+			for(Server server: allServers){
+				power+=server.getPowerValue();
+//			/	cooling += server.getCoolingValue();
+			}
+			
+		}
+		return power;
+	}
 	public void performFFD(List<VirtualMachine> allVMs) {
 		FFD ffd = new FFD();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = ffd.performFFD(allVMs);
 		
+		DataStreamWriter out = DataStreamWriterFactory.createDataWriter(DEMO_DIR,
+                "FFDtest");
+
+		// Set a values separator:
+		out.setSeparator(";");
+		
+		// Add a file description line:
+		out.writeFileInfo("FFD demo file.");
+		
+		// Set-up the data series:
+		out.addDataSeries("PowerConsumption");
+		out.addDataSeries("Nb of deployed VMs");
+		
+		PowerConsumption power = new PowerConsumption();
+		int ct=0;
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
+			ct++;
 			int serverId = entry.getValue().getServerId();
 			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
 			mergeSessionsForExecution(vm);
+			
+			ffd.setServerPowerConsumption();
+			power.setRackPowerConsumption();
+			out.setDataValue(getCurrentPowerConsumption());
+		    out.setDataValue(ct);
+		      
+		      // Write dataset to disk:
+		      out.writeDataSet();
+		      
+		      // Check for IOErrors:      
+		      if (out.hadIOException()) {
+		        out.getIOException().printStackTrace();
+		        out.resetIOException();
+		      }
+		      // Pause:
+		      Thread.yield();
+		      long sleep = (long) (MIN_SLEEP + (Math.random()
+		                            * (double) (MAX_SLEEP - MIN_SLEEP)));
+		      try { Thread.sleep(sleep); } catch (InterruptedException e) {}
+		      Thread.yield();
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
 
 		Utilization util = new Utilization();
 		util.setServerUtilization();
 		
-		PowerConsumption power = new PowerConsumption();
-		power.setServerPowerConsumption();
+		ffd.setServerPowerConsumption();
 		power.setRackPowerConsumption();
-		power.comparePowerValues();
+	//	power.comparePowerValues();
 		
-		CoolingSimulation cooling = new CoolingSimulation();
+		CoolingSimulation cooling = new CoolingSimulation(CRAC_SUPPLIED_TEMPERATURE);
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
+		displayPowerConsumptionAndCooling("FFD");
+		 out.close();
+		  System.out.println("Demo finished. Cheers.");
 
 	/*	History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");
