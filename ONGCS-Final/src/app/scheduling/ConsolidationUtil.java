@@ -3,17 +3,21 @@ package app.scheduling;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
+import app.access.impl.VirtualMachineDAOImpl;
 import app.constants.RackState;
 import app.constants.ServerState;
+import app.constants.VMState;
 import app.energy.CoolingSimulation;
 import app.energy.PowerConsumption;
 import app.energy.Utilization;
 import app.model.Rack;
 import app.model.Server;
+import app.model.VirtualMachine;
 
 public class ConsolidationUtil {
 	
@@ -22,9 +26,78 @@ public class ConsolidationUtil {
 	private CoolingSimulation coolingSimulation = new CoolingSimulation();
 	private ServerDAOImpl serverDAO = new ServerDAOImpl();
 	private RackDAOImpl rackDAO = new RackDAOImpl();
+	private VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+
 	
 	private static int OFF_VALUE = 0;
 
+	public void deleteForFFD(List<VirtualMachine> vmsToBeDeleted) {
+	
+		List<Server> allServers = serverDAO.getAllServers();
+		List<Server> allModifiedServers = new ArrayList<Server>();
+		float newServerUtilizationAfterVMDelete, newRackUtilizationAfterVMDelete, newServerPowerConsumptionAfterVMDelete, newServerCoolingAfterVMDelete, newRackPowerConsumptionAfterVMDelete, newRackCoolingAfterVMDelete;
+		
+		for (VirtualMachine selectedVm : vmsToBeDeleted) {
+			Server correspondingServer = selectedVm.getServer();
+
+			selectedVm.setState(VMState.DONE.getValue());
+			selectedVm.setServer(null);
+			vmDAO.mergeSessionsForVirtualMachine(selectedVm);
+//			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
+//					+ correspondingServer.getServerId() + " with vms: "
+//					+ correspondingServer.getCorrespondingVMs());
+
+			for (Server sr : allServers) {
+				if (sr.getServerId() == correspondingServer.getServerId()) {
+					sr.setCorrespondingVMs(SchedulingUtil.updateVmsOnServer(correspondingServer, selectedVm));
+					allModifiedServers.add(sr);
+					break;
+
+					// System.out.println("[AFTER VM DELETE FROM SERVER's LIST]Server "
+					// + correspondingServer.getServerId() + " with vms: " +
+					// correspondingServer.getCorrespondingVMs());
+				}
+
+				ListIterator<Server> iter = allModifiedServers.listIterator();
+				while (iter.hasNext()) {
+					if (iter.next().getServerId() == sr.getServerId()) {
+						iter.set(sr);
+					}
+				}
+			}
+		}
+
+		for (Server sr : allModifiedServers) {
+
+			// System.out.println("[BEFORE VM DELETE FROM SERVER]: " + sr.getUtilization());
+			newServerUtilizationAfterVMDelete = utilization.computeUtilization(sr);
+			newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumption(sr);
+			newServerCoolingAfterVMDelete = coolingSimulation.computeSingleServerCooling(sr);
+			sr.setPowerValue(newServerPowerConsumptionAfterVMDelete);
+			sr.setCoolingValue(newServerCoolingAfterVMDelete);
+			sr.setUtilization(newServerUtilizationAfterVMDelete);
+	
+			serverDAO.mergeSessionsForServer(sr);
+			
+
+			// System.out.println("[AFTER VM DELETE FROM SERVER]: " + sr.getUtilization());
+
+			Rack correspondingRack = sr.getRack();
+
+			// System.out.println("[OLD UTILIZATION]" + correspondingRack.toString());
+
+			newRackUtilizationAfterVMDelete = utilization.computeSingleRackUtilization(correspondingRack);
+			newRackPowerConsumptionAfterVMDelete = powerConsumption.computeSingleRackPowerConsumption(correspondingRack);
+			newRackCoolingAfterVMDelete = coolingSimulation.computeSingleRackCooling(correspondingRack);
+			correspondingRack.setUtilization(newRackUtilizationAfterVMDelete);
+			correspondingRack.setPowerValue(newRackPowerConsumptionAfterVMDelete);
+			correspondingRack.setCoolingValue(newRackCoolingAfterVMDelete);
+		
+			rackDAO.mergeSessionsForRack(correspondingRack);
+			// System.out.println("[NEW UTILIZATION]" + correspondingRack.toString());
+		}
+		
+	}
 	
 	public Map<Integer, List<Server>> serverCategory (List<Server> allServers) {
 		Map<Integer, List<Server>> serverCategorization = new HashMap<Integer, List<Server>>();	

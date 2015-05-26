@@ -35,6 +35,8 @@ public class Consolidation {
 	private VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 	private ServerDAOImpl serverDAO = new ServerDAOImpl();
 	private static VMProcessor vmProcessor;
+	private PowerConsumption powerConsumption = new PowerConsumption();
+	private CoolingSimulation coolingSimulation = new CoolingSimulation();
 	
 	private int numberOfReleasedNodes = 0;
 	private int numberOfSuccessfulMigrations = 0;
@@ -219,7 +221,7 @@ public class Consolidation {
 
 	public void consolidationOnDelete(List<VirtualMachine> vmsToBeDeleted) {
 
-		float newServerUtilizationAfterVMDelete, newRackUtilizationAfterVMDelete;
+		float newServerUtilizationAfterVMDelete, newRackUtilizationAfterVMDelete, newServerPowerConsumptionAfterVMDelete, newServerCoolingAfterVMDelete, newRackPowerConsumptionAfterVMDelete, newRackCoolingAfterVMDelete;
 		List<Server> allServers = serverDAO.getAllServers();
 		List<Server> allModifiedServers = new ArrayList<Server>();
 		List<Rack> allRacks = rackDAO.getAllRacks();
@@ -276,7 +278,12 @@ public class Consolidation {
 
 			// System.out.println("[BEFORE VM DELETE FROM SERVER]: " + sr.getUtilization());
 			newServerUtilizationAfterVMDelete = utilization.computeUtilization(sr);
+			newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumption(sr);
+			newServerCoolingAfterVMDelete = coolingSimulation.computeSingleServerCooling(sr);
+			sr.setPowerValue(newServerPowerConsumptionAfterVMDelete);
+			sr.setCoolingValue(newServerCoolingAfterVMDelete);
 			sr.setUtilization(newServerUtilizationAfterVMDelete);
+	
 			if (newServerUtilizationAfterVMDelete == 0) {
 				consolidationUtil.turnOffServer(sr);
 			} else {
@@ -289,8 +296,12 @@ public class Consolidation {
 
 			// System.out.println("[OLD UTILIZATION]" + correspondingRack.toString());
 
-			newRackUtilizationAfterVMDelete = utilization
-					.computeSingleRackUtilization(correspondingRack);
+
+			newRackPowerConsumptionAfterVMDelete = powerConsumption.computeSingleRackPowerConsumption(correspondingRack);
+			newRackUtilizationAfterVMDelete = utilization.computeSingleRackUtilization(correspondingRack);
+			newRackCoolingAfterVMDelete = coolingSimulation.computeSingleRackCooling(correspondingRack);
+			correspondingRack.setPowerValue(newRackPowerConsumptionAfterVMDelete);
+			correspondingRack.setCoolingValue(newRackCoolingAfterVMDelete);
 			correspondingRack.setUtilization(newRackUtilizationAfterVMDelete);
 
 			if (newRackUtilizationAfterVMDelete == 0) {

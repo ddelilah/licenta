@@ -6,6 +6,7 @@ import java.util.List;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
+import app.constants.RackState;
 import app.constants.ServerState;
 import app.model.Rack;
 import app.model.Server;
@@ -84,6 +85,9 @@ public class PowerConsumption {
 					power += server.getPowerValue();
 				}
 			}
+			if(power!=0)
+				rack.setState(RackState.ON.getValue());
+
 			rack.setPowerValue(power);
 			genericDAO.updateInstance(rack);
 		}

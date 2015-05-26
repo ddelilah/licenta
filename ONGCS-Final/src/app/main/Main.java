@@ -32,15 +32,15 @@ public class Main {
 	public void startInitialization() throws Exception {
 		
 		//Ade
-//				ProcessBuilder builder = new ProcessBuilder(
-//		 	            "cmd.exe", "/c", " mysql -u root licenta < init_script.sql "
-//		 	            );
+				ProcessBuilder builder = new ProcessBuilder(
+		 	            "cmd.exe", "/c", " mysql -u root licenta < init_script.sql "
+		 	            );
 		
 		//Delia
-		ProcessBuilder builder = new ProcessBuilder(
- 	            "cmd.exe", "/c", " mysql --user=root --password=password licenta < init_script.sql "
- 	            );
- 	
+//		ProcessBuilder builder = new ProcessBuilder(
+// 	            "cmd.exe", "/c", " mysql --user=root --password=password licenta < init_script.sql "
+// 	            );
+// 	
 	 	builder.redirectErrorStream(true);
 	     Process p = builder.start();
 	     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -60,29 +60,26 @@ public void startMonitoring() throws Exception{
 		  Monitoring monitoring = new Monitoring();
 		  int length = data.getData().length();
 		     String[] toParse = new String[length];
+		     String []alg = new String[3];
 		     toParse = data.getData().split("\\r?\\n");
 
 		     for(int i=0; i<toParse.length; i++){
+		    	 if(((toParse[i].split(" "))[0]).equalsIgnoreCase("START")){
+		    		  alg = toParse[i].split(" ");
+		    		 System.out.println(alg[1]);
+		    	 }
 		    	 if(((toParse[i].split(" "))[0]).equalsIgnoreCase("VM")){
 		    		String[] task = toParse[i].split(" "); 
 		    		try{
 			    		VirtualMachine	vm = vmDAO.getVirtualMachineById(Integer.parseInt(task[1]));
 			    		int numberOfInstances = Integer.parseInt(task[2]);
 			    		String command = task[3];
-			    		monitoring.addToQueue(vm,  numberOfInstances, command);
+			    		monitoring.addToQueue(vm,  numberOfInstances, command, alg[1]);
 		    		}
 		    		catch(NumberFormatException e){
 		    			System.out.println("Bad format for "+ toParse[i]);
 		    		}
-		    		
 		    	 }
-		    	 
-		   /* 	 else if(((toParse[i].split(" "))[0]).equals("SERVER")){
-			    		server = serverDAO.getServerById(Integer.parseInt(toParse[i].split(" ")[1]));
-			    		command = toParse[i].split(" ")[2];
-			    		monitoring.addToQueue(server, command);
-			    	 }*/
-		    	 
 		     }
 		     monitoring.startMonitoring();
 	}

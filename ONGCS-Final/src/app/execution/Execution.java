@@ -29,8 +29,6 @@ import org.LiveGraph.dataFile.write.DataStreamWriterFactory;
 
 public class Execution {
 	public static final String DEMO_DIR = System.getProperty("user.dir");
-	public static final int MIN_SLEEP = 0;
-	public static final int MAX_SLEEP = 1000;
 	
 	private static NUR nur = new NUR();
 	private static RBR rackScheduling = new RBR();
@@ -119,7 +117,7 @@ public class Execution {
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 
 		System.out.println("[NUR] map size: " + allocation.size());
-		
+		displayPowerConsumptionAndCooling("[BEFORE DELETE] NUR");
 
 	}
 		
@@ -184,7 +182,7 @@ public class Execution {
 		
 		History history = new History();
 		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyRBR.txt");
-		displayPowerConsumptionAndCooling("RBR");
+		displayPowerConsumptionAndCooling("[BEFORE DELETE] RBR");
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 //		History history = new History();
 //		history.writeToFile(allocation, "historyRBR.txt");
@@ -250,7 +248,7 @@ public class Execution {
 		// Set-up the data series:
 		out.addDataSeries("PowerConsumption");
 		out.addDataSeries("Nb of deployed VMs");
-		
+		Utilization util = new Utilization();
 		PowerConsumption power = new PowerConsumption();
 		int ct=0;
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
@@ -259,13 +257,20 @@ public class Execution {
 			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
+			s.setCorrespondingVMs(addVmsToServer(s, vm));
 			mergeSessionsForExecution(vm);
 			
+			
+			util.setServerUtilization();
+
 			ffd.setServerPowerConsumption();
 			power.setRackPowerConsumption();
+			
 			out.setDataValue(getCurrentPowerConsumption());
 		    out.setDataValue(ct);
 		      
+		    System.out.println("\n\n\n\nCurrent power "+ getCurrentPowerConsumption());
+		    
 		      // Write dataset to disk:
 		      out.writeDataSet();
 		      
@@ -276,15 +281,13 @@ public class Execution {
 		      }
 		      // Pause:
 		      Thread.yield();
-		      long sleep = (long) (MIN_SLEEP + (Math.random()
-		                            * (double) (MAX_SLEEP - MIN_SLEEP)));
-		      try { Thread.sleep(sleep); } catch (InterruptedException e) {}
+		   
+		//      try { Thread.sleep(3000); } catch (InterruptedException e) {}
 		      Thread.yield();
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
 
-		Utilization util = new Utilization();
-		util.setServerUtilization();
+		
 		
 		ffd.setServerPowerConsumption();
 		power.setRackPowerConsumption();
@@ -294,7 +297,7 @@ public class Execution {
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
-		displayPowerConsumptionAndCooling("FFD");
+		displayPowerConsumptionAndCooling("[BEFORE DELETE] FFD ");
 		 out.close();
 		  System.out.println("Demo finished. Cheers.");
 
@@ -356,64 +359,6 @@ public class Execution {
 		}
 		
 		executeRBR(allVMs, allRacks);
-	}
-	
-public void initialConsolidationFFD(){
-		
-		Utilization util = new Utilization();
-		util.setServerUtilization();
-		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
-		List<Rack> allRacks = new ArrayList<Rack>();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		List<Server> allServers = new ArrayList<Server>();
-		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
-		allRacks = rackDAO.getAllRacks();
-		
-		for(Rack rack: allRacks){
-			allServers = rack.getServers();
-			for(Server server: allServers){
-				vmList = server.getCorrespondingVMs();
-				for(VirtualMachine vm1: vmList)
-				allVMs.add(vm1);
-			}
-		}
-		
-		performFFD(allVMs);
-	}
-	
-public void initialConsolidationNUR(){
-		
-		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
-		List<Rack> allRacks = new ArrayList<Rack>();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		List<Server> allServers = new ArrayList<Server>();
-		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
-		allRacks = rackDAO.getAllRacks();
-		
-		for(Rack rack: allRacks){
-			allServers = rack.getServers();
-			for(Server server: allServers){
-				vmList = server.getCorrespondingVMs();
-				for(VirtualMachine vm1: vmList)
-				allVMs.add(vm1);
-			}
-		}
-		
-		Utilization util = new Utilization();
-		util.setServerUtilization();
-		executeNUR(allVMs, allRacks);
-	}
-
-	public static void main(String []args){
-		Execution execution = new Execution();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		VirtualMachineDAOImpl vmDAO= new VirtualMachineDAOImpl();
-		
-		List<Rack> rackList = rackDAO.getAllRacks();
-		List<VirtualMachine> vmList = vmDAO.getAllVMs();
-		
-		execution.executeRBR(vmList, rackList);
-		
 	}
 
 }

@@ -11,6 +11,7 @@ import app.access.RackDAO;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
+import app.constants.ServerState;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -76,46 +77,15 @@ public class FFD {
 							+ (MAXIMUM_POWER - server.getIdleEnergy())
 							* utilization;
 
-					server.setPowerValue(power);
-					genericDAO.updateInstance(server);
+					if(power!= server.getIdleEnergy()){
+						server.setPowerValue(power);
+						server.setState(ServerState.ON.getValue());
+						genericDAO.updateInstance(server);
+					}
+					
 			
 			}
 	}
 	
 	
-//
-//	public boolean enoughResources(Server server, VirtualMachine vm, Map<VirtualMachine, Server> map){
-//		
-//		List<VirtualMachine> vmList = server.getCorrespondingVMs();
-//		float totalMips = server.getServerMIPS();
-//		float ramCapacity = server.getRam().getCapacity();
-//		float hddCapacity = server.getHdd().getCapacity();
-//		
-//		for (VirtualMachine virtualMachine : vmList) {
-//			totalMips -= virtualMachine.getVmMips();
-//			ramCapacity -= virtualMachine.getRam().getCapacity();
-//			hddCapacity -= virtualMachine.getHdd().getCapacity();
-//			if(hddCapacity < 0 || ramCapacity <0 || totalMips <0)
-//				return false;
-//		}
-////		System.out.println("Server with id: "+server.getServerId()+"has cores: "+cpuCores+" ram: "+ramCapacity+" hdd: "+hddCapacity);
-//		for (Entry<VirtualMachine, Server> entry : map.entrySet()) 
-//			if (server.getServerId() == entry.getValue().getServerId()){
-//				totalMips -= entry.getKey().getVmMips();
-//				ramCapacity -= entry.getKey().getRam().getCapacity();
-//				hddCapacity -= entry.getKey().getHdd().getCapacity();
-//			}
-//		if(hddCapacity < 0 || ramCapacity <0 || totalMips <0)
-//			return false;
-//	//	System.out.println("Server with id: "+server.getServerId()+"has cores: "+cpuCores+" ram: "+ramCapacity+" hdd: "+hddCapacity);
-//
-//		if(totalMips - vm.getVmMips() >= 0 &&
-//				ramCapacity - vm.getRam().getCapacity() >=0 &&
-//				hddCapacity - vm.getHdd().getCapacity() >=0)
-//			return true;
-//		
-//		return false;
-//	}
-//	
-//	
 }

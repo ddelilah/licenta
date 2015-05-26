@@ -49,7 +49,7 @@ public class Analysis {
 		
 	}
 
-	public void performAnalysis(List<VirtualMachine> vmList) {
+	public void performAnalysis(List<VirtualMachine> vmList, String algorithm) {
 		/* evaluate all policies */
 		boolean isViolated = false;
 		boolean shouldStartScheduler = false;
@@ -61,7 +61,7 @@ public class Analysis {
 					System.out.println("\n\n\n.....VM policy violated........");
 					isViolated = true;
 					shouldStartScheduler = true;
-					checkPlanning(1, vmList);
+					checkPlanning(1, vmList, algorithm);
 					break;
 				}
 			}
@@ -74,7 +74,7 @@ public class Analysis {
 					System.out.println("\n\n\n............Server policy violated.............");
 					isViolated = true;
 					shouldStartScheduler = true;
-					checkPlanning(1, vmList);
+					checkPlanning(1, vmList, algorithm);
 					break;
 					
 				}
@@ -86,7 +86,7 @@ public class Analysis {
 						rack);
 				if (rackPolicy.evaluatePolicy() == true && !isViolated){
 					System.out.println("\n\n\n..........Rack policy violated........");
-					checkPlanning(1, vmList);
+					checkPlanning(1, vmList, algorithm);
 					isViolated = true;
 					shouldStartScheduler = true;
 					break;
@@ -94,10 +94,10 @@ public class Analysis {
 			}
 			
 			if(!shouldStartScheduler)
-				checkPlanning(0, vmList);
+				checkPlanning(0, vmList, algorithm);
 }
 
-	public void checkPlanning(int value,List<VirtualMachine> allVMs) {
+	public void checkPlanning(int value,List<VirtualMachine> allVMs, String algorithm) {
 
 		System.out.println("\n\n\n ...........Starting Learning Algorithm...........\n\n");
 		Execution execution = new Execution();
@@ -106,11 +106,18 @@ public class Analysis {
 		allRacks = rackDAO.getAllRacks();
 			
 		if(value == 1) {
-			
-	//		execution.executeNUR(allVMs, allRacks);
-			execution.executeRBR(allVMs, allRacks);
-	//		execution.performFFD(allVMs);
-			
+			switch(algorithm) {
+				case "RBR":
+					execution.executeRBR(allVMs, allRacks);
+					break;
+				case "NUR":
+					execution.executeNUR(allVMs, allRacks);
+					break;
+				case "FFD":
+					execution.performFFD(allVMs);
+					break;
+					
+			}	
 		} else {
 			System.out.println("............System is Optimal.............");
 		}

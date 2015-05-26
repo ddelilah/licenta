@@ -6,11 +6,21 @@ public class ContextData {
 	private Object type;
 	private String command; 
 	private int numberOfInstances;
+	private String alg;
 	
-	public ContextData(Object type, int numberOfInstances, String command) {
+	public ContextData(Object type, int numberOfInstances, String command, String alg) {
 		this.numberOfInstances = numberOfInstances;
 		this.type = type;
 		this.command = command;
+		this.alg = alg;
+	}
+
+	public String getAlg() {
+		return alg;
+	}
+
+	public void setAlg(String alg) {
+		this.alg = alg;
 	}
 
 	public Object getType() {
