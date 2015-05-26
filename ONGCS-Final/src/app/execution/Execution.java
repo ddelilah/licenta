@@ -274,6 +274,8 @@ public class Execution {
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = ffd.performFFD(allVMs);
 		
+		Utilization util = new Utilization();
+		PowerConsumption power = new PowerConsumption();
 		
 		
 		int ct=0;
@@ -322,15 +324,22 @@ public class Execution {
 		MigrationEfficiency mEff = new MigrationEfficiency();
 
 		
+		util.setServerUtilization();
 		
 		ffd.setServerPowerConsumption();
 		power.setRackPowerConsumption();
+		util.setRackUtilization();
 	//	power.comparePowerValues();
+		
+		CoolingSimulation cooling = new CoolingSimulation(CRAC_SUPPLIED_TEMPERATURE);
+		cooling.setServerCoolingValue();
+		cooling.setRackCoolingPower();
 		
 		
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 		displayPowerConsumptionAndCooling("[BEFORE DELETE] FFD ");
 
+		System.out.println("Demo finished. Cheers.");
 //		charts.finishChartExecution();
 	/*	History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");

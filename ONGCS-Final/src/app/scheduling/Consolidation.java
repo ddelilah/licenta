@@ -38,7 +38,7 @@ public class Consolidation {
 	private static VMProcessor vmProcessor;
 	private PowerConsumption powerConsumption = new PowerConsumption();
 	private CoolingSimulation coolingSimulation = new CoolingSimulation();
-	
+	private Execution exec = new Execution();
 	private int numberOfReleasedNodes = 0;
 	private int numberOfSuccessfulMigrations = 0;
 
@@ -233,7 +233,21 @@ public class Consolidation {
 			}
 		}
 		
-		if(r.getRackId() == underUtilizedRackFromAllocationStep.getRackId()) {
+		boolean singleRackOn = true;
+		int i;
+		
+		String first = r.getState();
+//		System.out.println("State of the first:" + first);
+		if(first.equalsIgnoreCase("ON")) {
+		for(i = 1; i < allRacks.size(); i++) {
+			if(allRacks.get(i).getState().equalsIgnoreCase(first)) {
+				singleRackOn = false;
+				break;
+			}
+		}
+	}
+		
+		if(r.getRackId() == underUtilizedRackFromAllocationStep.getRackId() && singleRackOn) {
 			System.out.println("[RACK POLICY IS VIOLATED, BUT THIS IS THE ONLY TURNED ON RACK => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON THE SAME RACK");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicyOnRack);
 		} else
@@ -340,7 +354,7 @@ public class Consolidation {
 		}
 
 		// RECONSOLIDATION FOR SERVERS
-		if (underUtilizedServerFromAllocationStep != null
+		if (underUtilizedServerFromAllocationStep != null && underUtilizedServerFromAllocationStep.getServerId() != 0
 				&& !underUtilizedServerFromAllocationStep.getState().equalsIgnoreCase(ServerState.OFF.getValue())) {
 			// move all vms from that server on other servers
 			System.out.println("[SERVER RECONSOLIDATION]");
@@ -348,21 +362,23 @@ public class Consolidation {
 		}
 		
 		
-		if(underUtilizedServerFromAllocationStep.getRack().getRackId() != underUtilizedRackFromAllocationStep.getRackId()) {
-			// RECONSOLIDATION FOR RACKS
-			if (underUtilizedRackFromAllocationStep != null
-					&& !underUtilizedRackFromAllocationStep.getState().equalsIgnoreCase(RackState.OFF.getValue())) {
-				for (Server srv : underUtilizedRackFromAllocationStep.getServers()) {
-					for (Server sr2 : resultOfServerAllocation) {
-						if (srv.getServerId() == sr2.getServerId()) {
-							srv.setCorrespondingVMs(sr2.getCorrespondingVMs());
-							srv.setUtilization(sr2.getUtilization());
-							srv.setPowerValue(sr2.getPowerValue());
-							srv.setCoolingValue(sr2.getCoolingValue());
-							break;
-						}
+		if(underUtilizedServerFromAllocationStep != null && underUtilizedRackFromAllocationStep.getRackId() != 0) {
+			if(underUtilizedServerFromAllocationStep.getRack().getRackId() != underUtilizedRackFromAllocationStep.getRackId()) {
+				// RECONSOLIDATION FOR RACKS
+				if (underUtilizedRackFromAllocationStep != null
+						&& !underUtilizedRackFromAllocationStep.getState().equalsIgnoreCase(RackState.OFF.getValue())) {
+					for (Server srv : underUtilizedRackFromAllocationStep.getServers()) {
+						for (Server sr2 : resultOfServerAllocation) {
+							if (srv.getServerId() == sr2.getServerId()) {
+								srv.setCorrespondingVMs(sr2.getCorrespondingVMs());
+								srv.setUtilization(sr2.getUtilization());
+								srv.setPowerValue(sr2.getPowerValue());
+								srv.setCoolingValue(sr2.getCoolingValue());
+								break;
+							}
 					}
-				}
+			}
+					
 				// move all vms from that rack on other servers from other racks
 				System.out.println("[RACK RECONSOLIDATION]");
 				tryToMoveAllVMsFromARack(underUtilizedRackFromAllocationStep);
@@ -370,7 +386,7 @@ public class Consolidation {
 		} else {
 			System.out.println("[UNDERUTILIZED SERVER IS ON THE UNDERUTILIZED RACK => CORNER CASE PREVIOUSLY CHECKED]");
 		}
-
+	}
 		
 
 		for (Server sr : allModifiedServers) {
@@ -404,5 +420,16 @@ public class Consolidation {
 		
 		MigrationEfficiency mEff = new MigrationEfficiency();
 		System.out.println("Migration efficiency: "+ mEff.computeMigrationEfficiency(numberOfReleasedNodes, numberOfSuccessfulMigrations));		
-	}
+		System.out.println("[CONSOLIDATION] #Released Nodes: " + numberOfReleasedNodes);
+		System.out.println("[CONSOLIDATION] #Migrations: " + numberOfSuccessfulMigrations);
+		
+		handleTheFailedVMs(chart);
+}
+			
+		
+public void handleTheFailedVMs(Charts chart) {
+		List<VirtualMachine> failedVMs = vmDAO.getAllVMsByState(VMState.FAILED.getValue());
+		List<Rack> allRacks = rackDAO.getAllRacks();
+		exec.executeNUR(failedVMs, allRacks, chart);	
+		}
 }
