@@ -2,21 +2,17 @@ package app.scheduling;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
-import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.constants.RackState;
 import app.constants.VMState;
-import app.hibernate.SessionFactoryUtil;
+import app.energy.Utilization;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -30,6 +26,15 @@ public class NUR {
 
 	private static VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 	private static RackDAOImpl rackDAO = new RackDAOImpl();
+	
+	private static List<Server> serversInNonUnderUtilizedRacks = new ArrayList<Server>();
+	private static List<Server> serversInUnderUtilizedRacks = new ArrayList<Server>();
+	private static List<Server> serversInOffRacks = new ArrayList<Server>();
+	
+	private static Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
+
+	
+	private static Utilization util = new Utilization();
 
 	public NUR() {
 
@@ -44,10 +49,7 @@ public class NUR {
 				.getNonUnderUtilizedRacks(racks);
 		List<Rack> underUtilizedRacks = rackProcessor
 				.getUnderUtilizedRacks(racks);
-		List<Server> serversInNonUnderUtilizedRacks = new ArrayList<Server>();
-		List<Server> serversInUnderUtilizedRacks = new ArrayList<Server>();
-		List<Server> serversInOffRacks = new ArrayList<Server>();
-		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
+		
 
 		Map<Server, List<Float>> resultOfOBFD = new HashMap<Server, List<Float>>();
 
@@ -130,6 +132,31 @@ public class NUR {
 						for (Entry<Server, List<Float>> entry : resultOfOBFD
 								.entrySet()) {
 							allocatedServer = entry.getKey();
+							
+							float potentialUtilization = util.computePotentialUtilizationForAServer(allocatedServer, v, allocation);
+							System.out.println("[SERVER'S POTENTIAL UTILIZATION]:" + potentialUtilization);
+							if(potentialUtilization > 0.2 && potentialUtilization < 0.8) {
+								serversInNonUnderUtilizedRacks.add(allocatedServer);
+				
+								Iterator<Server> iterator = serversInOffRacks.iterator();
+								while (iterator.hasNext()) {
+									Server sr1 = iterator.next();
+										if (sr1.getServerId() == allocatedServer.getServerId()) {
+											iterator.remove();	
+									}
+								}
+								
+							} else if(potentialUtilization != 0) {
+								serversInUnderUtilizedRacks.add(allocatedServer);
+								
+								Iterator<Server> iterator = serversInOffRacks.iterator();
+								while (iterator.hasNext()) {
+									Server sr1 = iterator.next();
+										if (sr1.getServerId() == allocatedServer.getServerId()) {
+											iterator.remove();	
+									}
+								}
+							}
 							System.out
 									.println("[Allocated VM on a server from an off rack] VM "
 											+ v.getVmId()
