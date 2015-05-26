@@ -107,9 +107,6 @@ public class Analysis {
 			
 		if(value == 1) {
 			
-			//why set server utilization before any allocation is made?? -> useless
-		//	Utilization util = new Utilization();
-		//	util.setServerUtilization();
 	//		execution.executeNUR(allVMs, allRacks);
 			execution.executeRBR(allVMs, allRacks);
 	//		execution.performFFD(allVMs);

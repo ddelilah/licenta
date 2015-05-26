@@ -48,23 +48,23 @@ public class Execution {
 		int initialNumberOnServers = serverDAO.getAllServersByState("on").size();
 		int initialNumberOffServers = allServers.size() - initialNumberOnServers;
 		
-		Learning l = new Learning();
-		boolean foundLearning = false;
-		try {
-			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
-		
-		if(foundLearning){
-			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
-			displayPowerConsumptionAndCooling("NUR");
-			}
-		
-	else{
+//		Learning l = new Learning();
+//		boolean foundLearning = false;
+//		try {
+//			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		
+//		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
+//		
+//		if(foundLearning){
+//			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
+//			displayPowerConsumptionAndCooling("NUR");
+//			}
+//		
+//	else{
 			System.out.println("\n\n\n ----------------- Performing experiment! --------------------------");
 		
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
@@ -106,8 +106,8 @@ public class Execution {
 		System.out.println("\n\n Cooling Computation for all racks..............");
 		cooling.setRackCoolingPower();
 		
-		History history = new History();
-		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyRBR.txt");
+//		History history = new History();
+//		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyRBR.txt");
 		
 		System.out.println("\n\n Utilization Computation for all racks..............");
 		util.setRackUtilization();
@@ -118,7 +118,7 @@ public class Execution {
 
 	}
 		
-	}
+//	}
 
 	public void executeRBR(List<VirtualMachine> allVMs,
 			List<Rack> allRacks) {
@@ -129,24 +129,24 @@ public class Execution {
 		int initialNumberOnServers = serverDAO.getAllServersByState("on").size();
 		int initialNumberOffServers = allServers.size() - initialNumberOnServers;
 		
-		Learning l = new Learning();
-		boolean foundLearning = false;
-		try {
-			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
-		
-
-		if(foundLearning){
-			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
-			displayPowerConsumptionAndCooling("RBR");
-			}
-		
-	else{
+//		Learning l = new Learning();
+//		boolean foundLearning = false;
+//		try {
+//			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		
+//		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
+//		
+//
+//		if(foundLearning){
+//			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
+//			displayPowerConsumptionAndCooling("RBR");
+//			}
+//		
+//	else{
 			System.out.println("\n\n\n ----------------- Performing experiment! --------------------------");
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
@@ -187,7 +187,7 @@ public class Execution {
 
 	}	
 
-	}
+//	}
 
 	public static void displayPowerConsumptionAndCooling(String algorithm){
 		

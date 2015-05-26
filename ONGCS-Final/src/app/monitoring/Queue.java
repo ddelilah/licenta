@@ -51,7 +51,7 @@ public class Queue extends Thread {
 			while (!receivedMessage.isEmpty()) {
 				try {
 
-					 Thread.sleep(4000);
+					// Thread.sleep(4000);
 				} catch (Exception e) {
 				}
 
@@ -82,12 +82,6 @@ public class Queue extends Thread {
 			}
 		}
 		
-//		System.out.println("To be deployed");
-//		for(VirtualMachine vm: toBeDeployedVmList)
-//			System.out.println(vm.toString());
-//		System.out.println("To be deleted");
-//		for(VirtualMachine vm: toBeDeletedVmList)
-//			System.out.println(vm.toString());
 		analysis.performAnalysis(toBeDeployedVmList);
 //		System.out.println("........\n\n End of deployment..........");
 		
@@ -98,20 +92,17 @@ public class Queue extends Thread {
 		}
 			
 		
-		System.out.println("To be deployed");
-		for(VirtualMachine vm: toBeDeployedVmList)
-			System.out.println(vm.toString());
-		System.out.println("To be deleted");
-		for(VirtualMachine vm: toBeDeletedVmList)
-			System.out.println(vm.toString());
-		
+//		System.out.println("To be deployed");
+//		for(VirtualMachine vm: toBeDeployedVmList)
+//			System.out.println(vm.toString());
+//		System.out.println("To be deleted");
+//		for(VirtualMachine vm: toBeDeletedVmList)
+//			System.out.println(vm.toString());
+//		
 
 		
-		
-//		analysis.performAnalysis(toBeDeployedVmList);
 		System.out.println("\n\n........ End of deployment..........");
-		
-//		c.consolidationOnDelete(toBeDeletedVmList);
+
 		t.setEndTime(System.nanoTime());
 		long elapsedTime = t.getExecutionTime();
 		System.out.println("[Execution Time] "+ t.getExecutionTime()+" nanoseconds");
@@ -351,8 +342,8 @@ public class Queue extends Thread {
 							break;
 						}}
 
-					if(removeFromToBeDeployedVmList!=-1 && deleteFromDeployedList)
-						toBeDeployedVmList.remove(removeFromToBeDeployedVmList);
+//					if(removeFromToBeDeployedVmList!=-1 && deleteFromDeployedList)
+//						toBeDeployedVmList.remove(removeFromToBeDeployedVmList);
 					
 //					if (startDelete){
 //						vmToDelete.setState(VMState.DONE.getValue());

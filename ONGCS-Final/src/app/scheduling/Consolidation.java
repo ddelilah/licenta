@@ -109,7 +109,7 @@ public class Consolidation {
 		
 		int firstId = 0;
 		
-		if(releasedNodes.get(0) != null) {
+		if(!releasedNodes.isEmpty()) {
 			firstId = releasedNodes.get(0).getServerId();
 			if(firstId != 0) {
 				numberOfReleasedNodes = 1;
