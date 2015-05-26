@@ -93,12 +93,12 @@ public class Execution {
 			System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
 			mergeSessionsForExecution(vm);
 			
-			util.setServerUtilization();
-			util.setRackUtilization();
-			power.setServerPowerConsumption();
-			power.setRackPowerConsumption();
-			cooling.setServerCoolingValue();
-			cooling.setRackCoolingPower();
+//			util.setServerUtilization();
+//			util.setRackUtilization();
+//			power.setServerPowerConsumption();
+//			power.setRackPowerConsumption();
+//			cooling.setServerCoolingValue();
+//			cooling.setRackCoolingPower();
 	//		chart.updateChart(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
 
 		}
@@ -313,8 +313,8 @@ public class Execution {
 			float parallelAirMassFlowRate05 = pp.computeHeatRecirculation(0.5f, CRAC_SUPPLIED_TEMPERATURE);
 			float parallelVolumetricAirFlow05 = hacs.computeVolumetricAirFlow(parallelAirMassFlowRate05);	
 		
-			//chart.updateChartPowerConsumption(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
-		//	chart.updatChartAirflow(hacsVolumetricAirFlow, 0, parallelVolumetricAirFlow01, parallelVolumetricAirFlow02, parallelVolumetricAirFlow03, parallelVolumetricAirFlow04, parallelVolumetricAirFlow05);
+			chart.updateChartPowerConsumption(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
+			chart.updatChartAirflow(hacsVolumetricAirFlow, 0, parallelVolumetricAirFlow01, parallelVolumetricAirFlow02, parallelVolumetricAirFlow03, parallelVolumetricAirFlow04, parallelVolumetricAirFlow05);
 			System.out.println("\n\n\n\nCurrent power "+ getCurrentPowerConsumption());
 		    System.out.println(hacsVolumetricAirFlow+" parallel " +parallelVolumetricAirFlow01);
 		     Thread.yield();
