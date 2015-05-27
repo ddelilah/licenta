@@ -78,8 +78,12 @@ public class ConsolidationUtil {
 			sr.setCoolingValue(newServerCoolingAfterVMDelete);
 			sr.setUtilization(newServerUtilizationAfterVMDelete);
 	
-			serverDAO.mergeSessionsForServer(sr);
-			
+			if (newServerUtilizationAfterVMDelete == 0) {
+				turnOffServer(sr);
+			} else {
+				serverDAO.mergeSessionsForServer(sr);
+			}
+		
 
 			// System.out.println("[AFTER VM DELETE FROM SERVER]: " + sr.getUtilization());
 
@@ -94,7 +98,11 @@ public class ConsolidationUtil {
 			correspondingRack.setPowerValue(newRackPowerConsumptionAfterVMDelete);
 			correspondingRack.setCoolingValue(newRackCoolingAfterVMDelete);
 		
-			rackDAO.mergeSessionsForRack(correspondingRack);
+			if (newRackUtilizationAfterVMDelete == 0) {
+				turnOffRack(correspondingRack);
+			} else {
+				rackDAO.mergeSessionsForRack(correspondingRack);
+			}
 			// System.out.println("[NEW UTILIZATION]" + correspondingRack.toString());
 		}
 		
