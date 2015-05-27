@@ -276,6 +276,7 @@ public class Execution {
 		
 		Utilization util = new Utilization();
 		PowerConsumption power = new PowerConsumption();
+		 		
 		
 		int ct=0;
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
@@ -324,10 +325,9 @@ public class Execution {
 
 		
 		util.setServerUtilization();
-		
 		ffd.setServerPowerConsumption();
 		power.setRackPowerConsumption();
-		util.setServerUtilization();
+		util.setRackUtilization();
 		util.setRackUtilization();
 	//	power.comparePowerValues();
 		
@@ -335,13 +335,12 @@ public class Execution {
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
 				
-		 		
-		
 		
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 		displayPowerConsumptionAndCooling("[BEFORE DELETE] FFD ");
 		System.out.println("Demo finished. Cheers.");
 		System.out.println("Demo finished. Cheers.");
+		
 //		charts.finishChartExecution();
 	/*	History history = new History();
 		history.writeToFile(allocation, "historyRBR.txt");

@@ -376,7 +376,7 @@ public class Consolidation {
 								srv.setCoolingValue(sr2.getCoolingValue());
 								break;
 							}
-					}
+			 					}
 			}
 					
 				// move all vms from that rack on other servers from other racks
@@ -429,7 +429,7 @@ public class Consolidation {
 		
 public void handleTheFailedVMs(Charts chart) {
 		List<VirtualMachine> failedVMs = vmDAO.getAllVMsByState(VMState.FAILED.getValue());
-		List<Rack> allRacks = rackDAO.getAllRacks();
+		List<Rack> allRacks = rackDAO.getAllRacks();	
 		exec.executeNUR(failedVMs, allRacks, chart);	
 		}
 }

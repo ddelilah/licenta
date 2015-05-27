@@ -21,7 +21,7 @@ import app.scheduling.Consolidation;
 import app.scheduling.ConsolidationUtil;
 
 public class Queue extends Thread {
-	public Charts chart = new Charts();
+	private Charts chart = new Charts();
 
 	private LinkedBlockingDeque<ContextData> receivedMessage;
 	private Analysis analysis;
