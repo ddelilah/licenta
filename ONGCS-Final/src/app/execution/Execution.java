@@ -181,12 +181,12 @@ public class Execution {
 			s.setCorrespondingVMs(addVmsToServer(s, vm));
 			mergeSessionsForExecution(vm);
 			
-			util.setServerUtilization();
-			util.setRackUtilization();
-			power.setServerPowerConsumption();
-			power.setRackPowerConsumption();
-			cooling.setServerCoolingValue();
-			cooling.setRackCoolingPower();
+//			util.setServerUtilization();
+//			util.setRackUtilization();
+//			power.setServerPowerConsumption();
+//			power.setRackPowerConsumption();
+//			cooling.setServerCoolingValue();
+//			cooling.setRackCoolingPower();
 	//		chart.updateChart(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
 
 		}
@@ -277,7 +277,6 @@ public class Execution {
 		Utilization util = new Utilization();
 		PowerConsumption power = new PowerConsumption();
 		
-		
 		int ct=0;
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			ct++;
@@ -328,17 +327,20 @@ public class Execution {
 		
 		ffd.setServerPowerConsumption();
 		power.setRackPowerConsumption();
+		util.setServerUtilization();
 		util.setRackUtilization();
 	//	power.comparePowerValues();
 		
 		CoolingSimulation cooling = new CoolingSimulation(CRAC_SUPPLIED_TEMPERATURE);
 		cooling.setServerCoolingValue();
 		cooling.setRackCoolingPower();
+				
+		 		
 		
 		
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 		displayPowerConsumptionAndCooling("[BEFORE DELETE] FFD ");
-
+		System.out.println("Demo finished. Cheers.");
 		System.out.println("Demo finished. Cheers.");
 //		charts.finishChartExecution();
 	/*	History history = new History();

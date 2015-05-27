@@ -234,18 +234,18 @@ public class Consolidation {
 		}
 		
 		boolean singleRackOn = true;
-		int i;
-		
-		String first = r.getState();
-//		System.out.println("State of the first:" + first);
-		if(first.equalsIgnoreCase("ON")) {
-		for(i = 1; i < allRacks.size(); i++) {
-			if(allRacks.get(i).getState().equalsIgnoreCase(first)) {
-				singleRackOn = false;
-				break;
+			int i;
+				
+				String first = r.getState();
+		//		System.out.println("State of the first:" + first);
+				if(first.equalsIgnoreCase("ON")) {
+				for(i = 1; i < allRacks.size(); i++) {
+					if(allRacks.get(i).getState().equalsIgnoreCase(first)) {
+						singleRackOn = false;
+						break;
+					}
+				}
 			}
-		}
-	}
 		
 		if(r.getRackId() == underUtilizedRackFromAllocationStep.getRackId() && singleRackOn) {
 			System.out.println("[RACK POLICY IS VIOLATED, BUT THIS IS THE ONLY TURNED ON RACK => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON THE SAME RACK");
