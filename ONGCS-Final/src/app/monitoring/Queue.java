@@ -100,13 +100,13 @@ public class Queue extends Thread {
 			if (algorithm.equalsIgnoreCase("FFD")) {
 				cUtil.deleteForFFD(toBeDeletedVmList, chart);
 			} else {
-				c.consolidationOnDelete(toBeDeletedVmList, chart);
+				c.consolidationOnDelete(toBeDeletedVmList, chart, algorithm);
 			}
 		} else {
 			System.out.println("No workload to be deleted.");
 		}
 		
-		e.displayPowerConsumptionAndCooling("[AFTER DELETE] "+algorithm);
+		e.displayPowerConsumptionAndCooling("[AFTER DELETE] " + algorithm);
 
 
 		System.out.println("\n\n........ End of deployment..........");

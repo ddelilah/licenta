@@ -260,7 +260,7 @@ public class Consolidation {
 		}
 	}
 
-	public void consolidationOnDelete(List<VirtualMachine> vmsToBeDeleted, Charts chart) {
+	public void consolidationOnDelete(List<VirtualMachine> vmsToBeDeleted, Charts chart, String algorithm) {
 
 		float newServerUtilizationAfterVMDelete, newRackUtilizationAfterVMDelete, newServerPowerConsumptionAfterVMDelete, newServerCoolingAfterVMDelete, newRackPowerConsumptionAfterVMDelete, newRackCoolingAfterVMDelete;
 		List<Server> allServers = serverDAO.getAllServers();
@@ -423,13 +423,27 @@ public class Consolidation {
 		System.out.println("[CONSOLIDATION] #Released Nodes: " + numberOfReleasedNodes);
 		System.out.println("[CONSOLIDATION] #Migrations: " + numberOfSuccessfulMigrations);
 		
-		handleTheFailedVMs(chart);
+		handleTheFailedVMs(chart, algorithm);
 }
 			
 		
-public void handleTheFailedVMs(Charts chart) {
+public void handleTheFailedVMs(Charts chart, String algorithm) {
 		List<VirtualMachine> failedVMs = vmDAO.getAllVMsByState(VMState.FAILED.getValue());
 		List<Rack> allRacks = rackDAO.getAllRacks();	
-		exec.executeNUR(failedVMs, allRacks, chart);	
+		if(failedVMs.size() != 0) {
+			switch(algorithm) {
+			case "RBR":
+				exec.executeRBR(failedVMs, allRacks, chart);
+				break;
+			case "NUR":
+				exec.executeNUR(failedVMs, allRacks, chart);
+				break;
+			case "FFD":
+				exec.performFFD(failedVMs, chart);
+				break;
+			
 		}
+			
+		}
+}
 }
