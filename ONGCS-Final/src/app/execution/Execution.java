@@ -10,6 +10,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 
+import app.GUI.ChartAirflow;
 import app.GUI.Charts;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
@@ -50,7 +51,7 @@ public class Execution {
 	}
 	
 	public void executeNUR(List<VirtualMachine> allVMs,
-			List<Rack> allRacks, Charts chart) {
+			List<Rack> allRacks, Charts chart, ChartAirflow chartAirflow) {
 		
 		ServerDAOImpl serverDAO = new ServerDAOImpl();
 		List<Server> allServers = serverDAO.getAllServers();
@@ -137,7 +138,7 @@ public class Execution {
 //	}
 
 	public void executeRBR(List<VirtualMachine> allVMs,
-			List<Rack> allRacks, Charts chart) {
+			List<Rack> allRacks, Charts chart,  ChartAirflow chartAirflow) {
 		
 		ServerDAOImpl serverDAO = new ServerDAOImpl();
 		List<Server> allServers = serverDAO.getAllServers();
@@ -269,7 +270,7 @@ public class Execution {
 		}
 		return cooling;
 	}
-	public void performFFD(List<VirtualMachine> allVMs, Charts chart) {
+	public void performFFD(List<VirtualMachine> allVMs, Charts chart,  ChartAirflow chartAirflow) {
 		FFD ffd = new FFD();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = ffd.performFFD(allVMs);
@@ -312,9 +313,9 @@ public class Execution {
 			float parallelVolumetricAirFlow04 = hacs.computeVolumetricAirFlow(parallelAirMassFlowRate04);	
 			float parallelAirMassFlowRate05 = pp.computeHeatRecirculation(0.5f, CRAC_SUPPLIED_TEMPERATURE);
 			float parallelVolumetricAirFlow05 = hacs.computeVolumetricAirFlow(parallelAirMassFlowRate05);	
-		
+			chartAirflow.updatChartAirflow(hacsVolumetricAirFlow, 0, parallelVolumetricAirFlow01, parallelVolumetricAirFlow02, parallelVolumetricAirFlow03, parallelVolumetricAirFlow04, parallelVolumetricAirFlow05);
+
 			chart.updateChartPowerConsumption(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
-			chart.updatChartAirflow(hacsVolumetricAirFlow, 0, parallelVolumetricAirFlow01, parallelVolumetricAirFlow02, parallelVolumetricAirFlow03, parallelVolumetricAirFlow04, parallelVolumetricAirFlow05);
 			System.out.println("\n\n\n\nCurrent power "+ getCurrentPowerConsumption());
 		    System.out.println(hacsVolumetricAirFlow+" parallel " +parallelVolumetricAirFlow01);
 		     Thread.yield();

@@ -3,6 +3,7 @@ package app.analysis;
 import java.util.ArrayList;
 import java.util.List;
 
+import app.GUI.ChartAirflow;
 import app.GUI.Charts;
 import app.access.*;
 import app.access.impl.*;
@@ -50,7 +51,7 @@ public class Analysis {
 		
 	}
 
-	public void performAnalysis(List<VirtualMachine> vmList, String algorithm, Charts chart) {
+	public void performAnalysis(List<VirtualMachine> vmList, String algorithm, Charts chart, ChartAirflow chartAirflow) {
 		/* evaluate all policies */
 		boolean isViolated = false;
 		boolean shouldStartScheduler = false;
@@ -62,7 +63,7 @@ public class Analysis {
 					System.out.println("\n\n\n.....VM policy violated........");
 					isViolated = true;
 					shouldStartScheduler = true;
-					checkPlanning(1, vmList, algorithm, chart);
+					checkPlanning(1, vmList, algorithm, chart, chartAirflow);
 					break;
 				}
 			}
@@ -75,7 +76,7 @@ public class Analysis {
 					System.out.println("\n\n\n............Server policy violated.............");
 					isViolated = true;
 					shouldStartScheduler = true;
-					checkPlanning(1, vmList, algorithm, chart);
+					checkPlanning(1, vmList, algorithm, chart, chartAirflow);
 					break;
 					
 				}
@@ -87,7 +88,7 @@ public class Analysis {
 						rack);
 				if (rackPolicy.evaluatePolicy() == true && !isViolated){
 					System.out.println("\n\n\n..........Rack policy violated........");
-					checkPlanning(1, vmList, algorithm, chart);
+					checkPlanning(1, vmList, algorithm, chart,chartAirflow);
 					isViolated = true;
 					shouldStartScheduler = true;
 					break;
@@ -95,10 +96,10 @@ public class Analysis {
 			}
 			
 			if(!shouldStartScheduler)
-				checkPlanning(0, vmList, algorithm, chart);
+				checkPlanning(0, vmList, algorithm, chart ,chartAirflow);
 }
 
-	public void checkPlanning(int value,List<VirtualMachine> allVMs, String algorithm, Charts chart) {
+	public void checkPlanning(int value,List<VirtualMachine> allVMs, String algorithm, Charts chart, ChartAirflow chartAirflow) {
 
 		System.out.println("\n\n\n ...........Starting Learning Algorithm...........\n\n");
 		Execution execution = new Execution();
@@ -109,13 +110,13 @@ public class Analysis {
 		if(value == 1) {
 			switch(algorithm) {
 				case "RBR":
-					execution.executeRBR(allVMs, allRacks, chart);
+					execution.executeRBR(allVMs, allRacks, chart, chartAirflow);
 					break;
 				case "NUR":
-					execution.executeNUR(allVMs, allRacks, chart);
+					execution.executeNUR(allVMs, allRacks, chart, chartAirflow);
 					break;
 				case "FFD":
-					execution.performFFD(allVMs, chart);
+					execution.performFFD(allVMs, chart, chartAirflow);
 					break;
 					
 			}	

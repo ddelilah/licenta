@@ -21,6 +21,7 @@ import app.energy.CoolingSimulation;
 import app.energy.MigrationEfficiency;
 import app.energy.PowerConsumption;
 import app.energy.Utilization;
+import app.GUI.ChartAirflow;
 import app.execution.Execution;
 import app.model.Rack;
 import app.model.Server;
@@ -260,7 +261,7 @@ public class Consolidation {
 		}
 	}
 
-	public void consolidationOnDelete(List<VirtualMachine> vmsToBeDeleted, Charts chart, String algorithm) {
+	public void consolidationOnDelete(List<VirtualMachine> vmsToBeDeleted, Charts chart,  ChartAirflow chartAirflow,String algorithm) {
 
 		float newServerUtilizationAfterVMDelete, newRackUtilizationAfterVMDelete, newServerPowerConsumptionAfterVMDelete, newServerCoolingAfterVMDelete, newRackPowerConsumptionAfterVMDelete, newRackCoolingAfterVMDelete;
 		List<Server> allServers = serverDAO.getAllServers();
@@ -423,23 +424,23 @@ public class Consolidation {
 		System.out.println("[CONSOLIDATION] #Released Nodes: " + numberOfReleasedNodes);
 		System.out.println("[CONSOLIDATION] #Migrations: " + numberOfSuccessfulMigrations);
 		
-		handleTheFailedVMs(chart, algorithm);
+		handleTheFailedVMs(chart, chartAirflow, algorithm);
 }
 			
 		
-public void handleTheFailedVMs(Charts chart, String algorithm) {
+public void handleTheFailedVMs(Charts chart,  ChartAirflow chartAirflow,String algorithm) {
 		List<VirtualMachine> failedVMs = vmDAO.getAllVMsByState(VMState.FAILED.getValue());
 		List<Rack> allRacks = rackDAO.getAllRacks();	
 		if(failedVMs.size() != 0) {
 			switch(algorithm) {
 			case "RBR":
-				exec.executeRBR(failedVMs, allRacks, chart);
+				exec.executeRBR(failedVMs, allRacks, chart, chartAirflow);
 				break;
 			case "NUR":
-				exec.executeNUR(failedVMs, allRacks, chart);
+				exec.executeNUR(failedVMs, allRacks, chart, chartAirflow);
 				break;
 			case "FFD":
-				exec.performFFD(failedVMs, chart);
+				exec.performFFD(failedVMs, chart, chartAirflow);
 				break;
 			
 		}

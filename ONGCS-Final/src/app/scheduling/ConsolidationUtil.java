@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import app.GUI.ChartAirflow;
 import app.GUI.Charts;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
@@ -32,7 +33,7 @@ public class ConsolidationUtil {
 	
 	private static int OFF_VALUE = 0;
 
-	public void deleteForFFD(List<VirtualMachine> vmsToBeDeleted, Charts chart) {
+	public void deleteForFFD(List<VirtualMachine> vmsToBeDeleted, Charts chart, ChartAirflow chartAirflow) {
 	
 		List<Server> allServers = serverDAO.getAllServers();
 		List<Server> allModifiedServers = new ArrayList<Server>();

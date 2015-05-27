@@ -1,6 +1,10 @@
 package app.GUI;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Panel;
 import java.util.Calendar;
 
@@ -8,27 +12,28 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import org.LiveGraph.LiveGraph;
+import org.LiveGraph.dataCache.DataCache;
 import org.LiveGraph.dataFile.write.DataStreamWriter;
 import org.LiveGraph.dataFile.write.DataStreamWriterFactory;
+import org.LiveGraph.plot.Plotter;
 import org.LiveGraph.settings.DataFileSettings;
 import org.LiveGraph.settings.DataSeriesSettings;
+import org.LiveGraph.settings.DataSeriesSettings.ScaleMode;
 import org.LiveGraph.settings.GraphSettings;
+import org.LiveGraph.settings.GraphSettings.VGridType;
 
-public class Charts extends JFrame{
+public class Charts {
 	
-	public JFrame frame=new JFrame("Data Center");
-	private JLabel label = new JLabel();
-	private Panel p;
-
+	
 	public static final String DEMO_DIR = System.getProperty("user.dir");
 
 	private DataStreamWriter out;
-	private DataStreamWriter outAirflow ;
+//	private DataStreamWriter outAirflow ;
 
 	public Charts(){
 		
 		out = DataStreamWriterFactory.createDataWriter(DEMO_DIR,"Chart");
-		outAirflow = DataStreamWriterFactory.createDataWriter(DEMO_DIR,"Airflow %");
+//		outAirflow = DataStreamWriterFactory.createDataWriter(DEMO_DIR,"Airflow %");
 		Calendar now = Calendar.getInstance();
 		int year = now.get(Calendar.YEAR);
 		int month = now.get(Calendar.MONTH) +1; 
@@ -60,40 +65,56 @@ public class Charts extends JFrame{
 		GraphSettings gfs = new GraphSettings();
 		DataFileSettings dfss = new DataFileSettings();
 		DataFileSettings dfs = new DataFileSettings();
-
+		DataSeriesSettings dss = new DataSeriesSettings();
+		
 		dfs.setDataFile(DEMO_DIR+"/Chart.15"+"."+mm+"."+dd+"-"+hh+"."+min+"."+ss+".dat");
 		dfss.setDataFile(DEMO_DIR+"/Airflow %.15"+"."+mm+"."+dd+"-"+hh+"."+min+"."+ss+".dat");
 
 		dfs.setUpdateFrequency(1000);
 		dfs.save("startup.lgdfs");
+		
+		dss.load("startup.lgdfs");
+		dss.setScaleMode(0, ScaleMode.Scale_SetVal);
+		dss.setParameter(0, 0.01);
+		dss.setColour(0, Color.MAGENTA);
+		dss.setScaleMode(1, ScaleMode.Scale_SetVal);
+		dss.setParameter(1, 0.01);
+		dss.setColour(1, Color.ORANGE);
+		dss.save("dss.lgdss");
+		
+		gfs.load("startup.lgdfs");
+		gfs.setHighlightDataPoints(true);
+		gfs.setVGridType(VGridType.VGrid_XAUnitAligned);
+		gfs.setVGridSize(1.0);
+	//	gfs.setXAxisScaleValue(10);
+		gfs.save("gfs.lggfs");
 		LiveGraph app = LiveGraph.application();
-		app.exec(new String[] {"-dfs", "startup.lgdfs"});
+		app.exec(new String[] {"-dfs", "startup.lgdfs", "-dss","dss.lgdss", "-gfs","gfs.lggfs"});
 				
 		dfss.setUpdateFrequency(1000);
 		dfss.save("startupAirflow.lgdfs");
-		LiveGraph appp = LiveGraph.application();
-		appp.exec(new String[] {"-dfs", "startupAirflow.lgdfs"});
+//		LiveGraph appp = LiveGraph.application();
+//		appp.exec(new String[] {"-dfs", "startupAirflow.lgdfs"});
 
+		
 		// Set a values separator:
 		out.setSeparator(";");
-		outAirflow.setSeparator(";");
+//		outAirflow.setSeparator(";");
 		// Add a file description line:
 		out.writeFileInfo("Chart");
-		outAirflow.writeFileInfo("Airflow %");
+//		outAirflow.writeFileInfo("Airflow %");
 		// Set-up the data series:
 		out.addDataSeries("PowerConsumption");
 		out.addDataSeries("Cooling Power Consumption");
 		out.addDataSeries("Nb of deployed VMs");
-		outAirflow.addDataSeries("HACS volumetric airflow");		
-		outAirflow.addDataSeries("CACS volumetric airflow");
-		outAirflow.addDataSeries("Parallel volumetric airflow 0.1 loss");
-		outAirflow.addDataSeries("Parallel volumetric airflow 0.2 loss");
-		outAirflow.addDataSeries("Parallel volumetric airflow 0.3 loss");
-		outAirflow.addDataSeries("Parallel volumetric airflow 0.4 loss");
-		outAirflow.addDataSeries("Parallel volumetric airflow 0.5 loss");
+//		outAirflow.addDataSeries("HACS volumetric airflow");		
+//		outAirflow.addDataSeries("CACS volumetric airflow");
+//		outAirflow.addDataSeries("Parallel volumetric airflow 0.1 loss");
+//		outAirflow.addDataSeries("Parallel volumetric airflow 0.2 loss");
+//		outAirflow.addDataSeries("Parallel volumetric airflow 0.3 loss");
+//		outAirflow.addDataSeries("Parallel volumetric airflow 0.4 loss");
+//		outAirflow.addDataSeries("Parallel volumetric airflow 0.5 loss");
 		
-	//	frame.add(dfs);
-		frame.setVisible(true);
 	}
 	
 	public void updateChartPowerConsumption(float powerConsumption,  float coolingPowerConsumption, int nbVMs){
@@ -116,32 +137,32 @@ public class Charts extends JFrame{
 //	        Thread.yield();		
 	}
 	
-	public void updatChartAirflow(float hacsAirflow , float cacsAirflow, float parAirflow01, float parAirflow02, float parAirflow03, float parAirflow04, float parAirflow05){
-		
-		outAirflow.setDataValue(hacsAirflow);
-		outAirflow.setDataValue(cacsAirflow);
-		outAirflow.setDataValue(parAirflow01);
-		outAirflow.setDataValue(parAirflow02);
-		outAirflow.setDataValue(parAirflow03);
-		outAirflow.setDataValue(parAirflow04);
-		outAirflow.setDataValue(parAirflow05);
-			 // Write dataset to disk:
-		outAirflow.writeDataSet();
-		      
-		      // Check for IOErrors:      
-		      if (outAirflow.hadIOException()) {
-		    	  outAirflow.getIOException().printStackTrace();
-		    	  outAirflow.resetIOException();
-		      }
-		      // Pause:
-//		      Thread.yield();
-//		        try { Thread.sleep(3000); } catch (InterruptedException e) {}
-//		        Thread.yield();		
-
-	}
+//	public void updatChartAirflow(float hacsAirflow , float cacsAirflow, float parAirflow01, float parAirflow02, float parAirflow03, float parAirflow04, float parAirflow05){
+//		
+//		outAirflow.setDataValue(hacsAirflow);
+//		outAirflow.setDataValue(cacsAirflow);
+//		outAirflow.setDataValue(parAirflow01);
+//		outAirflow.setDataValue(parAirflow02);
+//		outAirflow.setDataValue(parAirflow03);
+//		outAirflow.setDataValue(parAirflow04);
+//		outAirflow.setDataValue(parAirflow05);
+//			 // Write dataset to disk:
+//		outAirflow.writeDataSet();
+//		      
+//		      // Check for IOErrors:      
+//		      if (outAirflow.hadIOException()) {
+//		    	  outAirflow.getIOException().printStackTrace();
+//		    	  outAirflow.resetIOException();
+//		      }
+//		      // Pause:
+////		      Thread.yield();
+////		        try { Thread.sleep(3000); } catch (InterruptedException e) {}
+////		        Thread.yield();		
+//
+//	}
 	
 	public void finishChartExecution(){
 		 out.close();
-		 outAirflow.close();
+//		 outAirflow.close();
 	}
 }
