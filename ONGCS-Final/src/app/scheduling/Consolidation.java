@@ -42,10 +42,12 @@ public class Consolidation {
 	private Execution exec = new Execution();
 	private int numberOfReleasedNodes = 0;
 	private int numberOfSuccessfulMigrations = 0;
-
+	
+	private SchedulingUtil sUtil = new SchedulingUtil();
 	private ConsolidationUtil consolidationUtil = new ConsolidationUtil();
 
 	private static List<Server> resultOfServerAllocation = new ArrayList<Server>();
+	private static List<Rack> resultOfRackReallocation = new ArrayList<Rack>();
 
 	public void canMoveAllVMsSomewhereElse(List<VirtualMachine> VMs,
 			List<Server> servers) {
@@ -104,7 +106,9 @@ public class Consolidation {
 				resultOfServerAllocation.add(serverToBePlacedOn);
 				Rack newRack = serverToBePlacedOn.getRack();
 				consolidationUtil.updatesToRackValues(oldRack);
+				resultOfRackReallocation.add(oldRack);
 				consolidationUtil.updatesToRackValues(newRack);
+				resultOfRackReallocation.add(newRack);
 			}
 
 		} else {
@@ -247,13 +251,21 @@ public class Consolidation {
 					}
 				}
 			}
+				
+		for(Rack realloc: resultOfRackReallocation) {
+			if(realloc.getRackId() == r.getRackId()) {
+				r.setUtilization(realloc.getUtilization());
+				r.setCoolingValue(realloc.getCoolingValue());
+				r.setPowerValue(realloc.getPowerValue());
+			}
+		}
 		
 		if(r.getRackId() == underUtilizedRackFromAllocationStep.getRackId() && singleRackOn) {
 			System.out.println("[RACK POLICY IS VIOLATED, BUT THIS IS THE ONLY TURNED ON RACK => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON THE SAME RACK");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicyOnRack);
 		} else
 		if (r.getState().equalsIgnoreCase("ON") && rackPolicy.checkRackUtilizationViolation(r.getUtilization())) {
-			System.out.println("[RACK POLICY IS VIOLATED => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON OTHER RACKS");
+			System.out.println("[RACK POLICY IS VIOLATED => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER ON RACK ]" + r.getName() + " " + r.getUtilization() + " TO SERVERS ON OTHER RACKS");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicy);
 		} else {
 			System.out.println("[RACK POLICY IS NOT VIOLATED => MIGRATE ALL VMS TO OTHER SERVERS ON THE SAME RACK");
@@ -353,6 +365,10 @@ public class Consolidation {
 			}
 			// System.out.println("[NEW UTILIZATION]" + correspondingRack.toString());
 		}
+		
+		sUtil.displayPowerConsumptionAndCooling("[AFTER DELETE, BEFORE ACTUAL CONSOLIDATION]");
+		
+		
 
 		// RECONSOLIDATION FOR SERVERS
 		if (underUtilizedServerFromAllocationStep != null && underUtilizedServerFromAllocationStep.getServerId() != 0
@@ -400,9 +416,20 @@ public class Consolidation {
 					break;
 				}
 			}
+			
+			
 
 			ServerPolicy serverPolicy = new ServerPolicy(p.SERVER_POLICY, false, sr);
 			Rack correspondingRack = sr.getRack();
+			
+			for(Rack realloc: resultOfRackReallocation) {
+				if(realloc.getRackId() == correspondingRack.getRackId()) {
+					correspondingRack.setUtilization(realloc.getUtilization());
+					correspondingRack.setCoolingValue(realloc.getCoolingValue());
+					correspondingRack.setPowerValue(realloc.getPowerValue());
+				}
+			}
+			
 			RackPolicy rackPolicy = new RackPolicy(p.RACK_POLICY, false, correspondingRack);
 
 			if (sr.getState().equalsIgnoreCase("ON") && serverPolicy.checkServerUtilizationViolation(sr.getUtilization())) {
@@ -437,7 +464,7 @@ public void handleTheFailedVMs(Charts chart,  ChartAirflow chartAirflow,String a
 				exec.executeRBR(failedVMs, allRacks, chart, chartAirflow);
 				break;
 			case "NUR":
-				exec.executeNUR(failedVMs, allRacks, chart, chartAirflow);
+				exec.executeRBR(failedVMs, allRacks, chart, chartAirflow);
 				break;
 			case "FFD":
 				exec.performFFD(failedVMs, chart, chartAirflow);

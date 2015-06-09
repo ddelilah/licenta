@@ -20,6 +20,7 @@ import app.execution.Time;
 import app.model.VirtualMachine;
 import app.scheduling.Consolidation;
 import app.scheduling.ConsolidationUtil;
+import app.scheduling.SchedulingUtil;
 
 public class Queue extends Thread {
 	private ChartAirflow chartAirflow = new ChartAirflow();
@@ -36,7 +37,7 @@ public class Queue extends Thread {
 	
 	private ConsolidationUtil cUtil;
 	private Consolidation c;
-	private Execution e;
+	private SchedulingUtil sUtil;
 
 	private Map<String, List<VirtualMachine>> map = new HashMap<>();
 
@@ -48,7 +49,7 @@ public class Queue extends Thread {
 		this.dao = new GenericDAOImpl();
 		this.c = new Consolidation();
 		this.cUtil = new ConsolidationUtil();
-		this.e = new Execution();
+		this.sUtil = new SchedulingUtil();
 	}
 
 	@Override
@@ -109,7 +110,7 @@ public class Queue extends Thread {
 			System.out.println("No workload to be deleted.");
 		}
 		
-		e.displayPowerConsumptionAndCooling("[AFTER DELETE] " + algorithm);
+		sUtil.displayPowerConsumptionAndCooling("[AFTER DELETE] " + algorithm);
 
 
 		System.out.println("\n\n........ End of deployment..........");
