@@ -28,7 +28,6 @@ public class RamDAOImpl extends GenericDAOImpl implements RamDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getAllRams()");
 	        }
 	        throw e;
 	      }
@@ -58,7 +57,6 @@ public class RamDAOImpl extends GenericDAOImpl implements RamDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getRAMById(int ramId)");
 	        }
 	        throw e;
 	      }

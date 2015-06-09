@@ -28,7 +28,6 @@ public class CpuDAOImpl extends GenericDAOImpl implements CpuDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getAllCPUs()");
 	        }
 	        throw e;
 	      }
@@ -58,7 +57,6 @@ public class CpuDAOImpl extends GenericDAOImpl implements CpuDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getCPUById(int cpuId)");
 	        }
 	        throw e;
 	      }

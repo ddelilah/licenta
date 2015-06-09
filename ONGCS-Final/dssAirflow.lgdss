@@ -2,17 +2,5 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>LiveGraph version 1.0.1. DataSeriesSettings.</comment>
-<entry key="ScaleMode.1">Scale_None</entry>
-<entry key="ScaleMode.0">Scale_None</entry>
-<entry key="Parameter.2">100.0</entry>
-<entry key="Parameter.1">100.0</entry>
-<entry key="Show.2">1</entry>
-<entry key="Parameter.0">100.0</entry>
-<entry key="Show.1">1</entry>
-<entry key="Show.0">0</entry>
-<entry key="DescribedSeriesCount">3</entry>
-<entry key="Colour.2">ff0000</entry>
-<entry key="Colour.1">0000ff</entry>
-<entry key="Colour.0">000000</entry>
-<entry key="ScaleMode.2">Scale_None</entry>
+<entry key="DescribedSeriesCount">0</entry>
 </properties>

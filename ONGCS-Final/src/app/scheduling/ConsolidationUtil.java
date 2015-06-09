@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 import app.GUI.ChartAirflow;
 import app.GUI.Charts;
@@ -25,11 +26,17 @@ public class ConsolidationUtil {
 	
 	private Utilization utilization = new Utilization();
 	private PowerConsumption powerConsumption = new PowerConsumption();
-	private CoolingSimulation coolingSimulation = new CoolingSimulation();
+	private CoolingSimulation coolingSimulation ;
 	private ServerDAOImpl serverDAO = new ServerDAOImpl();
 	private RackDAOImpl rackDAO = new RackDAOImpl();
 	private VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 
+	private String cracTemp;
+	
+	public ConsolidationUtil(String cracTemp){
+		this.cracTemp = cracTemp;
+		coolingSimulation = new CoolingSimulation(Integer.parseInt(cracTemp));
+	}
 	
 	private static int OFF_VALUE = 0;
 
@@ -45,10 +52,12 @@ public class ConsolidationUtil {
 			selectedVm.setState(VMState.DONE.getValue());
 			selectedVm.setServer(null);
 			vmDAO.mergeSessionsForVirtualMachine(selectedVm);
-//			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
-//					+ correspondingServer.getServerId() + " with vms: "
-//					+ correspondingServer.getCorrespondingVMs());
-
+			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
+					+ correspondingServer.getServerId() + " with vms: "
+					+ correspondingServer.getCorrespondingVMs());
+			 Thread.yield();
+		        try { Thread.sleep(1000); } catch (InterruptedException e) {}
+			if(!allServers.isEmpty())
 			for (Server sr : allServers) {
 				if (sr.getServerId() == correspondingServer.getServerId()) {
 					sr.setCorrespondingVMs(SchedulingUtil.updateVmsOnServer(correspondingServer, selectedVm));
@@ -70,7 +79,8 @@ public class ConsolidationUtil {
 		}
 
 		for (Server sr : allModifiedServers) {
-
+			 Thread.yield();
+		        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 			// System.out.println("[BEFORE VM DELETE FROM SERVER]: " + sr.getUtilization());
 			newServerUtilizationAfterVMDelete = utilization.computeUtilization(sr);
 			newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumptionGivenUtilization(sr, newServerUtilizationAfterVMDelete);
@@ -91,7 +101,8 @@ public class ConsolidationUtil {
 			Rack correspondingRack = sr.getRack();
 
 			// System.out.println("[OLD UTILIZATION]" + correspondingRack.toString());
-
+			 Thread.yield();
+		        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 			newRackUtilizationAfterVMDelete = utilization.computeSingleRackUtilization(correspondingRack);
 			newRackPowerConsumptionAfterVMDelete = powerConsumption.computeSingleRackPowerConsumption(correspondingRack);
 			newRackCoolingAfterVMDelete = coolingSimulation.computeSingleRackCooling(correspondingRack);

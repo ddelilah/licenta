@@ -3,7 +3,7 @@ package app.coolingSystems;
 public class FanPowerConsumption {
 	
 	private HACS hacs = new HACS();
-	private CACS cacs = new CACS();
+//	private CACS cacs = new CACS();
 	private ParallelPlacementStrategy parallel = new ParallelPlacementStrategy();
 	
 	
@@ -29,19 +29,19 @@ public class FanPowerConsumption {
 		float volumetricAirFlow = parallel.computeVolumetricAirFlow(airMassFlowRate);
 		float airVelocity = parallel.computeAirVelocity(volumetricAirFlow);
 		
-		System.out.println("\n\n\n[Computing % decrease in volumetric air flow]\n\n -------------------- [HACS]-------------------------");
-		System.out.println("[Tin = "+ tIn+ " ]");
-		System.out.println("[Ideal air mass flow rate] m = "+idealAirMassFlowRate);
-		System.out.println("[Ideal volumetric air flow rate] f = "+idealVolumetricAirFlow);
-		System.out.println("[Ideal air velocity] v = "+idealAirVelocity);
-
-		System.out.println("---------------------------------------");
-		System.out.println("\n[Loss = "+ airLoss+ " ]");
-		System.out.println("[Air mass flow rate] m = "+airMassFlowRate);
-		System.out.println("[Volumetric air flow rate] f = "+volumetricAirFlow);
-		System.out.println("[Air velocity] v = "+airVelocity);
-		//----------- COMPUTE DECREASE IN FAN POWER CONSUMPTION ----------------------------
-		
+//		System.out.println("\n\n\n[Computing % decrease in volumetric air flow]\n\n -------------------- [HACS]-------------------------");
+//		System.out.println("[Tin = "+ tIn+ " ]");
+//		System.out.println("[Ideal air mass flow rate] m = "+idealAirMassFlowRate);
+//		System.out.println("[Ideal volumetric air flow rate] f = "+idealVolumetricAirFlow);
+//		System.out.println("[Ideal air velocity] v = "+idealAirVelocity);
+//
+//		System.out.println("---------------------------------------");
+//		System.out.println("\n[Loss = "+ airLoss+ " ]");
+//		System.out.println("[Air mass flow rate] m = "+airMassFlowRate);
+//		System.out.println("[Volumetric air flow rate] f = "+volumetricAirFlow);
+//		System.out.println("[Air velocity] v = "+airVelocity);
+//		//----------- COMPUTE DECREASE IN FAN POWER CONSUMPTION ----------------------------
+//		
 		System.out.println("\nDecrease in Fan Speed is "+computePercentageDecreaseInFanSpeed(idealVolumetricAirFlow, volumetricAirFlow)+"%");
 		System.out.println("Decrease in Air Velocity is "+computePercentageDecreaseInAirVelocity(idealAirVelocity,airVelocity)+"%");
 		System.out.println("Decrease in Fan Power Consumption is "+computePercentageDecreaseInFanPowerConsumption(idealAirVelocity,airVelocity)+"%");

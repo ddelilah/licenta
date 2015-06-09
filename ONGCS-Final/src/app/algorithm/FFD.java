@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import app.scheduling.*;
 import app.access.RackDAO;
@@ -31,24 +32,19 @@ public class FFD {
 		List<Rack> allRacks  = new ArrayList<Rack>();
 		List<Server> allServers  = new ArrayList<Server>();
 		allRacks = rackDAO.getAllRacks();
-		System.out.println(allRacks);
 		VMProcessor vmProcessor= new VMProcessor(vmList); 
 		vmList = vmProcessor.sortVMListDescending();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		
 		for(VirtualMachine vm: vmList) {
 			 foundServer = false;
-			System.out.println("Searching for vm: "+ vm.getName());
 			
 			for(Rack rack: allRacks) {
 				if(!foundServer){
-		//			System.out.println("Searching through racks for vm: "+ vm.getVmId());
 					allServers = rack.getServers();
 								
 						for(Server server: allServers) {
-	//						System.out.println("Searching through servers for vm: "+ vm.getVmId());
 							if(schedulingUtil.enoughResources(server, vm, allocation)){
-								System.out.println("Found server : "+ server.getServerId() +" on rack: "+rack.getRackId()+" for vm: "+vm.getVmId() +" "+vm.getName());
 //							Thread.yield();
 //							try { Thread.sleep(3000);} catch (InterruptedException e) {}
 //							Thread.yield();
@@ -62,8 +58,6 @@ public class FFD {
 			}
 			
 			if (!allocation.keySet().contains(vm)) {
-				System.out.println("[Allocation failed] VM " + vm.getVmId()
-						+ vm.getState());
 				vm.setState(VMState.FAILED.getValue());
 				vmDAO.mergeSessionsForVirtualMachine(vm);
 			}

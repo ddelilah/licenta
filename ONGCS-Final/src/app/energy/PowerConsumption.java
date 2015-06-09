@@ -141,16 +141,10 @@ public class PowerConsumption {
 				for(Server server: allServers){
 					power1 += server.getPowerValue();
 					power2 += (float)K*MAXIMUM_POWER+(1-K)*MAXIMUM_POWER*server.getUtilization();
-					System.out.println("\n\n\nPower Value For Server: "+server.getServerId());
-					System.out.println("Power Value: "+server.getPowerValue());
-					System.out.println("Power Value Draft: "+(float)(K*MAXIMUM_POWER+(1-K)*MAXIMUM_POWER*server.getUtilization()));
 				}
 			
 			
 		}
-		
-		System.out.println("\n\n\n\nSystem's power value1: " + power1);
-		System.out.println("System's power value2: " + power2);
 
 	}
 	

@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import app.constants.ServerState;
+import app.energy.CoolingSimulation;
 import app.energy.Utilization;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -14,18 +16,19 @@ public class OBFD {
 
 	private List<Server> serverList;
 	private SchedulingUtil schedulingUtil;
-	
+	private CoolingSimulation coolingSimulation;
 	private static final float UNDERUTILIZED = 0.2f;
 	/** Pmax = 1023W */
 	private static final int MAXIMUM_POWER = 1023;
 	/** fraction of power consumption of an idle server */
 	private static final int K = 70;
 	/* suppose temperature is 25 degrees */
-	private static final float COP = (float) (0.0068 * Math.pow(25, 2) + 0.0008 * 25 + 0.458);
+	//private static final float COP = (float) (0.0068 * Math.pow(25, 2) + 0.0008 * 25 + 0.458);
 
-	public OBFD(List<Server> serverList) {
+	public OBFD(List<Server> serverList, String cracTemp) {
 		this.serverList = serverList;
 		
+		coolingSimulation = new CoolingSimulation(Integer.parseInt(cracTemp));
 		schedulingUtil = new SchedulingUtil();
 	}
 	
@@ -51,7 +54,7 @@ public class OBFD {
 					break;
 				}
 			} else {
-				System.out.println("[ERROR 404: Server not found] Virtual machine" + vm.getVmId() + vm.getName() + " can't be placed anywhere" );
+//				System.out.println("[ERROR 404: Server not found] Virtual machine" + vm.getVmId() + vm.getName() + " can't be placed anywhere" );
 			}
 		}
 		
@@ -96,7 +99,7 @@ public class OBFD {
 						if (power < minPower) {
 							allocatedServers.add(server);
 							minPower = power;
-							cooling = power / COP;
+							cooling = power / coolingSimulation.getCOP();
 						}
 					}
 				}
@@ -113,7 +116,7 @@ public class OBFD {
 					if (power < minPower) {
 						allocatedServers.add(sUnderutilized);
 						minPower = power;
-						cooling = power / COP;
+						cooling = power / coolingSimulation.getCOP();
 					}
 				}
 			}
@@ -129,7 +132,7 @@ public class OBFD {
 							sEmpty.setState(ServerState.ON.getValue());
 							allocatedServers.add(sEmpty);
 							minPower = power;
-							cooling = power / COP;
+							cooling = power / coolingSimulation.getCOP();
 						}
 					}
 				}
@@ -144,7 +147,7 @@ public class OBFD {
 			correspondingValues.add(cooling);
 			returnValue.put(allocatedServers.get(0), correspondingValues);
 		} else {
-			System.out.println("[ERROR] No server has enough resources");
+//			System.out.println("[ERROR] No server has enough resources");
 		}
 		
 		return returnValue;

@@ -28,7 +28,6 @@ public class CoolingDAOImpl extends GenericDAOImpl implements CoolingDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getAllCPUs()");
 	        }
 	        throw e;
 	      }
@@ -58,7 +57,6 @@ public class CoolingDAOImpl extends GenericDAOImpl implements CoolingDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getCoolingById(int coolingId)");
 	        }
 	        throw e;
 	      }

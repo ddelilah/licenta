@@ -3,7 +3,7 @@
 <properties>
 <comment>LiveGraph version 1.0.1. DataFileSettings.</comment>
 <entry key="ShowOnlyTailData">0</entry>
-<entry key="DataFile">C:\Users\Ade\Desktop\GitHub\licenta\ONGCS-Final/Airflow %.15.05.27-15.34.41.dat</entry>
+<entry key="DataFile">C:\Users\Ade\Desktop\GitHub\licenta\ONGCS-Final/Airflow %.15.06.09-22.49.12.dat</entry>
 <entry key="UpdateFrequency">1000</entry>
 <entry key="DoNotCacheData">0</entry>
 </properties>

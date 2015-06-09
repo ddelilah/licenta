@@ -4,15 +4,11 @@
 <comment>LiveGraph version 1.0.1. DataSeriesSettings.</comment>
 <entry key="ScaleMode.1">Scale_SetVal</entry>
 <entry key="ScaleMode.0">Scale_SetVal</entry>
-<entry key="Parameter.2">100.0</entry>
 <entry key="Parameter.1">0.01</entry>
-<entry key="Show.2">1</entry>
 <entry key="Parameter.0">0.01</entry>
 <entry key="Show.1">1</entry>
 <entry key="Show.0">1</entry>
-<entry key="DescribedSeriesCount">3</entry>
-<entry key="Colour.2">33b300</entry>
+<entry key="DescribedSeriesCount">2</entry>
 <entry key="Colour.1">ffc800</entry>
 <entry key="Colour.0">ff00ff</entry>
-<entry key="ScaleMode.2">Scale_None</entry>
 </properties>

@@ -19,7 +19,6 @@ public class Data {
 	            line = br.readLine();
 	        }
 	        data = sb.toString();
-	   //     System.out.println(data);
 	    } finally {
 	        br.close();
 	    }

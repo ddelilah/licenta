@@ -74,7 +74,7 @@ public void writeToFile(List<VirtualMachine> allVMs,int initialNumberOffServers,
 		bw.write(content);
 		bw.close();
 
-		System.out.println("Done");
+//		System.out.println("Done");
 
 	} catch (IOException e) {
 		e.printStackTrace();

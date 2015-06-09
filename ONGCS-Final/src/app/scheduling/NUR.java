@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
@@ -33,11 +34,12 @@ public class NUR {
 	
 	private static Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 
+	private static String cracTemp;
 	
 	private static Utilization util = new Utilization();
 
-	public NUR() {
-
+	public NUR(String cracTemp) {
+		this.cracTemp = cracTemp;
 	}
 
 	public static Map<VirtualMachine, Server> placeVMsInNoneUnderutilizedRack(
@@ -76,7 +78,7 @@ public class NUR {
 		sortedVMs = vmProcessor.sortVMListDescending();
 		for (VirtualMachine v : sortedVMs) {
 
-			OBFD obfdNonUnderUtilized = new OBFD(serversInNonUnderUtilizedRacks);
+			OBFD obfdNonUnderUtilized = new OBFD(serversInNonUnderUtilizedRacks, cracTemp);
 			if (!obfdNonUnderUtilized.findAppropriateServer(v, allocation)
 					.isEmpty()) {
 				resultOfOBFD = obfdNonUnderUtilized.findAppropriateServer(v,
@@ -100,7 +102,7 @@ public class NUR {
 
 			} else {
 				// TODO: modify allocation
-				OBFD obfdUnderUtilized = new OBFD(serversInUnderUtilizedRacks);
+				OBFD obfdUnderUtilized = new OBFD(serversInUnderUtilizedRacks, cracTemp);
 				if (!obfdUnderUtilized.findAppropriateServer(v, allocation)
 						.isEmpty()) {
 					resultOfOBFD = obfdUnderUtilized.findAppropriateServer(v,
@@ -124,7 +126,7 @@ public class NUR {
 
 				} else {
 					// if all racks are off
-					OBFD obfdOff = new OBFD(serversInOffRacks);
+					OBFD obfdOff = new OBFD(serversInOffRacks, cracTemp);
 					if (!obfdOff.findAppropriateServer(v, allocation).isEmpty()) {
 						resultOfOBFD = obfdOff.findAppropriateServer(v,
 								allocation);
@@ -134,7 +136,7 @@ public class NUR {
 							allocatedServer = entry.getKey();
 							
 							float potentialUtilization = util.computePotentialUtilizationForAServer(allocatedServer, v, allocation);
-							System.out.println("[SERVER'S POTENTIAL UTILIZATION]:" + potentialUtilization);
+//							System.out.println("[SERVER'S POTENTIAL UTILIZATION]:" + potentialUtilization);
 							if(potentialUtilization > 0.2 && potentialUtilization < 0.8) {
 								serversInNonUnderUtilizedRacks.add(allocatedServer);
 				
@@ -180,8 +182,8 @@ public class NUR {
 			}
 
 			if (!allocation.keySet().contains(v)) {
-				System.out.println("[Allocation failed] VM " + v.getVmId()
-						+ v.getState());
+//				System.out.println("[Allocation failed] VM " + v.getVmId()
+//						+ v.getState());
 				v.setState(VMState.FAILED.getValue());
 				vmDAO.mergeSessionsForVirtualMachine(v);
 			}

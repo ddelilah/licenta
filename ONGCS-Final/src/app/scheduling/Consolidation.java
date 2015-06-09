@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import app.GUI.Charts;
 import app.access.impl.GenericDAOImpl;
@@ -38,14 +39,30 @@ public class Consolidation {
 	private ServerDAOImpl serverDAO = new ServerDAOImpl();
 	private static VMProcessor vmProcessor;
 	private PowerConsumption powerConsumption = new PowerConsumption();
-	private CoolingSimulation coolingSimulation = new CoolingSimulation();
-	private Execution exec = new Execution();
+	private CoolingSimulation coolingSimulation;
+	private Execution exec ;
 	private int numberOfReleasedNodes = 0;
 	private int numberOfSuccessfulMigrations = 0;
 
-	private ConsolidationUtil consolidationUtil = new ConsolidationUtil();
+	private String cracTemp;
+	private ConsolidationUtil consolidationUtil ;
 
 	private static List<Server> resultOfServerAllocation = new ArrayList<Server>();
+
+	public Consolidation(String cracTemp){
+		this.cracTemp = cracTemp;
+		coolingSimulation = new CoolingSimulation(Integer.parseInt(cracTemp));
+		exec = new Execution (cracTemp);
+		consolidationUtil = new ConsolidationUtil(cracTemp);
+	}
+	
+	public String getCracTemp() {
+		return cracTemp;
+	}
+
+	public void setCracTemp(String cracTemp) {
+		this.cracTemp = cracTemp;
+	}
 
 	public void canMoveAllVMsSomewhereElse(List<VirtualMachine> VMs,
 			List<Server> servers) {
@@ -65,7 +82,7 @@ public class Consolidation {
 		numberOfVms = sortedVMs.size();
 
 		for (VirtualMachine selectedVm : sortedVMs) {
-			OBFD obfd = new OBFD(servers);
+			OBFD obfd = new OBFD(servers, cracTemp);
 			resultOfOBFD = obfd.findAppropriateServerForConsolidationStep(selectedVm, allocation);
 
 			if (resultOfOBFD != null && resultOfOBFD.getServerId() != 0) {
@@ -87,7 +104,8 @@ public class Consolidation {
 						+ " should be placed on server "
 						+ serverToBePlacedOn.getServerId()
 						+ serverToBePlacedOn.getName());
-
+				 Thread.yield();
+			        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 				Rack oldRack = vmToBeMoved.getServer().getRack();
 				Server oldServer = vmToBeMoved.getServer();
 
@@ -99,8 +117,8 @@ public class Consolidation {
 				releasedNodes.add(oldServer);
 				
 				consolidationUtil.updatesToServerValues(serverToBePlacedOn);
-				System.out.println("Added VMs server's list of VMs: "
-						+ serverToBePlacedOn.getCorrespondingVMs());
+//				System.out.println("Added VMs server's list of VMs: "
+//						+ serverToBePlacedOn.getCorrespondingVMs());
 				resultOfServerAllocation.add(serverToBePlacedOn);
 				Rack newRack = serverToBePlacedOn.getRack();
 				consolidationUtil.updatesToRackValues(oldRack);
@@ -108,7 +126,7 @@ public class Consolidation {
 			}
 
 		} else {
-			System.out.println("[SERVER CAN'T BE TURNED OFF => LET IT BE]");
+//			System.out.println("[SERVER CAN'T BE TURNED OFF => LET IT BE]");
 		}
 		
 		int firstId = 0;
@@ -217,6 +235,8 @@ public class Consolidation {
 
 		allVmsOnServer = s.getCorrespondingVMs();
 		System.out.println("[SERVER CONSOLIDATION].........");
+		 Thread.yield();
+	        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		for (VirtualMachine vmm : allVmsOnServer) {
 			if (vmm.getState().equalsIgnoreCase("RUNNING")) {
 				allVmsOnServerToBeMigrated.add(vmm);
@@ -251,13 +271,19 @@ public class Consolidation {
 		if(r.getRackId() == underUtilizedRackFromAllocationStep.getRackId() && singleRackOn) {
 			System.out.println("[RACK POLICY IS VIOLATED, BUT THIS IS THE ONLY TURNED ON RACK => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON THE SAME RACK");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicyOnRack);
+			 Thread.yield();
+		        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		} else
 		if (r.getState().equalsIgnoreCase("ON") && rackPolicy.checkRackUtilizationViolation(r.getUtilization())) {
 			System.out.println("[RACK POLICY IS VIOLATED => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON OTHER RACKS");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicy);
+			 Thread.yield();
+		        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		} else {
 			System.out.println("[RACK POLICY IS NOT VIOLATED => MIGRATE ALL VMS TO OTHER SERVERS ON THE SAME RACK");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated, serversThatDontBreakPolicyOnRack);
+			 Thread.yield();
+		        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		}
 	}
 
@@ -382,10 +408,14 @@ public class Consolidation {
 					
 				// move all vms from that rack on other servers from other racks
 				System.out.println("[RACK RECONSOLIDATION]");
+				 Thread.yield();
+			        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 				tryToMoveAllVMsFromARack(underUtilizedRackFromAllocationStep);
 			}
 		} else {
 			System.out.println("[UNDERUTILIZED SERVER IS ON THE UNDERUTILIZED RACK => CORNER CASE PREVIOUSLY CHECKED]");
+			 Thread.yield();
+		        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		}
 	}
 		
@@ -407,14 +437,20 @@ public class Consolidation {
 
 			if (sr.getState().equalsIgnoreCase("ON") && serverPolicy.checkServerUtilizationViolation(sr.getUtilization())) {
 				System.out.println("[SERVER POLICY IS VIOLATED => MIGRATE ALL VMS FROM SERVER TO OTHER SERVERS]");
+				 Thread.yield();
+			        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 				tryToMoveAllVMsFromAServer(sr);
+			
 			} else {
 				// Server does not break policy => check rack
 				if (correspondingRack.getState().equalsIgnoreCase("ON") && rackPolicy.checkRackUtilizationViolation(correspondingRack.getUtilization())) {
+					 Thread.yield();
+				        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 					System.out.println("[RACK POLICY IS VIOLATED => MIGRATE ALL VMS FROM THE RACK TO OTHER RACKS");
 					tryToMoveAllVMsFromARack(correspondingRack);
+					
 				} else {
-					System.out.println("[HAPPY FLOW]");
+//					System.out.println("[HAPPY FLOW]");
 				}
 			}
 		}
@@ -423,6 +459,8 @@ public class Consolidation {
 		System.out.println("Migration efficiency: "+ mEff.computeMigrationEfficiency(numberOfReleasedNodes, numberOfSuccessfulMigrations));		
 		System.out.println("[CONSOLIDATION] #Released Nodes: " + numberOfReleasedNodes);
 		System.out.println("[CONSOLIDATION] #Migrations: " + numberOfSuccessfulMigrations);
+		 Thread.yield();
+	        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		
 		handleTheFailedVMs(chart, chartAirflow, algorithm);
 }

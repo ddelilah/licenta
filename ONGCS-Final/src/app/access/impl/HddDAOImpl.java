@@ -28,7 +28,6 @@ public class HddDAOImpl extends GenericDAOImpl implements HddDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getAllHDDs()");
 	        }
 	        throw e;
 	      }
@@ -58,7 +57,6 @@ public class HddDAOImpl extends GenericDAOImpl implements HddDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getHDDById(int hddId)");
 	        }
 	        throw e;
 	      }

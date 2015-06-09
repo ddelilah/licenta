@@ -58,24 +58,32 @@ public class ChartAirflow {
 		dfss.save("startupAirflow2.lgdfs");
 		
 		dss.load("startupAirflow2.lgdfs");
-		dss.setColour(0, Color.BLACK);
-		dss.setColour(1, Color.BLUE);
-		dss.setColour(2, Color.RED);
+		
 				
 		dss.save("dssAirflow.lgdss");
 		LiveGraph appp = LiveGraph.application();
+	//	appp.setDisplayGraphSettingsWindow(false);
+	//	appp.setDisplaySeriesSettingsWindow(false);
+	//	appp.setDisplayDataFileSettingsWindow(false);
+	//	appp.setDisplayDataFileSettingsWindow(false);
 		appp.exec(new String[] {"-dfs", "startupAirflow2.lgdfs","-dss", "dssAirflow.lgdss"});
+	
+		
 		outAirflow.setSeparator(";");
 		outAirflow.writeFileInfo("Airflow2");
 
 		outAirflow.addDataSeries("HACS volumetric airflow");		
-		outAirflow.addDataSeries("CACS volumetric airflow");
 		outAirflow.addDataSeries("Parallel volumetric airflow 0.1 loss");
 		outAirflow.addDataSeries("Parallel volumetric airflow 0.2 loss");
 		outAirflow.addDataSeries("Parallel volumetric airflow 0.3 loss");
 		outAirflow.addDataSeries("Parallel volumetric airflow 0.4 loss");
 		outAirflow.addDataSeries("Parallel volumetric airflow 0.5 loss");
 		
+		dss.setColour(0, Color.BLACK);
+		dss.setColour(1, Color.BLUE);
+		dss.setColour(2, Color.RED);
+		appp.setDisplayDataFileSettingsWindow(false);
+		appp.setDisplayGraphSettingsWindow(false);
 	}
 	
 	
@@ -83,7 +91,6 @@ public class ChartAirflow {
 	public void updatChartAirflow(float hacsAirflow , float cacsAirflow, float parAirflow01, float parAirflow02, float parAirflow03, float parAirflow04, float parAirflow05){
 		
 		outAirflow.setDataValue(hacsAirflow);
-		outAirflow.setDataValue(cacsAirflow);
 		outAirflow.setDataValue(parAirflow01);
 		outAirflow.setDataValue(parAirflow02);
 		outAirflow.setDataValue(parAirflow03);

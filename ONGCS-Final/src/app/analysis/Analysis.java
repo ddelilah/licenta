@@ -5,6 +5,7 @@ import java.util.List;
 
 import app.GUI.ChartAirflow;
 import app.GUI.Charts;
+import app.GUI.RackUtilizationGUI;
 import app.access.*;
 import app.access.impl.*;
 import app.constants.PolicyType;
@@ -29,7 +30,7 @@ public class Analysis {
 	private List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
 	private List<Server> serverList = new ArrayList<Server>();
 	private List<Rack> rackList = new ArrayList<Rack>();
-
+//	RackUtilizationGUI rGUI = new RackUtilizationGUI();
 	private PolicyType p;
 
 	public Analysis(List<VirtualMachine> vmList, List<Server> serverList,
@@ -51,7 +52,7 @@ public class Analysis {
 		
 	}
 
-	public void performAnalysis(List<VirtualMachine> vmList, String algorithm, Charts chart, ChartAirflow chartAirflow) {
+	public void performAnalysis(List<VirtualMachine> vmList, String algorithm, Charts chart, ChartAirflow chartAirflow, String cracTemp) {
 		/* evaluate all policies */
 		boolean isViolated = false;
 		boolean shouldStartScheduler = false;
@@ -63,7 +64,7 @@ public class Analysis {
 					System.out.println("\n\n\n.....VM policy violated........");
 					isViolated = true;
 					shouldStartScheduler = true;
-					checkPlanning(1, vmList, algorithm, chart, chartAirflow);
+					checkPlanning(1, vmList, algorithm, chart, chartAirflow, cracTemp);
 					break;
 				}
 			}
@@ -74,9 +75,10 @@ public class Analysis {
 						false, server);
 				if (serverPolicy.evaluatePolicy() == true && !isViolated){
 					System.out.println("\n\n\n............Server policy violated.............");
+
 					isViolated = true;
 					shouldStartScheduler = true;
-					checkPlanning(1, vmList, algorithm, chart, chartAirflow);
+					checkPlanning(1, vmList, algorithm, chart, chartAirflow, cracTemp);
 					break;
 					
 				}
@@ -88,7 +90,8 @@ public class Analysis {
 						rack);
 				if (rackPolicy.evaluatePolicy() == true && !isViolated){
 					System.out.println("\n\n\n..........Rack policy violated........");
-					checkPlanning(1, vmList, algorithm, chart,chartAirflow);
+
+					checkPlanning(1, vmList, algorithm, chart,chartAirflow, cracTemp);
 					isViolated = true;
 					shouldStartScheduler = true;
 					break;
@@ -96,13 +99,14 @@ public class Analysis {
 			}
 			
 			if(!shouldStartScheduler)
-				checkPlanning(0, vmList, algorithm, chart ,chartAirflow);
+				checkPlanning(0, vmList, algorithm, chart ,chartAirflow, cracTemp);
 }
 
-	public void checkPlanning(int value,List<VirtualMachine> allVMs, String algorithm, Charts chart, ChartAirflow chartAirflow) {
+	public void checkPlanning(int value,List<VirtualMachine> allVMs, String algorithm, Charts chart, ChartAirflow chartAirflow, String cracTemp) {
 
 		System.out.println("\n\n\n ...........Starting Learning Algorithm...........\n\n");
-		Execution execution = new Execution();
+
+		Execution execution = new Execution(cracTemp);
 		RackDAO rackDAO = new RackDAOImpl();
 		List<Rack> allRacks  = new ArrayList<Rack>();
 		allRacks = rackDAO.getAllRacks();
@@ -122,6 +126,7 @@ public class Analysis {
 			}	
 		} else {
 			System.out.println("............System is Optimal.............");
+
 		}
 	}
 

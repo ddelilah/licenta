@@ -15,6 +15,7 @@ import org.LiveGraph.LiveGraph;
 import org.LiveGraph.dataCache.DataCache;
 import org.LiveGraph.dataFile.write.DataStreamWriter;
 import org.LiveGraph.dataFile.write.DataStreamWriterFactory;
+import org.LiveGraph.gui.MainWindow;
 import org.LiveGraph.plot.Plotter;
 import org.LiveGraph.settings.DataFileSettings;
 import org.LiveGraph.settings.DataSeriesSettings;
@@ -67,11 +68,15 @@ public class Charts {
 		DataFileSettings dfs = new DataFileSettings();
 		DataSeriesSettings dss = new DataSeriesSettings();
 		
+		MainWindow mw = new MainWindow();
+		//mw.hide();
+		
+	
 		dfs.setDataFile(DEMO_DIR+"/Chart.15"+"."+mm+"."+dd+"-"+hh+"."+min+"."+ss+".dat");
-		dfss.setDataFile(DEMO_DIR+"/Airflow %.15"+"."+mm+"."+dd+"-"+hh+"."+min+"."+ss+".dat");
+	//	dfss.setDataFile(DEMO_DIR+"/Airflow %.15"+"."+mm+"."+dd+"-"+hh+"."+min+"."+ss+".dat");
 
 		dfs.setUpdateFrequency(1000);
-		dfs.save("startup.lgdfs");
+		dfs.save("startup.lgdfs");		
 		
 		dss.load("startup.lgdfs");
 		dss.setScaleMode(0, ScaleMode.Scale_SetVal);
@@ -88,32 +93,30 @@ public class Charts {
 		gfs.setVGridSize(1.0);
 	//	gfs.setXAxisScaleValue(10);
 		gfs.save("gfs.lggfs");
+	
+		
 		LiveGraph app = LiveGraph.application();
-		app.exec(new String[] {"-dfs", "startup.lgdfs", "-dss","dss.lgdss", "-gfs","gfs.lggfs"});
+		
+//		app.setDisplayGraphSettingsWindow(false);
+//		app.setDisplaySeriesSettingsWindow(false);
+//		app.setDisplayDataFileSettingsWindow(false);
+//		app.setDisplayDataFileSettingsWindow(false);
+//		
+		
+		app.exec(new String[] {"-dfs", "startup.lgdfs", "-dss","dss.lgdss", "-gs","gfs.lggfs"});
 				
+		
 		dfss.setUpdateFrequency(1000);
 		dfss.save("startupAirflow.lgdfs");
-//		LiveGraph appp = LiveGraph.application();
-//		appp.exec(new String[] {"-dfs", "startupAirflow.lgdfs"});
 
-		
-		// Set a values separator:
 		out.setSeparator(";");
-//		outAirflow.setSeparator(";");
-		// Add a file description line:
 		out.writeFileInfo("Chart");
-//		outAirflow.writeFileInfo("Airflow %");
-		// Set-up the data series:
 		out.addDataSeries("PowerConsumption");
 		out.addDataSeries("Cooling Power Consumption");
 		out.addDataSeries("Nb of deployed VMs");
-//		outAirflow.addDataSeries("HACS volumetric airflow");		
-//		outAirflow.addDataSeries("CACS volumetric airflow");
-//		outAirflow.addDataSeries("Parallel volumetric airflow 0.1 loss");
-//		outAirflow.addDataSeries("Parallel volumetric airflow 0.2 loss");
-//		outAirflow.addDataSeries("Parallel volumetric airflow 0.3 loss");
-//		outAirflow.addDataSeries("Parallel volumetric airflow 0.4 loss");
-//		outAirflow.addDataSeries("Parallel volumetric airflow 0.5 loss");
+		
+		app.setDisplayDataFileSettingsWindow(false);
+		app.setDisplayGraphSettingsWindow(false);
 		
 	}
 	

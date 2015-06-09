@@ -29,7 +29,6 @@ public class RackDAOImpl extends GenericDAOImpl implements RackDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getAllRacks()");
 	        }
 	        throw e;
 	      }
@@ -59,7 +58,6 @@ public class RackDAOImpl extends GenericDAOImpl implements RackDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getRackById(int rackId)");
 	        }
 	        throw e;
 	      }

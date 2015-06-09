@@ -43,11 +43,8 @@ public class HACS {
 		do{
 			float newTin = tIn;
 			float tOut = tIn;
-	//		System.out.println("\n\n\n\n----------- m is "+ (float)m+" -----------------------");
 			tOut = (float)(totalPowerConsumption / (m*SPECIFIC_HEAT)) + newTin;
 			newTin = tOut;				
-	//		System.out.println("powerConsumption is "+totalPowerConsumption);
-	//		System.out.println("tOut is "+tOut);
 
 			if(tOut < T_MAX){
 				airMassFlowRate = m;
@@ -64,11 +61,11 @@ public class HACS {
 	
 	
 	public float computeVolumetricAirFlow(float airMassFlowRate){
-		System.out.println("volumetricAirFlow="+(float)(airMassFlowRate / DENSITY)+"[m^3/s]");
+//		System.out.println("volumetricAirFlow="+(float)(airMassFlowRate / DENSITY)+"[m^3/s]");
 		return (float)(airMassFlowRate/DENSITY);
 	}
 	public float computeAirVelocity(float volumetricAirFLow){
-		System.out.println("airVelocity = "+ (float)(volumetricAirFLow/AREA)+"[m/s]");
+//		System.out.println("airVelocity = "+ (float)(volumetricAirFLow/AREA)+"[m/s]");
 		return (float) volumetricAirFLow/AREA;
  	}
 	

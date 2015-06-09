@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import app.access.RackDAO;
 import app.access.impl.GenericDAOImpl;
@@ -33,7 +34,12 @@ public class RBR implements Serializable {
 	private SchedulingUtil schedulingUtil= new SchedulingUtil();
 	public GenericDAOImpl dao = new GenericDAOImpl();
 	public VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
-	public RBR(){}
+	private String cracTemp;
+	
+	public RBR(String cracTemp){
+		
+		this.cracTemp = cracTemp;
+	}
 
 	@SuppressWarnings("unchecked")
 	public Map<VirtualMachine, Server> placeVMsRackByRack(List<VirtualMachine> vmList, List<Rack> rackList) {
@@ -50,7 +56,7 @@ public class RBR implements Serializable {
 		vmList = vmProcessor.sortVMListDescending();
 		Rack rack = new Rack();
 
-		System.out.println("........... RBR ...................."+vmList.size());
+//		System.out.println("........... RBR ...................."+vmList.size());
 	
 		
 		for (VirtualMachine vm : vmList) {
@@ -62,7 +68,7 @@ public class RBR implements Serializable {
 			
 
 			allocatedServer = null;
-			OBFD obfd = new OBFD(serverList);
+			OBFD obfd = new OBFD(serverList, cracTemp);
 			if (!obfd.findAppropriateServer(vm,allocation).isEmpty()) {
 				resultOfOBFD = obfd.findAppropriateServer(vm, allocation);
 
@@ -76,18 +82,18 @@ public class RBR implements Serializable {
 
 			if (allocatedServer != null) {
 				allocation.put(vm, allocatedServer);
-				System.out.println("Virtual machine "+ vm.getVmId()+" "+vm.getName() +" allocated to server "+allocatedServer);
+//				System.out.println("Virtual machine "+ vm.getVmId()+" "+vm.getName() +" allocated to server "+allocatedServer);
 				getServerRemainingResources(allocatedServer, allocation);
 			}
 			else{
-				System.out.println("Allocation failed "+ vm.getName()+ vm.getVmId()+ vm.getState());
+//				System.out.println("Allocation failed "+ vm.getName()+ vm.getVmId()+ vm.getState());
 				vm.setState(VMState.FAILED.getValue());
 				vmDAO.updateInstance(vm);
 			}
 		
 		}
 			else{
-				System.out.println("Allocation failed "+ vm.getName()+ vm.getVmId()+ vm.getState());
+//				System.out.println("Allocation failed "+ vm.getName()+ vm.getVmId()+ vm.getState());
 				vm.setState(VMState.FAILED.getValue());
 				vmDAO.updateInstance(vm);
 			}
@@ -115,8 +121,8 @@ public class RBR implements Serializable {
 		int remainingCores = server.getCpu().getNr_cores();
 		float remainingHDD = server.getHdd().getCapacity();
 		float remainingRam = server.getRam().getCapacity();
-		System.out.println("Server's resources before allocation are: \n MIPS "+remainingMIPS+"\n Cores "+ remainingCores +"\n HDD "+remainingHDD+" MB \n Ram"
-				+remainingRam);
+//		System.out.println("Server's resources before allocation are: \n MIPS "+remainingMIPS+"\n Cores "+ remainingCores +"\n HDD "+remainingHDD+" MB \n Ram"
+//				+remainingRam);
 		for(VirtualMachine vm: vmList){
 			remainingMIPS -= vm.getVmMips();
 			remainingCores -= vm.getCpu().getNr_cores();
@@ -130,22 +136,8 @@ public class RBR implements Serializable {
 				remainingHDD -= entry.getKey().getHdd().getCapacity();
 				remainingRam -= entry.getKey().getRam().getCapacity();
 		}
-		System.out.println("Server's remaining resources after allocation are: \n MIPS "+remainingMIPS+"\n Cores "+ remainingCores +"\n HDD "+remainingHDD+" MB \n Ram"
-				+remainingRam);
+//		System.out.println("Server's remaining resources after allocation are: \n MIPS "+remainingMIPS+"\n Cores "+ remainingCores +"\n HDD "+remainingHDD+" MB \n Ram"
+//				+remainingRam);
 	}
-	public static void main(String []args){
-		RackDAO rackDAO = new RackDAOImpl();
-		List<Rack> allRacks  = new ArrayList<Rack>();
-		List<VirtualMachine> allVMs  = new ArrayList<VirtualMachine>();
-		allRacks = rackDAO.getAllRacks();
-		
-		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
-
-		allVMs = vmDAO.getAllVMs();
-		allRacks = rackDAO.getAllRacks();
-		
-		RBR rbr = new RBR();
-		rbr.placeVMsRackByRack(allVMs, allRacks);
-		
-	}
+	
 }

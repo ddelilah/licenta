@@ -61,14 +61,14 @@ public class Learning {
 	        		}
  // ------------------------------ we have the same number of VMs allocated in the file -----------------------------------------------
 	        		else{
-	        			System.out.println("same nb of vms");
+//	        			System.out.println("same nb of vms");
 	        			String[] toParse = line.split(" ");
 	        			/*
 	        			 * If the number of Unused servers = max number of existent servers and same number
 	        			 * 
 	        			 * */
 	        			if(Integer.parseInt(toParse[0]) == initialNumberOffServers && maxNumberOfServers == Integer.parseInt(toParse[0])){
-	        				System.out.println("Found allocation \n\n\n\n");
+//	        				System.out.println("Found allocation \n\n\n\n");
 	        				while(!line.equals("-------------------- Allocation --------------------")){
 	        					line = br.readLine();
 	        					
@@ -97,7 +97,7 @@ public class Learning {
 	        				foundExperiment.add(servers);
 	        				foundExperiment.add(racks);
 	        				getObjectList(foundExperiment,allVMsToBeDeployed);
-	        				System.out.println("\n\n\n\n--------------------- Same VMs and all servers are turned OFF-----------------");
+//	        				System.out.println("\n\n\n\n--------------------- Same VMs and all servers are turned OFF-----------------");
 	        				return true;
 	        			}
 // ------------------- If the number of Unused servers = our initial config -------------------------------------------------------------
@@ -117,7 +117,7 @@ public class Learning {
 	        				initialServers +="]";
 // ------------------- Initial server configuration from the file is exactly the same with the initial one from our experiment -----------
 	        				if(initialServers.equals(allInitialServers.toString())){
-	        					System.out.println("Found allocation  2 \n\n\n\n");
+//	        					System.out.println("Found allocation  2 \n\n\n\n");
 		        				while(!line.equals("-------------------- Allocation --------------------")){
 		        					line = br.readLine();
 		        					
@@ -145,8 +145,8 @@ public class Learning {
 		        				foundExperiment.add(racks);
 		        				getObjectList(foundExperiment,allVMsToBeDeployed);
 		        				
-		        				System.out.println("\n\n\n\n--------------------- Same VMs, some of the servers are turned OFF and "
-		        						+ "the ON ones have the same config-----------------");
+//		        				System.out.println("\n\n\n\n--------------------- Same VMs, some of the servers are turned OFF and "
+//		        						+ "the ON ones have the same config-----------------");
 
 		        				return true;
 		        					        					
@@ -154,8 +154,8 @@ public class Learning {
 // --------------------------- Check if maybe the servers have another order, but the same utilization (HOMOGENOUS SERVERS)------------------------------
 	        				else {
 	        					setServerListFromFile(getInitialServersList(initialServers));
-		        				System.out.println("\n\n\n\n--------------------- Same VMs, some of the servers are turned OFF and "
-		        						+ "the ON ones DO NOT have the same config-----------------"+allInitialServers.size());
+//		        				System.out.println("\n\n\n\n--------------------- Same VMs, some of the servers are turned OFF and "
+//		        						+ "the ON ones DO NOT have the same config-----------------"+allInitialServers.size());
 		        				
 		        				boolean sameConfigExists = true;
 		        				for(Server server: allInitialServers){
@@ -242,11 +242,11 @@ public class Learning {
 		for(i=0; i< serverFromFileList.size() && !exists; i++){
 			if(serverFromFileList.get(i).getUtilization() == server.getUtilization()){
 				exists = true;
-				System.out.println("Same utilization "+ serverFromFileList.get(i).getUtilization()+" "+server.getUtilization() );
+//				System.out.println("Same utilization "+ serverFromFileList.get(i).getUtilization()+" "+server.getUtilization() );
 			}
 		}
 		
-		System.out.println("i is"+ i+" and exists is "+ exists);
+//		System.out.println("i is"+ i+" and exists is "+ exists);
 		if(exists)
 			serverFromFileList.remove(i-1);
 		setServerListFromFile(serverFromFileList);
@@ -259,9 +259,9 @@ public class Learning {
 		List<Server> initialServerList = new ArrayList<>();
 		String [] initialServ = initialServersString.split("Server");
 		
-		System.out.println("Initial Server List"+initialServersString);
-
-		System.out.println("\n\n\n"+initialServ[0]);
+//		System.out.println("Initial Server List"+initialServersString);
+//
+//		System.out.println("\n\n\n"+initialServ[0]);
 		
 		for(int i=1; i<initialServ.length; i++){
 			Server server = new Server();
@@ -322,23 +322,23 @@ public class Learning {
 		toParse = foundExperiment.get(0).split("VirtualMachine");
 		serverList = serverDAO.getAllServers();
 		
-		System.out.println("\n\n\n\n\n\n\n\n\n\nServer list is"+ serverList);
+//		System.out.println("\n\n\n\n\n\n\n\n\n\nServer list is"+ serverList);
 		for(int i=1; i<toParse.length ; i++){
 			
-			System.out.println("\n\n\nIn file we have "+toParse[i]);
+//			System.out.println("\n\n\nIn file we have "+toParse[i]);
 
 			int pos =-1;
 			for(VirtualMachine vm: allVMsToBeDeployed){
-					System.out.println("\n\n\nChecking vm "+ vm);
+//					System.out.println("\n\n\nChecking vm "+ vm);
 					pos ++;
 					if(vm.getName().equals(toParse[i].split("name=")[1].split(",")[0]) && vm.getServer()==null ){
-						System.out.println("\n\n\nVm name equal and server_id null");
+//						System.out.println("\n\n\nVm name equal and server_id null");
 						VirtualMachine virtualMachine = new VirtualMachine();
 						virtualMachine = vmDAO.getVirtualMachineById(vm.getVmId());
 						virtualMachine.setState(VMState.RUNNING.getValue());
 						
 						virtualMachine.setServer(serverList.get(Integer.parseInt(toParse[i].split("id: ")[1].split(System.lineSeparator())[0])-1));
-						System.out.println("\n\n\nVm "+virtualMachine+"\ngets server_id" + serverList.get(Integer.parseInt(toParse[i].split("id: ")[1].split(System.lineSeparator())[0])-1));
+//						System.out.println("\n\n\nVm "+virtualMachine+"\ngets server_id" + serverList.get(Integer.parseInt(toParse[i].split("id: ")[1].split(System.lineSeparator())[0])-1));
 				//		genericDAO.updateInstance(virtualMachine);
 						mergeSessionsForExecution(virtualMachine);
 						

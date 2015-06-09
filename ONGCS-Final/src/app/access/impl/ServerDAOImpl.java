@@ -29,7 +29,6 @@ public class ServerDAOImpl extends GenericDAOImpl implements ServerDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getAllServers()");
 	        }
 	        throw e;
 	      }
@@ -53,7 +52,6 @@ public class ServerDAOImpl extends GenericDAOImpl implements ServerDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getAllServersByState()");
 	        }
 	        throw e;
 	      }
@@ -83,7 +81,6 @@ public class ServerDAOImpl extends GenericDAOImpl implements ServerDAO {
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getServerById(int serverId)");
 	        }
 	        throw e;
 	      }

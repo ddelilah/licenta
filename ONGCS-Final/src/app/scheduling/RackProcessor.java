@@ -68,18 +68,6 @@ public class RackProcessor implements Comparator<Rack> {
 		
 	}
 	
-	public static void main(String []args){
-		
-		RackDAO rackDAO = new RackDAOImpl();
-
-		List<Rack> allRacks  = new ArrayList<Rack>();
-		allRacks = rackDAO.getAllRacks();
 	
-		RackProcessor rProc = new RackProcessor(allRacks);
-		rProc.sortRackListDescending();
-		for(Rack r: allRacks)
-			System.out.println(r.getUtilization()+ " ");
-	}
-
 	
 }

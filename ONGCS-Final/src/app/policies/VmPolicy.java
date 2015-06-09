@@ -14,7 +14,6 @@ public class VmPolicy extends Policy {
 
 	@Override
 	public boolean evaluatePolicy() {
-		System.out.println(vm.getServer());
 		return vm.getServer() == null;
 	}
 

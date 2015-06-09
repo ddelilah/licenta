@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import app.access.ServerDAO;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
@@ -47,7 +48,6 @@ public void setServerUtilization() {
 	}
 
 	public float computeUtilization(Server server) {
-		System.out.println("Server for which we compute the utilization: " + server.getServerId());
 		List<VirtualMachine> vmList = server.getCorrespondingVMs();
 		float sum = 0;
 		for (VirtualMachine vm : vmList) {
@@ -106,6 +106,7 @@ public void setServerUtilization() {
 
 	}
 
+
 public void setRackUtilization() {
 		
 
@@ -116,11 +117,9 @@ public void setRackUtilization() {
 		
 		allRacks = rackDAO.getAllRacks();
 				
-		System.out.println("\n\n\n\n"+allRacks);
 		for(Rack rack: allRacks) {
 			
 			allServers = rack.getServers();
-			System.out.println("\n Rack"+rack + "\n" +allServers);
 			
 			if(!allServers.isEmpty()) {
 				float utilization = computeSingleRackUtilization(rack);

@@ -9,6 +9,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import app.GUI.MainGUI;
 import app.access.*;
 import app.access.impl.*;
 import app.constants.RackState;
@@ -52,7 +53,7 @@ public class Main {
 	     
 	}
 	
-public void startMonitoring() throws Exception{
+public void startMonitoring(String algorithmToStart, String cracTemp) throws Exception{
 		
 		VirtualMachineDAO vmDAO = new VirtualMachineDAOImpl();
 		
@@ -66,7 +67,6 @@ public void startMonitoring() throws Exception{
 		     for(int i=0; i<toParse.length; i++){
 		    	 if(((toParse[i].split(" "))[0]).equalsIgnoreCase("START")){
 		    		  alg = toParse[i].split(" ");
-		    		 System.out.println(alg[1]);
 		    	 }
 		    	 if(((toParse[i].split(" "))[0]).equalsIgnoreCase("VM")){
 		    		String[] task = toParse[i].split(" "); 
@@ -74,7 +74,7 @@ public void startMonitoring() throws Exception{
 			    		VirtualMachine	vm = vmDAO.getVirtualMachineById(Integer.parseInt(task[1]));
 			    		int numberOfInstances = Integer.parseInt(task[2]);
 			    		String command = task[3];
-			    		monitoring.addToQueue(vm,  numberOfInstances, command, alg[1]);
+			    		monitoring.addToQueue(vm,  numberOfInstances, command, algorithmToStart, cracTemp);
 		    		}
 		    		catch(NumberFormatException e){
 		    			System.out.println("Bad format for "+ toParse[i]);
@@ -84,13 +84,14 @@ public void startMonitoring() throws Exception{
 		     monitoring.startMonitoring();
 	}
 
-	public static void main(String[] args) throws Exception {
-		
-		Main main = new Main();
-		
-		main.startInitialization();  
-		
-		main.startMonitoring();
-	}
+//	public static void main(String[] args) throws Exception {
+//		
+//		Main main = new Main();
+//		
+//		MainGUI mGUI = new MainGUI();
+//		main.startInitialization();  
+//		
+//		main.startMonitoring();
+//	}
 
 }

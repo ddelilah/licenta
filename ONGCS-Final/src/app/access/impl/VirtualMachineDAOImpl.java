@@ -29,7 +29,6 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getAllServers()");
 	        }
 	        throw e;
 	      }
@@ -53,7 +52,6 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getAllServers()");
 	        }
 	        throw e;
 	      }
@@ -84,7 +82,6 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 	        try {
 	          tx.rollback();
 	        } catch (HibernateException e1) {
-	          System.out.println("Error for getServerById(int serverId)");
 	        }
 	        throw e;
 	      }
@@ -145,10 +142,5 @@ public class VirtualMachineDAOImpl extends GenericDAOImpl implements VirtualMach
 
 	}
 
-	public static void main(String []args){
-		
-		VirtualMachineDAOImpl vmDao = new VirtualMachineDAOImpl();
-		
-		System.out.println(vmDao.getAllVMsByState("failed"));
-	}
+	
 }

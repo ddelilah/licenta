@@ -7,12 +7,22 @@ public class ContextData {
 	private String command; 
 	private int numberOfInstances;
 	private String alg;
+	private String cracTemp;
 	
-	public ContextData(Object type, int numberOfInstances, String command, String alg) {
+	public ContextData(Object type, int numberOfInstances, String command, String alg, String cracTemp) {
 		this.numberOfInstances = numberOfInstances;
 		this.type = type;
 		this.command = command;
 		this.alg = alg;
+		this.cracTemp = cracTemp;
+	}
+
+	public String getCracTemp() {
+		return cracTemp;
+	}
+
+	public void setCracTemp(String cracTemp) {
+		this.cracTemp = cracTemp;
 	}
 
 	public String getAlg() {

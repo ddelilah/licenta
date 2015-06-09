@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import app.GUI.ChartAirflow;
 import app.GUI.Charts;
+import app.GUI.RackUtilizationGUI;
 import app.access.GenericDAO;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
@@ -38,6 +40,7 @@ public class Queue extends Thread {
 	private Consolidation c;
 	private Execution e;
 
+	
 	private Map<String, List<VirtualMachine>> map = new HashMap<>();
 
 	private List<VirtualMachine> taskList = new ArrayList<VirtualMachine>();
@@ -46,9 +49,6 @@ public class Queue extends Thread {
 		this.receivedMessage = new LinkedBlockingDeque<ContextData>();
 		this.analysis = new Analysis();
 		this.dao = new GenericDAOImpl();
-		this.c = new Consolidation();
-		this.cUtil = new ConsolidationUtil();
-		this.e = new Execution();
 	}
 
 	@Override
@@ -57,30 +57,36 @@ public class Queue extends Thread {
 		Time t = new Time();
 		t.setStartTime(System.nanoTime());
 		String algorithm = "";
-
+		String cracTemp = "";
+		
 		while (true) {
 			while (!receivedMessage.isEmpty()) {
 
 				ContextData message = receivedMessage.pollFirst();
 
+
 				System.out.println("\n\n\n.............Monitoring "
 						+ message.toString() + ".........");
-
 				map = updateDB(message);
 				algorithm = message.getAlg();
-				System.out.println("\n\n\nALG is " + algorithm);
+				cracTemp = message.getCracTemp();
 				Thread.yield();
 				statesChanged = true;
+				
 			}
 			if (statesChanged) {
+
 				System.out
 						.println("\n\n\n............Starting system analysis..............");
-
 				statesChanged = false;
 				break;
 			}
 		}
 
+		c = new Consolidation(cracTemp);
+		cUtil = new ConsolidationUtil(cracTemp);
+		e = new Execution(cracTemp);
+		
 		for (Entry<String, List<VirtualMachine>> entry : map.entrySet()) {
 			if (entry.getKey().equals("toBeDeployedVmList")) {
 				toBeDeployedVmList = entry.getValue();
@@ -90,14 +96,16 @@ public class Queue extends Thread {
 		}
 		
 
-		System.out.println("To be deployed");
-		for (VirtualMachine vm : toBeDeployedVmList)
-			System.out.println(vm.toString());
-		System.out.println("To be deleted");
-		for (VirtualMachine vm : toBeDeletedVmList)
-			System.out.println(vm.toString());
+//		System.out.println("To be deployed");
+//		for (VirtualMachine vm : toBeDeployedVmList)
+//			System.out.println(vm.toString());
+//		System.out.println("To be deleted");
+//		for (VirtualMachine vm : toBeDeletedVmList)
+//			System.out.println(vm.toString());
 
-		analysis.performAnalysis(toBeDeployedVmList, algorithm, chart, chartAirflow);
+
+		analysis.performAnalysis(toBeDeployedVmList, algorithm, chart, chartAirflow, cracTemp);
+
 
 		if (!toBeDeletedVmList.isEmpty()) {
 			if (algorithm.equalsIgnoreCase("FFD")) {
@@ -110,18 +118,21 @@ public class Queue extends Thread {
 		}
 		
 		e.displayPowerConsumptionAndCooling("[AFTER DELETE] " + algorithm);
+	//	rGUI.getTextArea().append("............... End of deployment.....................");
 
 
 		System.out.println("\n\n........ End of deployment..........");
 
 		t.setEndTime(System.nanoTime());
 		long elapsedTime = t.getExecutionTime();
-		System.out.println("[Execution Time] " + t.getExecutionTime()
-				+ " nanoseconds");
 		System.out.println("[Execution Time] "
 				+ TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS)
 				+ " sec");
-		
+	
+		System.out.println("[Execution Time] "
+				+ TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS)
+				+ " sec");
+
 		chart.finishChartExecution();
 		chartAirflow.finishChartExecution();
 	}
@@ -130,8 +141,8 @@ public class Queue extends Thread {
 			List<VirtualMachine> toBeDeployedVmList) {
 
 		for (VirtualMachine vm : toBeDeployedVmList) {
-			System.out.println("Checking.... " + vm.getVmId() + " and "
-					+ vmToCheck.getVmId());
+//			System.out.println("Checking.... " + vm.getVmId() + " and "
+//					+ vmToCheck.getVmId());
 			if (vm.getVmId() == vmToCheck.getVmId())
 				return true;
 		}
@@ -140,6 +151,7 @@ public class Queue extends Thread {
 	}
 
 	private Map<String, List<VirtualMachine>> updateDB(ContextData message) {
+
 
 		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 		// ---------------------------------- CREATE COMMAND
@@ -157,19 +169,19 @@ public class Queue extends Thread {
 					System.out
 							.println("\n\n\n...........Preparing to create VM "
 									+ vm.getName() + "...........");
-
-					// try {
-					// Thread.sleep(2000);
-					// } catch (InterruptedException e) {}
+//							+ vm.getName() + "...........");
+//					 try {
+//					 Thread.sleep(1000);
+//					 } catch (InterruptedException e) {}
 
 					vm.setState(VMState.PENDING.getValue());
 					vm.setServer(null);
 
-					System.out.println("vm's state is " + vm.getState());
+//					System.out.println("vm's state is " + vm.getState());
 					vmDAO.createInstance(vm);
 					VirtualMachine vmToAdd = vmDAO.getVirtualMachineById(vm
 							.getVmId());
-					System.out.println("[CREATED VM] " + vmToAdd);
+					System.out.println("\n[CREATED VM] " + vmToAdd);
 					vmToAdd.setState(VMState.PENDING.getValue());
 					newlyCreatedVmList.add(vmToAdd);
 					taskList.add(vmToAdd);
@@ -192,9 +204,10 @@ public class Queue extends Thread {
 				System.out
 						.println("\n\n\n...........Preparing to deploy VM............"
 								+ vm.getVmId());
-				// try {
-				// Thread.sleep(2000);
-				// } catch (InterruptedException e) {}
+				
+//				 try {
+//				 Thread.sleep(1000);
+//				 } catch (InterruptedException e) {}
 
 				boolean modifyNewlyCreated = false;
 
@@ -213,7 +226,7 @@ public class Queue extends Thread {
 								toBeDeployedVmList))
 							toBeDeployedVmList.add(vmToDeploy);
 						modifyNewlyCreated = true;
-						System.out.println("Found in list 1");
+//						System.out.println("Found in list 1");
 						break;
 					}
 				}
@@ -234,7 +247,7 @@ public class Queue extends Thread {
 									toBeDeployedVmList))
 								toBeDeployedVmList.add(vmToDeploy);
 							modifyNewlyCreated = true;
-							System.out.println("Found in list 2");
+//							System.out.println("Found in list 2");
 							break;
 						}
 					}
@@ -243,26 +256,27 @@ public class Queue extends Thread {
 					taskList.set(pos, vmToDeploy);
 				}
 
-				System.out.println("taskList " + taskList);
+//				System.out.println("taskList " + taskList);
 
 				if (modifyNewlyCreated)
 					dao.updateInstance(vmToDeploy);
 				else {
-					System.out.println("Not found in list");
+//					System.out.println("Not found in list");
 
 					if (vmDAO.getVirtualMachineById(vm.getVmId()) != null) {
-						System.out.println("Found in db");
+//						System.out.println("Found in db");
 						if (!checkIfInstanceAlreadyAdded(vmToDeploy,
 								toBeDeployedVmList))
 							toBeDeployedVmList.add(vmToDeploy);
 						vmToDeploy.setState(VMState.DEPLOY.getValue());
 						dao.updateInstance(vmToDeploy);
-					} else
-						System.out.println("Not Found in db");
+					} 
+//					else
+//						System.out.println("Not Found in db");
 				}
 
 			}
-			System.out.println("toBeDeployedVmList " + toBeDeployedVmList);
+//			System.out.println("toBeDeployedVmList " + toBeDeployedVmList);
 		}
 		// ---------------------------------- SHUTDOWN COMMAND
 		// --------------------------------------------------------------------------------
@@ -294,7 +308,7 @@ public class Queue extends Thread {
 						vm = virtualM;
 						vm.setState(VMState.SHUT_DOWN.getValue());
 						modifyNewlyCreated = true;
-						System.out.println("Found in list");
+//						System.out.println("Found in list");
 						break;
 					}
 				}
@@ -312,7 +326,7 @@ public class Queue extends Thread {
 							vm = virtualM;
 							vm.setState(VMState.SHUT_DOWN.getValue());
 							modifyNewlyCreated = true;
-							System.out.println("Found in list");
+//							System.out.println("Found in list");
 							break;
 						}
 					}
@@ -334,21 +348,22 @@ public class Queue extends Thread {
 				if (pos != -1) {
 					taskList.set(pos, vm);
 				}
-				System.out.println("taskList " + taskList);
+//				System.out.println("taskList " + taskList);
 				if (modifyNewlyCreated)
 					dao.updateInstance(vm);
 				else {
-					System.out.println("Not found in list");
+//					System.out.println("Not found in list");
 
 					if (vmDAO.getVirtualMachineById(vm.getVmId()) != null) {
-						System.out.println("Found in db");
+//						System.out.println("Found in db");
 
 						dao.updateInstance(vm);
-					} else
-						System.out.println("Not Found in db");
+					} 
+//					else
+//						System.out.println("Not Found in db");
 				}
 			}
-			System.out.println("toBeDeployedVmList " + toBeDeployedVmList);
+//			System.out.println("toBeDeployedVmList " + toBeDeployedVmList);
 
 		}
 		// ---------------------------------- DELETE COMMAND
@@ -360,9 +375,9 @@ public class Queue extends Thread {
 						+ message.getNumberOfInstances() + " VMs...........");
 
 				for (int i = 0; i < message.getNumberOfInstances(); i++) {
-					// try {
-					// Thread.sleep(2000);
-					// } catch (InterruptedException e) {}
+//					 try {
+//					 Thread.sleep(1000);
+//					 } catch (InterruptedException e) {}
 
 					VirtualMachine vm = (VirtualMachine) message.getType();
 					System.out
@@ -383,8 +398,12 @@ public class Queue extends Thread {
 							break;
 						}
 					}
-					System.out
-							.println("toBeDeletedVmList " + toBeDeletedVmList);
+//					System.out
+//							.println("toBeDeletedVmList " + toBeDeletedVmList);
+//					rGUI.getTextArea().append("\n...........Will be deleted "
+//							+toBeDeletedVmList + " ...........");
+//					
+//					rGUI.getTextArea().setCaretPosition(rGUI.getTextArea().getDocument().getLength());
 
 					if (pos != -1) {
 						taskList.remove(pos);
@@ -394,13 +413,13 @@ public class Queue extends Thread {
 					for (VirtualMachine virtualM : toBeDeployedVmList) {
 						removeFromToBeDeployedVmList++;
 						if (virtualM.getVmId() == vmToDelete.getVmId()) {
-							System.out
-									.println((virtualM.getVmId() == vmToDelete
-											.getVmId())
-											+ " "
-											+ virtualM.getVmId()
-											+ " "
-											+ vmToDelete.getVmId());
+//							System.out
+//									.println((virtualM.getVmId() == vmToDelete
+//											.getVmId())
+//											+ " "
+//											+ virtualM.getVmId()
+//											+ " "
+//											+ vmToDelete.getVmId());
 							deleteFromDeployedList = true;
 							break;
 						}
@@ -432,8 +451,8 @@ public class Queue extends Thread {
 					System.out.println("\n\n\n...........VM "
 							+ vmToDelete.getVmId()
 							+ " has been deleted............");
-					System.out.println("toBeDeployedVmList "
-							+ toBeDeployedVmList);
+//					System.out.println("toBeDeployedVmList "
+//							+ toBeDeployedVmList);
 
 				}
 			}

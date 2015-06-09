@@ -43,14 +43,14 @@ public class ParallelPlacementStrategy {
 		do{
 			float newTin = tIn;
 			float tOut = tIn;
-			System.out.println("\n\n\n\n----------- m is "+ (float)m+" -----------------------");
+//			System.out.println("\n\n\n\n----------- m is "+ (float)m+" -----------------------");
 			for(int i =0; i<rackList.size() && tOut < T_MAX; i++ ){
-				System.out.println("tIn is "+newTin);
+//				System.out.println("tIn is "+newTin);
 				powerConsumption = rackList.get(i).getPowerValue();
 				tOut = (float)(powerConsumption / (m*SPECIFIC_HEAT)) + newTin;
 				newTin = tOut;				
-				System.out.println("powerConsumption is "+powerConsumption);
-				System.out.println("tOut is "+tOut);
+//				System.out.println("powerConsumption is "+powerConsumption);
+//				System.out.println("tOut is "+tOut);
 			}
 
 			if(tOut < T_MAX){
@@ -66,11 +66,11 @@ public class ParallelPlacementStrategy {
 	}
 	
 	public float computeVolumetricAirFlow(float airMassFlowRate){
-		System.out.println("volumetricAirFlow="+(float)(airMassFlowRate / DENSITY)+"[m^3/s]");
+//		System.out.println("volumetricAirFlow="+(float)(airMassFlowRate / DENSITY)+"[m^3/s]");
 		return (float)(airMassFlowRate/DENSITY);
 	}
 	public float computeAirVelocity(float volumetricAirFLow){
-		System.out.println("airVelocity = "+ (float)(volumetricAirFLow/AREA)+"[m/s]");
+//		System.out.println("airVelocity = "+ (float)(volumetricAirFLow/AREA)+"[m/s]");
 		return (float) volumetricAirFLow/AREA;
  	}
 	
