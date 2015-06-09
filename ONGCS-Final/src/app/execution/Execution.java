@@ -93,41 +93,20 @@ public class Execution {
 			s.setCorrespondingVMs(addVmsToServer(s, vm));
 			System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
 			mergeSessionsForExecution(vm);
-			
-//			util.setServerUtilization();
-//			util.setRackUtilization();
-//			power.setServerPowerConsumption();
-//			power.setRackPowerConsumption();
-//			cooling.setServerCoolingValue();
-//			cooling.setRackCoolingPower();
-	//		chart.updateChart(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
+			util.setSingleServerUtilization(s);
+			util.setSingleRackUtilization(s.getRack());
+			power.setSingleServerPowerConsumption(s);
+			power.setSingleRackPowerConsumption(s.getRack());
+			cooling.setSingleServerCoolingValue(s);
+			cooling.setSingleRackCoolingValue(s.getRack());
+//			chart.updateChartPowerConsumption(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
 
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
-
-		//trebuie ca de dinainte sa fie valorile ok
-		
-		System.out.println("\n\n Utilization Computation for all servers..............");
-		util.setServerUtilization();
-		
-		System.out.println("\n\n Power consumption Computation for all servers..............");
-		power.setServerPowerConsumption();
-		
-		System.out.println("\n\n Power consumption Computation for all racks..............");
-		power.setRackPowerConsumption();
-		
-		
-		System.out.println("\n\n Cooling Computation for all servers..............");
-		cooling.setServerCoolingValue();
-		
-		System.out.println("\n\n Cooling Computation for all racks..............");
-		cooling.setRackCoolingPower();
 		
 //		History history = new History();
 //		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyRBR.txt");
-		
-		System.out.println("\n\n Utilization Computation for all racks..............");
-		util.setRackUtilization();
+
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 
 		System.out.println("[NUR] map size: " + allocation.size());
@@ -182,12 +161,12 @@ public class Execution {
 			s.setCorrespondingVMs(addVmsToServer(s, vm));
 			mergeSessionsForExecution(vm);
 			
-//			util.setServerUtilization();
-//			util.setRackUtilization();
-//			power.setServerPowerConsumption();
-//			power.setRackPowerConsumption();
-//			cooling.setServerCoolingValue();
-//			cooling.setRackCoolingPower();
+			util.setSingleServerUtilization(s);
+			util.setSingleRackUtilization(s.getRack());
+			power.setSingleServerPowerConsumption(s);
+			power.setSingleRackPowerConsumption(s.getRack());
+			cooling.setSingleServerCoolingValue(s);
+			cooling.setSingleRackCoolingValue(s.getRack());
 	//		chart.updateChart(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
 
 		}

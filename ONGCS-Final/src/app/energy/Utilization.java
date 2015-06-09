@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
+import app.constants.RackState;
+import app.constants.ServerState;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
@@ -32,6 +34,16 @@ public void setServerUtilization() {
 					genericDAO.updateInstance(server);
 				}
 		}
+	}
+
+	public void setSingleServerUtilization(Server s) {
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+		float utilization = computeUtilization(s);
+		if(utilization == 0) {
+			s.setState(ServerState.OFF.getValue());
+		}
+		s.setUtilization(utilization);
+		serverDAO.mergeSessionsForServer(s);
 	}
 
 	public float computeUtilization(Server server) {
@@ -83,6 +95,17 @@ public void setServerUtilization() {
 		
 	}
 	
+	public void setSingleRackUtilization(Rack r) {
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		float utilization = computeSingleRackUtilization(r);
+		if(utilization == 0) {
+			r.setState(RackState.OFF.getValue());
+		}
+		r.setUtilization(utilization);
+		rackDAO.mergeSessionsForRack(r);
+
+	}
+
 public void setRackUtilization() {
 		
 

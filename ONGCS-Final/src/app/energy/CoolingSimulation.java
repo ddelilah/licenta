@@ -59,6 +59,20 @@ public class CoolingSimulation {
 				genericDAO.updateInstance(server);
 			}
 	}
+	
+	public void setSingleServerCoolingValue(Server s) {
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+		float cooling = computeSingleServerCooling(s);
+		s.setCoolingValue(cooling);
+		serverDAO.mergeSessionsForServer(s);
+	}
+	
+	public void setSingleRackCoolingValue(Rack r) {
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		float cooling = computeSingleRackCooling(r);	
+		r.setCoolingValue(cooling);
+		rackDAO.mergeSessionsForRack(r);
+	}
 
 	public void setRackCoolingPower() {
 

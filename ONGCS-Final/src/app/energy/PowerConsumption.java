@@ -50,6 +50,18 @@ public class PowerConsumption {
 		return power;
 	}
 	
+	public void setSingleServerPowerConsumption(Server s) {
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+		if (s.getState().equalsIgnoreCase("ON")) {
+			float power = computeSingleServerPowerConsumption(s);
+			s.setPowerValue(power);
+			serverDAO.mergeSessionsForServer(s);
+		} else {
+			s.setPowerValue(0);
+			serverDAO.mergeSessionsForServer(s);
+		}
+	}
+	
 	public void setServerPowerConsumption() {
 
 		List<Rack> allRacks = new ArrayList<Rack>();
@@ -99,6 +111,20 @@ public class PowerConsumption {
 			rack.setPowerValue(power);
 			genericDAO.updateInstance(rack);
 		}
+	}
+	
+	
+	public void setSingleRackPowerConsumption(Rack r) {
+		RackDAOImpl rackDAO = new RackDAOImpl();
+		float power = 0;
+		power = computeSingleRackPowerConsumption(r);
+		if (power != 0) {
+			r.setState(RackState.ON.getValue());
+		}
+
+		r.setPowerValue(power);
+		rackDAO.mergeSessionsForRack(r);
+
 	}
 	
 	public void comparePowerValues(){
