@@ -6,6 +6,7 @@ import java.util.Calendar;
 import org.LiveGraph.LiveGraph;
 import org.LiveGraph.dataFile.write.DataStreamWriter;
 import org.LiveGraph.dataFile.write.DataStreamWriterFactory;
+import org.LiveGraph.gui.MainWindow;
 import org.LiveGraph.settings.DataFileSettings;
 import org.LiveGraph.settings.DataSeriesSettings;
 import org.LiveGraph.settings.GraphSettings;
@@ -28,6 +29,9 @@ public class ChartAirflow {
 		int hour = now.get(Calendar.HOUR_OF_DAY);
 		int minute = now.get(Calendar.MINUTE);
 		int sec = now.get(Calendar.SECOND);
+		
+	//	MainWindow mAirflow = new MainWindow();
+
 		
 		String yy ="15";
 		String mm = "0"+Integer.toString(month);
@@ -78,6 +82,8 @@ public class ChartAirflow {
 		outAirflow.addDataSeries("Parallel volumetric airflow 0.3 loss");
 		outAirflow.addDataSeries("Parallel volumetric airflow 0.4 loss");
 		outAirflow.addDataSeries("Parallel volumetric airflow 0.5 loss");
+		appp.setDisplayDataFileSettingsWindow(false);
+		appp.setDisplayGraphSettingsWindow(false);
 		
 		dss.setColour(0, Color.BLACK);
 		dss.setColour(1, Color.BLUE);

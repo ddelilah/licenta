@@ -66,6 +66,73 @@ public class Execution {
 		return result;
 	}
 	
+	
+	
+	
+	public void executeNURFailed(List<VirtualMachine> allVMs,
+			List<Rack> allRacks, Charts chart, ChartAirflow chartAirflow) {
+		
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+		List<Server> allServers = serverDAO.getAllServers();
+
+		int initialNumberOnServers = serverDAO.getAllServersByState("on").size();
+		int initialNumberOffServers = allServers.size() - initialNumberOnServers;
+		
+//		Learning l = new Learning();
+//		boolean foundLearning = false;
+//		try {
+//			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		
+//		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
+//		
+//		if(foundLearning){
+//			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
+//			displayPowerConsumptionAndCooling("NUR");
+//			}
+//		
+//	else{
+			System.out.println("\n\n\n ----------------- Performing experiment! --------------------------");
+
+		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
+		allocation = nur.placeVMsNURAfterFailed(allVMs, allRacks);
+		int ct=0;
+		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
+			ct++;
+			int serverId = entry.getValue().getServerId();
+			System.out.println("[NUR]vm " + entry.getKey().getName()
+					+ " should be assigned to server with id " + serverId);
+			Server s = entry.getValue();
+			VirtualMachine vm = entry.getKey();
+			vm.setServer(s);
+			vm.setState(VMState.RUNNING.getValue());
+			s.setCorrespondingVMs(addVmsToServer(s, vm));
+			System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
+			mergeSessionsForExecution(vm);
+			util.setSingleServerUtilization(s);
+			util.setSingleRackUtilization(s.getRack());
+			power.setSingleServerPowerConsumption(s);
+			power.setSingleRackPowerConsumption(s.getRack());
+			cooling.setSingleServerCoolingValue(s);
+			cooling.setSingleRackCoolingValue(s.getRack());
+//			chart.updateChartPowerConsumption(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
+
+		}
+		MigrationEfficiency mEff = new MigrationEfficiency();
+		
+//		History history = new History();
+//		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyRBR.txt");
+
+		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
+
+		System.out.println("[NUR] map size: " + allocation.size());
+		sUtil.displayPowerConsumptionAndCooling("[BEFORE DELETE] NUR");
+
+	}
+	
 	public void executeNUR(List<VirtualMachine> allVMs,
 			List<Rack> allRacks, Charts chart, ChartAirflow chartAirflow) {
 		

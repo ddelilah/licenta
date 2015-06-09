@@ -490,7 +490,7 @@ public class Consolidation {
 		 Thread.yield();
 	        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		
-	//	handleTheFailedVMs(chart, chartAirflow, algorithm);
+		handleTheFailedVMs(chart, chartAirflow, algorithm);
 }
 			
 		
@@ -503,7 +503,7 @@ public void handleTheFailedVMs(Charts chart,  ChartAirflow chartAirflow,String a
 				exec.executeRBR(failedVMs, allRacks, chart, chartAirflow);
 				break;
 			case "NUR":
-				exec.executeNUR(failedVMs, allRacks, chart, chartAirflow);
+				exec.executeNURFailed(failedVMs, allRacks, chart, chartAirflow);
 				break;
 			case "FFD":
 				exec.performFFD(failedVMs, chart, chartAirflow);

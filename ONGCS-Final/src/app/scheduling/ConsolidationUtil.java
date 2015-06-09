@@ -37,11 +37,12 @@ public class ConsolidationUtil {
 		this.cracTemp = cracTemp;
 		coolingSimulation = new CoolingSimulation(Integer.parseInt(cracTemp));
 	}
-	
+
 	private static int OFF_VALUE = 0;
 
 	public void deleteForFFD(List<VirtualMachine> vmsToBeDeleted, Charts chart, ChartAirflow chartAirflow) {
-	
+		int nodesReleased = 0;
+
 		List<Server> allServers = serverDAO.getAllServers();
 		List<Server> allModifiedServers = new ArrayList<Server>();
 		float newServerUtilizationAfterVMDelete, newRackUtilizationAfterVMDelete, newServerPowerConsumptionAfterVMDelete, newServerCoolingAfterVMDelete, newRackPowerConsumptionAfterVMDelete, newRackCoolingAfterVMDelete;
@@ -91,11 +92,13 @@ public class ConsolidationUtil {
 	
 			if (newServerUtilizationAfterVMDelete == 0) {
 				turnOffServer(sr);
+				nodesReleased++;
 			} else {
 				serverDAO.mergeSessionsForServer(sr);
 			}
 		
-
+			System.out.println("[FFD] Nodes Released: " + nodesReleased);
+			
 			// System.out.println("[AFTER VM DELETE FROM SERVER]: " + sr.getUtilization());
 
 			Rack correspondingRack = sr.getRack();
@@ -117,6 +120,7 @@ public class ConsolidationUtil {
 			}
 			// System.out.println("[NEW UTILIZATION]" + correspondingRack.toString());
 		}
+		
 		
 	}
 	
