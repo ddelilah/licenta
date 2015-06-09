@@ -20,6 +20,7 @@ import app.GUI.RackUtilizationGUI;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
+import app.access.impl.VirtualMachineDAOImpl;
 import app.algorithm.FFD;
 import app.constants.VMState;
 import app.coolingSystems.HACS;
@@ -95,12 +96,15 @@ public class Execution {
 
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = nur.placeVMsInNoneUnderutilizedRack(allVMs, allRacks);
-		int ct=0;
+		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+		 List<VirtualMachine> vmList = vmDAO.getAllVMsByState("Running");
+		 int ct= vmList.size();
+		 
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			ct++;
 			int serverId = entry.getValue().getServerId();
-			System.out.println("[NUR]vm " + entry.getKey().getName()
-					+ " should be assigned to server with id " + serverId);
+			System.out.println("[NUR] vm " + entry.getKey().getName()
+					+ " is assigned to server with id " + serverId);
 			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
@@ -188,15 +192,15 @@ public class Execution {
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
 		
-		int ct =0;
-
-		
+		VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+		 List<VirtualMachine> vmList = vmDAO.getAllVMsByState("Running");
+		 int ct= vmList.size();
 		
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			ct++;
 			int serverId = entry.getValue().getServerId();
-			System.out.println("[RBR]vm " + entry.getKey().getName()
-					+ " should be assigned to server with id " + serverId);
+			System.out.println("[RBR] vm " + entry.getKey().getName()
+					+ " is assigned to server with id " + serverId);
 			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
@@ -356,8 +360,10 @@ public class Execution {
 		 sortedAllocation.putAll(small);
 		 sortedAllocation.putAll(tiny);
 
-	
-		int ct=0;
+		 VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
+		 List<VirtualMachine> vmList = vmDAO.getAllVMsByState("Running");
+		 int ct= vmList.size();
+		
 		for (Entry<VirtualMachine, Server> entry : sortedAllocation.entrySet()) {
 			ct++;
 			int serverId = entry.getValue().getServerId();
@@ -402,8 +408,8 @@ public class Execution {
 			chart.updateChartPowerConsumption(sUtil.getCurrentPowerConsumption(), sUtil.getCurrentCoolingPowerConsumption(), ct);
 			System.out.println("\n\n\n\nCurrent power "+ sUtil.getCurrentPowerConsumption());
 		    System.out.println(hacsVolumetricAirFlow+" parallel " +parallelVolumetricAirFlow01);
-		     Thread.yield();
-		        try { Thread.sleep(3000); } catch (InterruptedException e) {}
+//		     Thread.yield();
+//		        try { Thread.sleep(3000); } catch (InterruptedException e) {}
 		      
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();

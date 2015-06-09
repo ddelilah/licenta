@@ -84,6 +84,7 @@ public class ChartAirflow {
 		dss.setColour(2, Color.RED);
 		appp.setDisplayDataFileSettingsWindow(false);
 		appp.setDisplayGraphSettingsWindow(false);
+		appp.setDisplaySeriesSettingsWindow(false);
 	}
 	
 	

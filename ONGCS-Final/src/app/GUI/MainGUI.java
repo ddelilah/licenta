@@ -6,6 +6,7 @@ import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.Font;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -22,6 +23,7 @@ import app.model.Server;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,9 +44,9 @@ public class MainGUI extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					frame.setBounds(0, 0, 460, 720);
+					frame.setBounds(0, 0, 460, 220);
 					frame.toFront();
-					frame.setTitle("Energy-Aware Data Centers");
+					frame.setTitle("Energy-Aware Data Center");
 					frame.setVisible(true);
 					
 				} catch (Exception e) {
@@ -65,17 +67,13 @@ public class MainGUI extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-//		ImageIcon image = new ImageIcon("C:\\Users\\Ade\\Desktop\\GitHub\\licenta\\ONGCS-Final\\dc.jpg");
-//		JLabel label = new JLabel( image);
-////		contentPane.setOpaque(true);
-////		contentPane.setBackground(Color.white);
-////		contentPane.add( label);
+	
 		
 		JLabel lblCracInletTemperature = new JLabel("CRAC inlet temperature: ");
 		lblCracInletTemperature.setBounds(10, 23, 139, 14);
 		contentPane.add(lblCracInletTemperature);
 		
-		textField = new JTextField();
+		textField = new JTextField("20");
 		textField.setBounds(159, 20, 86, 20);
 		contentPane.add(textField);
 		textField.setColumns(10);
@@ -114,6 +112,7 @@ public class MainGUI extends JFrame {
 		comboBox.setBounds(159, 51, 86, 20);
 		contentPane.add(comboBox);
 		
+		
 		JButton btnStart = new JButton("START");
 		btnStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -148,8 +147,8 @@ public class MainGUI extends JFrame {
 						
 						
 						frame.toFront();
-						
-						
+						Legend lgd = new Legend();
+						lgd.showLegend();
 						
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
@@ -159,8 +158,6 @@ public class MainGUI extends JFrame {
 		});
 		btnStart.setBounds(289, 34, 89, 23);
 		contentPane.add(btnStart);
-		
-		
 	}
 	
 	public JFrame getFrame(){
