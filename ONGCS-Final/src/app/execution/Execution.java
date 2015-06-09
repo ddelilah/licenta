@@ -20,21 +20,21 @@ import app.GUI.RackUtilizationGUI;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
-import app.access.impl.VirtualMachineDAOImpl;
 import app.algorithm.FFD;
 import app.constants.VMState;
 import app.coolingSystems.HACS;
 import app.coolingSystems.ParallelPlacementStrategy;
-import app.energy.*;
+import app.energy.CoolingSimulation;
+import app.energy.MigrationEfficiency;
+import app.energy.PowerConsumption;
+import app.energy.Utilization;
 import app.hibernate.SessionFactoryUtil;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
 import app.scheduling.NUR;
 import app.scheduling.RBR;
-
-import org.LiveGraph.dataFile.write.DataStreamWriter;
-import org.LiveGraph.dataFile.write.DataStreamWriterFactory;
+import app.scheduling.SchedulingUtil;
 
 public class Execution {
 	public static final String DEMO_DIR = System.getProperty("user.dir");
@@ -45,6 +45,7 @@ public class Execution {
 //	private static final float CRAC_SUPPLIED_TEMPERATURE = 20;
 	private Utilization util = new Utilization();
 	private PowerConsumption power = new PowerConsumption();
+
 	private CoolingSimulation cooling ;
 	private String cracTemp;
 	
@@ -54,7 +55,9 @@ public class Execution {
 		rackScheduling = new RBR(cracTemp);
 		cooling = new CoolingSimulation(Integer.parseInt(cracTemp));
 	}
-	
+
+	private SchedulingUtil sUtil = new SchedulingUtil();
+
 	public static List<VirtualMachine> addVmsToServer(Server s, VirtualMachine vm) {
 		List<VirtualMachine> result = new ArrayList<VirtualMachine>();
 		result = s.getCorrespondingVMs();
@@ -143,7 +146,7 @@ public class Execution {
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 
 		System.out.println("[NUR] map size: " + allocation.size());
-		displayPowerConsumptionAndCooling("[BEFORE DELETE] NUR");
+		sUtil.displayPowerConsumptionAndCooling("[BEFORE DELETE] NUR");
 
 		 Thread.yield();
 	        try { Thread.sleep(1000); } catch (InterruptedException e) {}
@@ -233,19 +236,19 @@ public class Execution {
 		      
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
-		util.setServerUtilization();
-
-		power.setServerPowerConsumption();
-		power.setRackPowerConsumption();
-
-		cooling.setServerCoolingValue();
-		cooling.setRackCoolingPower();
-		util.setRackUtilization();
+//		util.setServerUtilization();
+//
+//		power.setServerPowerConsumption();
+//		power.setRackPowerConsumption();
+//
+//		cooling.setServerCoolingValue();
+//		cooling.setRackCoolingPower();
+//		util.setRackUtilization();
 		
 		
 		History history = new History();
 		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyRBR.txt");
-		displayPowerConsumptionAndCooling("[BEFORE DELETE] RBR");
+		sUtil.displayPowerConsumptionAndCooling("[BEFORE DELETE] RBR");
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 //		History history = new History();
 //		history.writeToFile(allocation, "historyRBR.txt");
@@ -312,6 +315,7 @@ public class Execution {
 		}
 		return cooling;
 	}
+
 	public void performFFD(List<VirtualMachine> allVMs, Charts chart,  ChartAirflow chartAirflow) {
 		FFD ffd = new FFD();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
@@ -368,8 +372,8 @@ public class Execution {
 			s.setCorrespondingVMs(addVmsToServer(s, vm));
 			mergeSessionsForExecution(vm);
 			
-			util.setServerUtilization();
-			util.setRackUtilization();
+			util.setSingleServerUtilization(s);
+			util.setSingleRackUtilization(s.getRack());
 			ffd.setServerPowerConsumption();
 			power.setRackPowerConsumption();
 			cooling.setServerCoolingValue();
@@ -395,10 +399,9 @@ public class Execution {
 			float parallelVolumetricAirFlow05 = hacs.computeVolumetricAirFlow(parallelAirMassFlowRate05);	
 			chartAirflow.updatChartAirflow(hacsVolumetricAirFlow, 0, parallelVolumetricAirFlow01, parallelVolumetricAirFlow02, parallelVolumetricAirFlow03, parallelVolumetricAirFlow04, parallelVolumetricAirFlow05);
 
-			chart.updateChartPowerConsumption(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
-//			System.out.println("\n\n\n\nCurrent power "+ getCurrentPowerConsumption());
-//		    System.out.println(hacsVolumetricAirFlow+" parallel " +parallelVolumetricAirFlow01);
-//		    		    
+			chart.updateChartPowerConsumption(sUtil.getCurrentPowerConsumption(), sUtil.getCurrentCoolingPowerConsumption(), ct);
+			System.out.println("\n\n\n\nCurrent power "+ sUtil.getCurrentPowerConsumption());
+		    System.out.println(hacsVolumetricAirFlow+" parallel " +parallelVolumetricAirFlow01);
 		     Thread.yield();
 		        try { Thread.sleep(3000); } catch (InterruptedException e) {}
 		      
@@ -406,11 +409,11 @@ public class Execution {
 		MigrationEfficiency mEff = new MigrationEfficiency();
 
 		
-		util.setServerUtilization();
-		ffd.setServerPowerConsumption();
-		power.setRackPowerConsumption();
-		util.setRackUtilization();
-		util.setRackUtilization();
+//		util.setServerUtilization();
+//		ffd.setServerPowerConsumption();
+//		power.setRackPowerConsumption();
+//		util.setRackUtilization();
+//		util.setRackUtilization();
 	//	power.comparePowerValues();
 		
 		CoolingSimulation cooling = new CoolingSimulation(Integer.parseInt(cracTemp));
@@ -419,7 +422,7 @@ public class Execution {
 				
 		
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
-		displayPowerConsumptionAndCooling("[BEFORE DELETE] FFD ");
+		sUtil.displayPowerConsumptionAndCooling("[BEFORE DELETE] FFD ");
 		System.out.println("Demo finished. Cheers.");
 		System.out.println("Demo finished. Cheers.");
 		
