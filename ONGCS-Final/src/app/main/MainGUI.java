@@ -1,4 +1,4 @@
-package app.GUI;
+package app.main;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -17,8 +17,10 @@ import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.Timer;
 
+import app.GUI.Legend;
+import app.GUI.RackUtilizationGUI;
+import app.GUI.Repaint;
 import app.access.impl.ServerDAOImpl;
-import app.main.Main;
 import app.model.Server;
 
 import java.awt.event.ActionListener;

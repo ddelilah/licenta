@@ -21,7 +21,7 @@ import app.util.RackProcessor;
 import app.util.SchedulingUtil;
 import app.util.VMProcessor;
 
-public class NUR {
+public class NURF {
 
 	private static VMProcessor vmProcessor;
 	private static RackProcessor rackProcessor;
@@ -44,7 +44,7 @@ public class NUR {
 	
 	private static Utilization util = new Utilization();
 
-	public NUR(String cracTemp) {
+	public NURF(String cracTemp) {
 		this.cracTemp = cracTemp;
 	}
 	

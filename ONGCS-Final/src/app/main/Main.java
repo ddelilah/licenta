@@ -9,7 +9,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import app.GUI.MainGUI;
 import app.access.*;
 import app.access.impl.*;
 import app.constants.RackState;
@@ -33,14 +32,14 @@ public class Main {
 	public void startInitialization() throws Exception {
 		
 		//Ade
-				ProcessBuilder builder = new ProcessBuilder(
-		 	            "cmd.exe", "/c", " mysql -u root licenta < init_script.sql "
-		 	            );
+//				ProcessBuilder builder = new ProcessBuilder(
+//		 	            "cmd.exe", "/c", " mysql -u root licenta < init_script.sql "
+//		 	            );
 		
 		//Delia
-//		ProcessBuilder builder = new ProcessBuilder(
-// 	            "cmd.exe", "/c", " mysql --user=root --password=password licenta < init_script.sql "
-// 	            );
+		ProcessBuilder builder = new ProcessBuilder(
+ 	            "cmd.exe", "/c", " mysql --user=root --password=password licenta < init_script.sql "
+ 	            );
 // 	
 	 	builder.redirectErrorStream(true);
 	     Process p = builder.start();

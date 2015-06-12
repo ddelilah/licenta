@@ -26,7 +26,7 @@ import app.util.RackProcessor;
 import app.util.SchedulingUtil;
 import app.util.VMProcessor;
 
-public class RBR implements Serializable {
+public class RBRP implements Serializable {
 
 	private List<Rack> rackList= new ArrayList<Rack>();
 	private List<VirtualMachine> vmList= new ArrayList<VirtualMachine>();
@@ -38,7 +38,7 @@ public class RBR implements Serializable {
 	public VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 	private String cracTemp;
 	
-	public RBR(String cracTemp){
+	public RBRP(String cracTemp){
 		
 		this.cracTemp = cracTemp;
 	}

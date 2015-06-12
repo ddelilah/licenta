@@ -33,15 +33,15 @@ import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
 import app.scheduling.FFD;
-import app.scheduling.NUR;
-import app.scheduling.RBR;
+import app.scheduling.NURF;
+import app.scheduling.RBRP;
 import app.util.SchedulingUtil;
 
 public class Execution {
 	public static final String DEMO_DIR = System.getProperty("user.dir");
 	
-	private static NUR nur; 
-	private static RBR rackScheduling ;
+	private static NURF nur; 
+	private static RBRP rackScheduling ;
 	private static History history = new History();
 //	private static final float CRAC_SUPPLIED_TEMPERATURE = 20;
 	private Utilization util = new Utilization();
@@ -52,8 +52,8 @@ public class Execution {
 	
 	public Execution(String cracTemp){
 		this.cracTemp = cracTemp;
-		nur = new NUR(cracTemp);
-		rackScheduling = new RBR(cracTemp);
+		nur = new NURF(cracTemp);
+		rackScheduling = new RBRP(cracTemp);
 		cooling = new CoolingSimulation(Integer.parseInt(cracTemp));
 	}
 
