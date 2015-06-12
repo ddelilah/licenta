@@ -1,4 +1,4 @@
-package app.algorithm;
+package app.scheduling;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import app.scheduling.*;
+import app.util.SchedulingUtil;
+import app.util.VMProcessor;
 import app.access.RackDAO;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;

@@ -29,6 +29,9 @@ import app.model.Server;
 import app.model.VirtualMachine;
 import app.policies.RackPolicy;
 import app.policies.ServerPolicy;
+import app.util.ConsolidationUtil;
+import app.util.SchedulingUtil;
+import app.util.VMProcessor;
 
 public class Consolidation {
 
@@ -85,7 +88,7 @@ public class Consolidation {
 		numberOfVms = sortedVMs.size();
 
 		for (VirtualMachine selectedVm : sortedVMs) {
-			OBFD obfd = new OBFD(servers, cracTemp);
+			PABFD obfd = new PABFD(servers, cracTemp);
 			resultOfOBFD = obfd.findAppropriateServerForConsolidationStep(selectedVm, allocation);
 
 			if (resultOfOBFD != null && resultOfOBFD.getServerId() != 0) {

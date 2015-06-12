@@ -17,6 +17,9 @@ import app.energy.Utilization;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
+import app.util.RackProcessor;
+import app.util.SchedulingUtil;
+import app.util.VMProcessor;
 
 public class NUR {
 
@@ -68,7 +71,7 @@ public class NUR {
 			
 
 			allocatedServer = null;
-			OBFD obfd = new OBFD(serverList, cracTemp);
+			PABFD obfd = new PABFD(serverList, cracTemp);
 			if (!obfd.findAppropriateServer(vm,allocation).isEmpty()) {
 				resultOfOBFD = obfd.findAppropriateServer(vm, allocation);
 
@@ -176,7 +179,7 @@ public class NUR {
 		sortedVMs = vmProcessor.sortVMListDescending();
 		for (VirtualMachine v : sortedVMs) {
 
-			OBFD obfdNonUnderUtilized = new OBFD(serversInNonUnderUtilizedRacks, cracTemp);
+			PABFD obfdNonUnderUtilized = new PABFD(serversInNonUnderUtilizedRacks, cracTemp);
 			if (!obfdNonUnderUtilized.findAppropriateServer(v, allocation)
 					.isEmpty()) {
 				resultOfOBFD = obfdNonUnderUtilized.findAppropriateServer(v,
@@ -203,7 +206,7 @@ public class NUR {
 
 			} else {
 				// TODO: modify allocation
-				OBFD obfdUnderUtilized = new OBFD(serversInUnderUtilizedRacks, cracTemp);
+				PABFD obfdUnderUtilized = new PABFD(serversInUnderUtilizedRacks, cracTemp);
 				if (!obfdUnderUtilized.findAppropriateServer(v, allocation)
 						.isEmpty()) {
 					resultOfOBFD = obfdUnderUtilized.findAppropriateServer(v,
@@ -242,7 +245,7 @@ public class NUR {
 
 				} else {
 					// if all racks are off
-					OBFD obfdOff = new OBFD(serversInOffRacks, cracTemp);
+					PABFD obfdOff = new PABFD(serversInOffRacks, cracTemp);
 					if (!obfdOff.findAppropriateServer(v, allocation).isEmpty()) {
 						resultOfOBFD = obfdOff.findAppropriateServer(v,
 								allocation);

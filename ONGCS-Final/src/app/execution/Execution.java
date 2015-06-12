@@ -21,7 +21,6 @@ import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
-import app.algorithm.FFD;
 import app.constants.VMState;
 import app.coolingSystems.HACS;
 import app.coolingSystems.ParallelPlacementStrategy;
@@ -33,9 +32,10 @@ import app.hibernate.SessionFactoryUtil;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
+import app.scheduling.FFD;
 import app.scheduling.NUR;
 import app.scheduling.RBR;
-import app.scheduling.SchedulingUtil;
+import app.util.SchedulingUtil;
 
 public class Execution {
 	public static final String DEMO_DIR = System.getProperty("user.dir");

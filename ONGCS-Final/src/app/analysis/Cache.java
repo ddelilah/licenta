@@ -1,4 +1,4 @@
-package app.execution;
+package app.analysis;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -19,7 +19,7 @@ import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
 
-public class Learning {
+public class Cache {
 
 	private List<Server> serverListFromFile;
 	public boolean learning(List<VirtualMachine> allVMsToBeDeployed,int initialNumberOffServers, List<Server> allInitialServers, String fileName) throws Exception{

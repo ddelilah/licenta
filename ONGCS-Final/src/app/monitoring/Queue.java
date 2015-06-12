@@ -21,8 +21,8 @@ import app.execution.Execution;
 import app.execution.Time;
 import app.model.VirtualMachine;
 import app.scheduling.Consolidation;
-import app.scheduling.ConsolidationUtil;
-import app.scheduling.SchedulingUtil;
+import app.util.ConsolidationUtil;
+import app.util.SchedulingUtil;
 
 public class Queue extends Thread {
 	private ChartAirflow chartAirflow = new ChartAirflow();

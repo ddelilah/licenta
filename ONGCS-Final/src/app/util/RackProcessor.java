@@ -1,4 +1,4 @@
-package app.scheduling;
+package app.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

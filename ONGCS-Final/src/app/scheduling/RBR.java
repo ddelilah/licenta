@@ -16,13 +16,15 @@ import app.access.RackDAO;
 import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
-import app.algorithm.FFD;
 import app.constants.VMState;
 import app.execution.Execution;
 import app.execution.History;
 import app.model.Rack;
 import app.model.Server;
 import app.model.VirtualMachine;
+import app.util.RackProcessor;
+import app.util.SchedulingUtil;
+import app.util.VMProcessor;
 
 public class RBR implements Serializable {
 
@@ -68,7 +70,7 @@ public class RBR implements Serializable {
 			
 
 			allocatedServer = null;
-			OBFD obfd = new OBFD(serverList, cracTemp);
+			PABFD obfd = new PABFD(serverList, cracTemp);
 			if (!obfd.findAppropriateServer(vm,allocation).isEmpty()) {
 				resultOfOBFD = obfd.findAppropriateServer(vm, allocation);
 

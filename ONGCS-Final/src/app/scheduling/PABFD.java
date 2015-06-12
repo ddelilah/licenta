@@ -11,8 +11,9 @@ import app.energy.CoolingSimulation;
 import app.energy.Utilization;
 import app.model.Server;
 import app.model.VirtualMachine;
+import app.util.SchedulingUtil;
 
-public class OBFD {
+public class PABFD {
 
 	private List<Server> serverList;
 	private SchedulingUtil schedulingUtil;
@@ -25,7 +26,7 @@ public class OBFD {
 	/* suppose temperature is 25 degrees */
 	//private static final float COP = (float) (0.0068 * Math.pow(25, 2) + 0.0008 * 25 + 0.458);
 
-	public OBFD(List<Server> serverList, String cracTemp) {
+	public PABFD(List<Server> serverList, String cracTemp) {
 		this.serverList = serverList;
 		
 		coolingSimulation = new CoolingSimulation(Integer.parseInt(cracTemp));
