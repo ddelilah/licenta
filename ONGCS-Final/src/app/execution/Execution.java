@@ -104,20 +104,20 @@ public class Execution {
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			ct++;
 			int serverId = entry.getValue().getServerId();
-			System.out.println("[NUR]vm " + entry.getKey().getName()
-					+ " should be assigned to server with id " + serverId);
+//			System.out.println("[NUR]vm " + entry.getKey().getName()
+//					+ " should be assigned to server with id " + serverId);
 			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
 			vm.setState(VMState.RUNNING.getValue());
 			s.setCorrespondingVMs(addVmsToServer(s, vm));
-			System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
+		//	System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
 			mergeSessionsForExecution(vm);
 			util.setSingleServerUtilization(s);
 			util.setSingleRackUtilization(s.getRack());
-			power.setSingleServerPowerConsumption(s);
+			power.setSingleServerPowerConsumptionGivenUtilization(s, s.getUtilization());
 			power.setSingleRackPowerConsumption(s.getRack());
-			cooling.setSingleServerCoolingValue(s);
+			cooling.setSingleServerCoolingValueGivenPowerConsumption(s, s.getPowerValue());
 			cooling.setSingleRackCoolingValue(s.getRack());
 //			chart.updateChartPowerConsumption(getCurrentPowerConsumption(), getCurrentCoolingPowerConsumption(), ct);
 
@@ -181,21 +181,21 @@ public class Execution {
 		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			ct++;
 			int serverId = entry.getValue().getServerId();
-			System.out.println("[NUR] vm " + entry.getKey().getName()
-					+ " is assigned to server with id " + serverId);
+//			System.out.println("[NUR] vm " + entry.getKey().getName()
+//					+ " is assigned to server with id " + serverId);
 			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
 			vm.setState(VMState.RUNNING.getValue());
 			s.setCorrespondingVMs(addVmsToServer(s, vm));
-			System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
+		//	System.out.println("Added VMs server's list of VMs: " + s.getCorrespondingVMs());
 			mergeSessionsForExecution(vm);
 
 			util.setSingleServerUtilization(s);
 			util.setSingleRackUtilization(s.getRack());
-			power.setSingleServerPowerConsumption(s);
+			power.setSingleServerPowerConsumptionGivenUtilization(s, s.getUtilization());
 			power.setSingleRackPowerConsumption(s.getRack());
-			cooling.setSingleServerCoolingValue(s);
+			cooling.setSingleServerCoolingValueGivenPowerConsumption(s, s.getPowerValue());
 			cooling.setSingleRackCoolingValue(s.getRack());
 			HACS hacs = new HACS();
 			ParallelPlacementStrategy pp = new ParallelPlacementStrategy();
@@ -297,9 +297,9 @@ public class Execution {
 			
 			util.setSingleServerUtilization(s);
 			util.setSingleRackUtilization(s.getRack());
-			power.setSingleServerPowerConsumption(s);
+			power.setSingleServerPowerConsumptionGivenUtilization(s, s.getUtilization());
 			power.setSingleRackPowerConsumption(s.getRack());
-			cooling.setSingleServerCoolingValue(s);
+			cooling.setSingleServerCoolingValueGivenPowerConsumption(s, s.getPowerValue());
 			cooling.setSingleRackCoolingValue(s.getRack());
 	
 			HACS hacs = new HACS();
@@ -452,7 +452,7 @@ public class Execution {
 			ct++;
 			int serverId = entry.getValue().getServerId();
 			
-			System.out.println("\n\n...... Deploying vm "+ entry.getKey().getName()+ " on server "+entry.getValue().getServerId());
+//			System.out.println("\n\n...... Deploying vm "+ entry.getKey().getName()+ " on server "+entry.getValue().getServerId());
 			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
@@ -461,10 +461,10 @@ public class Execution {
 			
 			util.setSingleServerUtilization(s);
 			util.setSingleRackUtilization(s.getRack());
-			ffd.setServerPowerConsumption();
-			power.setRackPowerConsumption();
-			cooling.setServerCoolingValue();
-			cooling.setRackCoolingPower();
+			power.setSingleServerPowerConsumptionGivenUtilization(s, s.getUtilization());
+			power.setSingleRackPowerConsumption(s.getRack());
+			cooling.setSingleServerCoolingValueGivenPowerConsumption(s, s.getPowerValue());
+			cooling.setSingleRackCoolingValue(s.getRack());
 			
 			HACS hacs = new HACS();
 			ParallelPlacementStrategy pp = new ParallelPlacementStrategy();
@@ -489,18 +489,11 @@ public class Execution {
 			chart.updateChartPowerConsumption(sUtil.getCurrentPowerConsumption(), sUtil.getCurrentCoolingPowerConsumption(), ct);
 			System.out.println("\n\n\n\nCurrent power "+ sUtil.getCurrentPowerConsumption());
 		    System.out.println(hacsVolumetricAirFlow+" parallel " +parallelVolumetricAirFlow01);
-//		     Thread.yield();
-//		        try { Thread.sleep(3000); } catch (InterruptedException e) {}
+		     Thread.yield();
+		        try { Thread.sleep(3000); } catch (InterruptedException e) {}
 		      
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
-
-		
-		
-		CoolingSimulation cooling = new CoolingSimulation(Integer.parseInt(cracTemp));
-		cooling.setServerCoolingValue();
-		cooling.setRackCoolingPower();
-				
 		
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 		sUtil.displayPowerConsumptionAndCooling("[BEFORE DELETE] FFD ");

@@ -11,6 +11,10 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Proxy;
 
+/**
+ * The RAM model class
+ */
+
 @Entity
 @Table(name = "ram")
 @Proxy(lazy = false)

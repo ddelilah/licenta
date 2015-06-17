@@ -25,9 +25,6 @@ public class NURF {
 
 	private static VMProcessor vmProcessor;
 	private static RackProcessor rackProcessor;
-
-	public static GenericDAOImpl dao = new GenericDAOImpl();
-
 	private static VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 	private static RackDAOImpl rackDAO = new RackDAOImpl();
 	

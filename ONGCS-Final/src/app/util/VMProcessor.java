@@ -14,7 +14,9 @@ public class VMProcessor implements Comparator<VirtualMachine> {
 		this.vmList=vmList;
 	}
 	
-	public VMProcessor() {}
+	public VMProcessor() {
+		
+	}
 
 	@Override
 	public int compare(VirtualMachine vm1, VirtualMachine vm2) {

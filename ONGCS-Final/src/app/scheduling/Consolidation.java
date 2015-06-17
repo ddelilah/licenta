@@ -330,32 +330,36 @@ public class Consolidation {
 
 		for (VirtualMachine selectedVm : vmsToBeDeleted) {
 			Server correspondingServer = selectedVm.getServer();
+			
+			if(correspondingServer != null && correspondingServer.getServerId() != 0) {
+				selectedVm.setState(VMState.DONE.getValue());
+				selectedVm.setServer(null);
+				vmDAO.mergeSessionsForVirtualMachine(selectedVm);
+//				System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
+//						+ correspondingServer.getServerId() + " with vms: "
+//						+ correspondingServer.getCorrespondingVMs());
 
-			selectedVm.setState(VMState.DONE.getValue());
-			selectedVm.setServer(null);
-			vmDAO.mergeSessionsForVirtualMachine(selectedVm);
-//			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
-//					+ correspondingServer.getServerId() + " with vms: "
-//					+ correspondingServer.getCorrespondingVMs());
+				for (Server sr : allServers) {
+					if (sr.getServerId() == correspondingServer.getServerId()) {
+						sr.setCorrespondingVMs(SchedulingUtil.updateVmsOnServer(correspondingServer, selectedVm));
+						allModifiedServers.add(sr);
+						break;
 
-			for (Server sr : allServers) {
-				if (sr.getServerId() == correspondingServer.getServerId()) {
-					sr.setCorrespondingVMs(SchedulingUtil.updateVmsOnServer(correspondingServer, selectedVm));
-					allModifiedServers.add(sr);
-					break;
+						// System.out.println("[AFTER VM DELETE FROM SERVER's LIST]Server "
+						// + correspondingServer.getServerId() + " with vms: " +
+						// correspondingServer.getCorrespondingVMs());
+					}
 
-					// System.out.println("[AFTER VM DELETE FROM SERVER's LIST]Server "
-					// + correspondingServer.getServerId() + " with vms: " +
-					// correspondingServer.getCorrespondingVMs());
-				}
-
-				ListIterator<Server> iter = allModifiedServers.listIterator();
-				while (iter.hasNext()) {
-					if (iter.next().getServerId() == sr.getServerId()) {
-						iter.set(sr);
+					ListIterator<Server> iter = allModifiedServers.listIterator();
+					while (iter.hasNext()) {
+						if (iter.next().getServerId() == sr.getServerId()) {
+							iter.set(sr);
+						}
 					}
 				}
 			}
+
+	
 		}
 
 		for (Server sr : allModifiedServers) {

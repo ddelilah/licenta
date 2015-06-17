@@ -15,8 +15,7 @@ public class SessionFactoryUtil {
 	}
 
 	static {
-		sessionFactory = new AnnotationConfiguration().configure()
-				.buildSessionFactory();
+		sessionFactory = new AnnotationConfiguration().configure().buildSessionFactory();
 		//sessionFactory = new Configuration().configure().buildSessionFactory();
 	}
 

@@ -16,30 +16,11 @@ import app.model.Server;
 import app.model.VirtualMachine;
 
 public class Utilization {
-	
-	private float totalUtilization = 0;
-	private static final int MAXIMUM_POWER = 1023;
-	
-public void setServerUtilization() {
-		
-		List<Server> allServers = new ArrayList<Server>();
-		GenericDAOImpl genericDAO = new GenericDAOImpl();
-		ServerDAOImpl serverDAO = new ServerDAOImpl();
-		
-		allServers = serverDAO.getAllServers();
-		
-			if(!allServers.isEmpty()) {
-				for(Server server: allServers) {
-					float utilization = computeUtilization(server);
-					server.setUtilization(utilization);
-					genericDAO.updateInstance(server);
-				}
-		}
-	}
 
 	public void setSingleServerUtilization(Server s) {
 		ServerDAOImpl serverDAO = new ServerDAOImpl();
 		float utilization = computeUtilization(s);
+		
 		if(utilization == 0) {
 			s.setState(ServerState.OFF.getValue());
 		}
@@ -50,6 +31,7 @@ public void setServerUtilization() {
 	public float computeUtilization(Server server) {
 		List<VirtualMachine> vmList = server.getCorrespondingVMs();
 		float sum = 0;
+		
 		for (VirtualMachine vm : vmList) {
 			sum += vm.getVmMips();
 		}
@@ -58,25 +40,37 @@ public void setServerUtilization() {
 	}
 	
 	public float computePotentialUtilizationForAServer(Server server, VirtualMachine vmToCheck, Map<VirtualMachine, Server> map) {
-		float potentialUtilization = 0;
-		float totalRequiredMips = 0;	
+		float potentialUtilization = 0, totalRequiredMips = 0;
 		List<VirtualMachine> vmList = server.getCorrespondingVMs();
 		
 		for (VirtualMachine vm : vmList) {
 			totalRequiredMips += vm.getVmMips();
 		}
 		
-		if(!map.isEmpty())
+		if(!map.isEmpty()) {
 			for (Entry<VirtualMachine, Server> entry : map.entrySet()) {
 				if(entry.getValue() != null)
 				if (server.getServerId() == entry.getValue().getServerId()) {
 					totalRequiredMips += entry.getKey().getVmMips();
 				}
 			}
+		}
 			
 			potentialUtilization = (totalRequiredMips + vmToCheck.getVmMips()) / server.getServerMIPS();
 
 		return potentialUtilization;
+	}
+	
+	
+	public float computePotentialUtilizationForARack(Rack r, VirtualMachine vmToCheck, Map<VirtualMachine, Server> map) {
+		List<Server> serversOnRack = r.getServers();
+		int nrOfServers = serversOnRack.size();
+		float rackPotentialUtilization = 0;
+		for(Server s: serversOnRack) {
+			rackPotentialUtilization += computePotentialUtilizationForAServer(s, vmToCheck, map);
+		}
+		
+		return (float) rackPotentialUtilization/nrOfServers;
 	}
 	
 	public float computeSingleRackUtilization(Rack r) {
@@ -104,36 +98,6 @@ public void setServerUtilization() {
 		r.setUtilization(utilization);
 		rackDAO.mergeSessionsForRack(r);
 
-	}
-
-
-public void setRackUtilization() {
-		
-
-		List<Rack> allRacks = new ArrayList<Rack>();
-		List<Server> allServers = new ArrayList<Server>();
-		GenericDAOImpl genericDAO = new GenericDAOImpl();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		
-		allRacks = rackDAO.getAllRacks();
-				
-		for(Rack rack: allRacks) {
-			
-			allServers = rack.getServers();
-			
-			if(!allServers.isEmpty()) {
-				float utilization = computeSingleRackUtilization(rack);
-				rack.setUtilization(utilization);
-				genericDAO.updateInstance(rack);
-			}
-			else {
-				rack.setUtilization(0);
-				genericDAO.updateInstance(rack);
-			}
-		}
-		
-		
-		
 	}
 
 }

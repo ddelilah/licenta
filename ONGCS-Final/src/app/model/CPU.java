@@ -14,6 +14,10 @@ import org.hibernate.annotations.Proxy;
 @Entity
 @Table(name = "cpu")
 @Proxy(lazy = false)
+
+/** 
+ * The CPU model class
+ */
 public class CPU implements Serializable{
 
 	@Id

@@ -14,6 +14,10 @@ import org.hibernate.annotations.Proxy;
 @Entity
 @Table(name = "hdd")
 @Proxy(lazy = false)
+
+/**
+ * The HDD model class
+ */
 public class HDD implements Serializable{
 
 	@Id

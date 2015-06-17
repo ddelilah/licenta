@@ -13,8 +13,11 @@ public class CoolingSimulation {
 
 	private float tSuppliedByCRAC;
 	private float COP;
+	private ServerDAOImpl serverDAO = new ServerDAOImpl();
+	private RackDAOImpl rackDAO = new RackDAOImpl();
+
 	
-	public CoolingSimulation(float tSuppliedByCRAC){
+	public CoolingSimulation(float tSuppliedByCRAC) {
 		this.tSuppliedByCRAC = tSuppliedByCRAC;
 		this.COP = (float) (0.0068 * Math.pow(tSuppliedByCRAC, 2) + 0.0008 * tSuppliedByCRAC + 0.458);
 	}
@@ -27,7 +30,6 @@ public class CoolingSimulation {
 		COP = cOP;
 	}
 
-
 	public float computeSingleServerCooling(Server s) {
 		return s.getPowerValue() / COP;
 	}
@@ -35,6 +37,13 @@ public class CoolingSimulation {
 	public float computeSingleServerCoolingGivenPowerValue(Server s, float power) {
 		return power / COP;
 	}
+	
+	public void setSingleServerCoolingValueGivenPowerConsumption(Server s, float power) {
+		float cooling = computeSingleServerCoolingGivenPowerValue(s, power);
+		s.setCoolingValue(cooling);
+		serverDAO.mergeSessionsForServer(s);
+	}
+	
 
 	public float computeSingleRackCooling(Rack r) {
 		float cooling = 0;
@@ -44,78 +53,29 @@ public class CoolingSimulation {
 		for (Server server : allServers) {
 			cooling += server.getCoolingValue();
 		}
+		
 		return cooling;
-	}
-
-	public void setServerCoolingValue() {
-
-		List<Server> allServers = new ArrayList<Server>();
-		GenericDAOImpl genericDAO = new GenericDAOImpl();
-		ServerDAOImpl serverDAO = new ServerDAOImpl();
-
-		allServers = serverDAO.getAllServers();
-
-		if (!allServers.isEmpty())
-			for (Server server : allServers) {
-				float cooling = server.getPowerValue() / COP;
-				server.setCoolingValue(cooling);
-				genericDAO.updateInstance(server);
-			}
-	}
-	
-	public void setSingleServerCoolingValue(Server s) {
-		ServerDAOImpl serverDAO = new ServerDAOImpl();
-		float cooling = computeSingleServerCooling(s);
-		s.setCoolingValue(cooling);
-		serverDAO.mergeSessionsForServer(s);
 	}
 	
 	public void setSingleRackCoolingValue(Rack r) {
-		RackDAOImpl rackDAO = new RackDAOImpl();
 		float cooling = computeSingleRackCooling(r);	
 		r.setCoolingValue(cooling);
 		rackDAO.mergeSessionsForRack(r);
 	}
 
-	public void setRackCoolingPower() {
-
-		List<Rack> allRacks = new ArrayList<Rack>();
-		List<Server> allServers = new ArrayList<Server>();
-		GenericDAOImpl genericDAO = new GenericDAOImpl();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		float cooling = 0;
-
-		allRacks = rackDAO.getAllRacks();
-		for (Rack rack : allRacks) {
-			cooling = 0;
-			allServers = rack.getServers();
-			if (!allServers.isEmpty()) {
-				for (Server server : allServers) {
-					cooling += server.getCoolingValue();
-				}
-			}
-			rack.setCoolingValue(cooling);
-			genericDAO.updateInstance(rack);
-		}
-	}
-
-
-	public float getCOP(float temperature){
-		
+	public float getCOP(float temperature) {
 		return (float) (0.0068 * Math.pow(temperature, 2) + 0.0008 * temperature + 0.458);
 	}
 	
-	public float getRackCoolingValueGivenInletTemperatureAndPowerValue(float inletTemperature, float powerValue){
-		
+	public float getRackCoolingValueGivenInletTemperatureAndPowerValue(float inletTemperature, float powerValue) {
 		float coefficientOfPerformance = (float) (0.0068 * Math.pow(inletTemperature, 2) + 0.0008 * inletTemperature + 0.458);
-		
 		float cooling = powerValue / coefficientOfPerformance;
-					
+		
 		return cooling;
 		
 	}
 
-	public float getSystemCoolingPower(List<Rack> rackList, float temperature){
+	public float getSystemCoolingPower(List<Rack> rackList, float temperature) {
 		float totalPower = 0;
 		for(Rack rack: rackList)
 			totalPower += rack.getPowerValue();

@@ -49,34 +49,38 @@ public class ConsolidationUtil {
 		
 		for (VirtualMachine selectedVm : vmsToBeDeleted) {
 			Server correspondingServer = selectedVm.getServer();
+			
+			if(correspondingServer != null && correspondingServer.getServerId() != 0) {
 
-			selectedVm.setState(VMState.DONE.getValue());
-			selectedVm.setServer(null);
-			vmDAO.mergeSessionsForVirtualMachine(selectedVm);
-			System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
-					+ correspondingServer.getServerId() + " with vms: "
-					+ correspondingServer.getCorrespondingVMs());
-			 Thread.yield();
-		        try { Thread.sleep(1000); } catch (InterruptedException e) {}
-			if(!allServers.isEmpty())
-			for (Server sr : allServers) {
-				if (sr.getServerId() == correspondingServer.getServerId()) {
-					sr.setCorrespondingVMs(SchedulingUtil.updateVmsOnServer(correspondingServer, selectedVm));
-					allModifiedServers.add(sr);
-					break;
+				selectedVm.setState(VMState.DONE.getValue());
+				selectedVm.setServer(null);
+				vmDAO.mergeSessionsForVirtualMachine(selectedVm);
+//				System.out.println("[BEFORE VM DELETE FROM SERVER's LIST]Server "
+//						+ correspondingServer.getServerId() + " with vms: "
+//						+ correspondingServer.getCorrespondingVMs());
+				 Thread.yield();
+			        try { Thread.sleep(1000); } catch (InterruptedException e) {}
+				if(!allServers.isEmpty())
+				for (Server sr : allServers) {
+					if (sr.getServerId() == correspondingServer.getServerId()) {
+						sr.setCorrespondingVMs(SchedulingUtil.updateVmsOnServer(correspondingServer, selectedVm));
+						allModifiedServers.add(sr);
+						break;
 
-					// System.out.println("[AFTER VM DELETE FROM SERVER's LIST]Server "
-					// + correspondingServer.getServerId() + " with vms: " +
-					// correspondingServer.getCorrespondingVMs());
-				}
+						// System.out.println("[AFTER VM DELETE FROM SERVER's LIST]Server "
+						// + correspondingServer.getServerId() + " with vms: " +
+						// correspondingServer.getCorrespondingVMs());
+					}
 
-				ListIterator<Server> iter = allModifiedServers.listIterator();
-				while (iter.hasNext()) {
-					if (iter.next().getServerId() == sr.getServerId()) {
-						iter.set(sr);
+					ListIterator<Server> iter = allModifiedServers.listIterator();
+					while (iter.hasNext()) {
+						if (iter.next().getServerId() == sr.getServerId()) {
+							iter.set(sr);
+						}
 					}
 				}
 			}
+
 		}
 
 		for (Server sr : allModifiedServers) {
@@ -165,15 +169,16 @@ public class ConsolidationUtil {
 		float newServerUtilizationAfterVMDelete, newServerPowerConsumptionAfterVMDelete, newServerEstimatedCoolingAfterVMDelete;
 		
 		newServerUtilizationAfterVMDelete = utilization.computeUtilization(s);
-		newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumption(s);
-		newServerEstimatedCoolingAfterVMDelete = coolingSimulation.computeSingleServerCooling(s);
+		newServerPowerConsumptionAfterVMDelete = powerConsumption.computeSingleServerPowerConsumptionGivenUtilization(s, s.getUtilization());
+		newServerEstimatedCoolingAfterVMDelete = coolingSimulation.computeSingleServerCoolingGivenPowerValue(s, s.getPowerValue());
 		s.setUtilization(newServerUtilizationAfterVMDelete);
 		s.setPowerValue(newServerPowerConsumptionAfterVMDelete);
 		s.setCoolingValue(newServerEstimatedCoolingAfterVMDelete);
 		if(newServerUtilizationAfterVMDelete == 0) {
-			s.setState(ServerState.OFF.getValue());
+			turnOffServer(s);
+		} else {
+			serverDAO.mergeSessionsForServer(s);
 		}
-		serverDAO.mergeSessionsForServer(s);
 	}
 	
 	public void updatesToRackValues(Rack r) {
@@ -187,9 +192,10 @@ public class ConsolidationUtil {
 		r.setUtilization(newRackUtilizationAfterVMDelete);
 		
 		if(newRackUtilizationAfterVMDelete == 0) {
-			r.setState(RackState.OFF.getValue());
+			turnOffRack(r);
+		} else {
+			rackDAO.mergeSessionsForRack(r);
 		}
-		rackDAO.mergeSessionsForRack(r);
 	}
 	
 	public void turnOffServer(Server s) {

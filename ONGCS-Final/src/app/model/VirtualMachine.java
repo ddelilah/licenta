@@ -15,6 +15,10 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Proxy;
 
+/**
+ * The Virtual Machine model class
+ */
+
 
 @Entity
 @Table(name = "vm")
