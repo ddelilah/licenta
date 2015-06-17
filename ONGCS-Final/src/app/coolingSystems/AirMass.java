@@ -6,13 +6,19 @@ import app.model.Rack;
 
 public class AirMass {
 
-	public float getAirMass(List<Rack> rackList, float coolingPower, float tIn, float tOut){
-		
-		float totalPower = 0;
-		for(Rack rack: rackList)
-			totalPower += rack.getPowerValue();
-		
-		return totalPower/(coolingPower * ( tOut - tIn));
+	private float airMass;
+	
+	public AirMass(float airMass){
+		this.airMass = airMass;
 	}
+	
+	public float getAirMass() {
+		return airMass;
+	}
+
+	public void setAirMass(float airMass) {
+		this.airMass = airMass;
+	}
+
 	
 }

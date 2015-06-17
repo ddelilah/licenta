@@ -27,10 +27,13 @@ public class HACS {
 	private float fanPowerConsumption; // [W]
 	private float volumeFlowRate;	   // [m^3/s]
 	private float area;				   // [m^2]
+	private AirMass airMassObject;
+	private VolumetricAirFlowRate volumetricAirFlowObject;
 	
 	public HACS(){
 		this.rackList = rackDAO.getAllRacks();
 		totalPowerConsumption=0;
+		
 	}
 	
 	public float computeMinMassFlowRate(float tIn){
@@ -54,18 +57,14 @@ public class HACS {
 				m = (float)(m+(float)0.01);
 		}while(!conditionSatisfied);
 		
-		System.out.println("Min m is "+ m +"[kg/s]");
+//		System.out.println("Min m is "+ m +"[kg/s]");
 		return m;
 	}
-	
-	
-	
+		
 	public float computeVolumetricAirFlow(float airMassFlowRate){
-//		System.out.println("volumetricAirFlow="+(float)(airMassFlowRate / DENSITY)+"[m^3/s]");
 		return (float)(airMassFlowRate/DENSITY);
 	}
 	public float computeAirVelocity(float volumetricAirFLow){
-//		System.out.println("airVelocity = "+ (float)(volumetricAirFLow/AREA)+"[m/s]");
 		return (float) volumetricAirFLow/AREA;
  	}
 	

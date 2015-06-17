@@ -32,14 +32,14 @@ public class Main {
 	public void startInitialization() throws Exception {
 		
 		//Ade
-//				ProcessBuilder builder = new ProcessBuilder(
-//		 	            "cmd.exe", "/c", " mysql -u root licenta < init_script.sql "
-//		 	            );
+				ProcessBuilder builder = new ProcessBuilder(
+		 	            "cmd.exe", "/c", " mysql -u root licenta < init_script.sql "
+		 	            );
 		
 		//Delia
-		ProcessBuilder builder = new ProcessBuilder(
- 	            "cmd.exe", "/c", " mysql --user=root --password=password licenta < init_script.sql "
- 	            );
+//		ProcessBuilder builder = new ProcessBuilder(
+// 	            "cmd.exe", "/c", " mysql --user=root --password=password licenta < init_script.sql "
+// 	            );
 // 	
 	 	builder.redirectErrorStream(true);
 	     Process p = builder.start();

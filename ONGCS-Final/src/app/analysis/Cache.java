@@ -14,6 +14,7 @@ import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.constants.VMState;
+import app.execution.History;
 import app.hibernate.SessionFactoryUtil;
 import app.model.Rack;
 import app.model.Server;
@@ -52,23 +53,42 @@ public class Cache {
 	        		i++;
 	        		line = br.readLine();
 	        		}
+	        		boolean sameNbDelVMs = true;
+	        		if(line.equals("VMs to be deleted")){
+    	        		line = br.readLine();
+    	        		 sameNbDelVMs = true;
+    	        		 i=0;
+    	        		 History h = new History();
+    	        		 List<Integer> deletedVMsList= h.readDeletesFromFile("script.txt");
+    	        		while(i < 5){
+    		        		String[] toParse = line.split(" ");
+    		        		if(Integer.parseInt(toParse[0]) != deletedVMsList.get(i)){
+    		        			sameNbDelVMs = false;
+    		        		}
+    	        		i++;
+    	        		line = br.readLine();
+    	        		}}
 // --------------------- don't have the same number of VMs allocated - Go to the next EXPERIMENT and check ---------------------------
 
-	        		if(!sameNbVMs){
-	        			while(!line.equals("-------------------- EXPERIMENT --------------------") && line!=null){
-	        				line = br.readLine();
+	        		if(!sameNbVMs || !sameNbDelVMs){
+	        			while( line!=null && !line.equals("-------------------- EXPERIMENT --------------------") ){
+	        					line = br.readLine();
 	        			}
 	        		}
  // ------------------------------ we have the same number of VMs allocated in the file -----------------------------------------------
 	        		else{
-//	        			System.out.println("same nb of vms");
-	        			String[] toParse = line.split(" ");
+	        			
+	        			
+	        			String[] 
+	        				toParse = line.split(" ");
+	        			
+	        				line = br.readLine();
 	        			/*
 	        			 * If the number of Unused servers = max number of existent servers and same number
 	        			 * 
 	        			 * */
 	        			if(Integer.parseInt(toParse[0]) == initialNumberOffServers && maxNumberOfServers == Integer.parseInt(toParse[0])){
-//	        				System.out.println("Found allocation \n\n\n\n");
+	        				System.out.println("Found allocation \n\n\n\n");
 	        				while(!line.equals("-------------------- Allocation --------------------")){
 	        					line = br.readLine();
 	        					
@@ -97,9 +117,10 @@ public class Cache {
 	        				foundExperiment.add(servers);
 	        				foundExperiment.add(racks);
 	        				getObjectList(foundExperiment,allVMsToBeDeployed);
-//	        				System.out.println("\n\n\n\n--------------------- Same VMs and all servers are turned OFF-----------------");
+	        				System.out.println("\n\n\n\n--------------------- Same VMs and all servers are turned OFF-----------------");
 	        				return true;
 	        			}
+	        			
 // ------------------- If the number of Unused servers = our initial config -------------------------------------------------------------
 	        			else if(Integer.parseInt(toParse[0]) == initialNumberOffServers){
 	        				line = br.readLine();
@@ -117,7 +138,7 @@ public class Cache {
 	        				initialServers +="]";
 // ------------------- Initial server configuration from the file is exactly the same with the initial one from our experiment -----------
 	        				if(initialServers.equals(allInitialServers.toString())){
-//	        					System.out.println("Found allocation  2 \n\n\n\n");
+	        					System.out.println("Found allocation  2 \n\n\n\n");
 		        				while(!line.equals("-------------------- Allocation --------------------")){
 		        					line = br.readLine();
 		        					
@@ -145,8 +166,8 @@ public class Cache {
 		        				foundExperiment.add(racks);
 		        				getObjectList(foundExperiment,allVMsToBeDeployed);
 		        				
-//		        				System.out.println("\n\n\n\n--------------------- Same VMs, some of the servers are turned OFF and "
-//		        						+ "the ON ones have the same config-----------------");
+		        				System.out.println("\n\n\n\n--------------------- Same VMs, some of the servers are turned OFF and "
+		        						+ "the ON ones have the same config-----------------");
 
 		        				return true;
 		        					        					
@@ -154,8 +175,8 @@ public class Cache {
 // --------------------------- Check if maybe the servers have another order, but the same utilization (HOMOGENOUS SERVERS)------------------------------
 	        				else {
 	        					setServerListFromFile(getInitialServersList(initialServers));
-//		        				System.out.println("\n\n\n\n--------------------- Same VMs, some of the servers are turned OFF and "
-//		        						+ "the ON ones DO NOT have the same config-----------------"+allInitialServers.size());
+		        				System.out.println("\n\n\n\n--------------------- Same VMs, some of the servers are turned OFF and "
+		        						+ "the ON ones DO NOT have the same config-----------------"+allInitialServers.size());
 		        				
 		        				boolean sameConfigExists = true;
 		        				for(Server server: allInitialServers){
@@ -202,7 +223,7 @@ public class Cache {
 		            
 		        line = br.readLine();
 	        }
-	       
+	        
 	    } finally {
 	        br.close();
 	    }
@@ -242,11 +263,9 @@ public class Cache {
 		for(i=0; i< serverFromFileList.size() && !exists; i++){
 			if(serverFromFileList.get(i).getUtilization() == server.getUtilization()){
 				exists = true;
-//				System.out.println("Same utilization "+ serverFromFileList.get(i).getUtilization()+" "+server.getUtilization() );
 			}
 		}
 		
-//		System.out.println("i is"+ i+" and exists is "+ exists);
 		if(exists)
 			serverFromFileList.remove(i-1);
 		setServerListFromFile(serverFromFileList);
@@ -259,9 +278,6 @@ public class Cache {
 		List<Server> initialServerList = new ArrayList<>();
 		String [] initialServ = initialServersString.split("Server");
 		
-//		System.out.println("Initial Server List"+initialServersString);
-//
-//		System.out.println("\n\n\n"+initialServ[0]);
 		
 		for(int i=1; i<initialServ.length; i++){
 			Server server = new Server();
@@ -293,7 +309,7 @@ public class Cache {
 		toParse = foundExperiment.get(2).split("Rack");
 		
 		for(int i=1; i<toParse.length; i++){
-			System.out.println("Parsing through"+ toParse[i]);
+			System.out.println("Checking "+ toParse[i]);
 			if(toParse[i].split("state=")[1].split(",")[0].equalsIgnoreCase("on") || Float.parseFloat(toParse[i].split("powerValue=")[1].split(",")[0]) != (float)0){
 				Rack rack = rackDAO.getRackById(Integer.parseInt(toParse[i].split("rackId=")[1].split(",")[0]));
 				rack.setState("on");
@@ -303,7 +319,7 @@ public class Cache {
 				genericDAO.updateInstance(rack);
 				
 				
-				System.out.println("\n\n\nRAck to be updated is "+rack);
+				System.out.println("\n\n\nRack to be updated is "+rack);
 			}
 		}
 		
@@ -322,24 +338,18 @@ public class Cache {
 		toParse = foundExperiment.get(0).split("VirtualMachine");
 		serverList = serverDAO.getAllServers();
 		
-//		System.out.println("\n\n\n\n\n\n\n\n\n\nServer list is"+ serverList);
 		for(int i=1; i<toParse.length ; i++){
 			
-//			System.out.println("\n\n\nIn file we have "+toParse[i]);
 
 			int pos =-1;
 			for(VirtualMachine vm: allVMsToBeDeployed){
-//					System.out.println("\n\n\nChecking vm "+ vm);
 					pos ++;
 					if(vm.getName().equals(toParse[i].split("name=")[1].split(",")[0]) && vm.getServer()==null ){
-//						System.out.println("\n\n\nVm name equal and server_id null");
 						VirtualMachine virtualMachine = new VirtualMachine();
 						virtualMachine = vmDAO.getVirtualMachineById(vm.getVmId());
 						virtualMachine.setState(VMState.RUNNING.getValue());
 						
 						virtualMachine.setServer(serverList.get(Integer.parseInt(toParse[i].split("id: ")[1].split(System.lineSeparator())[0])-1));
-//						System.out.println("\n\n\nVm "+virtualMachine+"\ngets server_id" + serverList.get(Integer.parseInt(toParse[i].split("id: ")[1].split(System.lineSeparator())[0])-1));
-				//		genericDAO.updateInstance(virtualMachine);
 						mergeSessionsForExecution(virtualMachine);
 						
 						allVMsToBeDeployed.set(pos, virtualMachine);

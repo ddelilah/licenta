@@ -21,6 +21,7 @@ import app.access.impl.GenericDAOImpl;
 import app.access.impl.RackDAOImpl;
 import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
+import app.analysis.Cache;
 import app.constants.VMState;
 import app.coolingSystems.HACS;
 import app.coolingSystems.ParallelPlacementStrategy;
@@ -142,23 +143,33 @@ public class Execution {
 		int initialNumberOnServers = serverDAO.getAllServersByState("on").size();
 		int initialNumberOffServers = allServers.size() - initialNumberOnServers;
 		
-//		Learning l = new Learning();
-//		boolean foundLearning = false;
-//		try {
-//			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		
-//		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
-//		
-//		if(foundLearning){
-//			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
-//			displayPowerConsumptionAndCooling("NUR");
-//			}
-//		
-//	else{
+		Cache l = new Cache();
+		boolean foundLearning = false;
+		try {
+			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyNUR.txt");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
+		
+
+		if(foundLearning){
+			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
+			
+			sUtil.displayPowerConsumptionAndCooling("NUR ");
+
+			try {
+				Thread.sleep(50000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.exit(1);
+		}
+		
+	else{
 			System.out.println("\n\n\n ----------------- Performing experiment! --------------------------");
 
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
@@ -218,10 +229,12 @@ public class Execution {
 
 		System.out.println("[NUR] map size: " + allocation.size());
 		sUtil.displayPowerConsumptionAndCooling("[BEFORE DELETE] NUR");
-
+		History history = new History();
+		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyNUR.txt");
+		
 		 Thread.yield();
 	        try { Thread.sleep(1000); } catch (InterruptedException e) {}
-	      
+	}
 	}
 		
 //	}
@@ -234,27 +247,34 @@ public class Execution {
 
 		int initialNumberOnServers = serverDAO.getAllServersByState("on").size();
 		int initialNumberOffServers = allServers.size() - initialNumberOnServers;
+			
+		Cache l = new Cache();
+		boolean foundLearning = false;
+		try {
+			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
+		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
 		
+
+		if(foundLearning){
+			
+			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
+			
+			sUtil.displayPowerConsumptionAndCooling("RBR ");
+			try {
+				Thread.sleep(50000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.exit(1);
+		}
 		
-//		Learning l = new Learning();
-//		boolean foundLearning = false;
-//		try {
-//			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyRBR.txt");
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		
-//		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
-//		
-//
-//		if(foundLearning){
-//			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
-//			displayPowerConsumptionAndCooling("RBR");
-//			}
-//		
-//	else{
+	else{
 			System.out.println("\n\n\n ----------------- Performing experiment! --------------------------");
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
 		allocation = rackScheduling.placeVMsRackByRack(allVMs, allRacks);
@@ -306,25 +326,15 @@ public class Execution {
 		        try { Thread.sleep(1000); } catch (InterruptedException e) {}
 		      
 		}
-		MigrationEfficiency mEff = new MigrationEfficiency();
-//		util.setServerUtilization();
-//
-//		power.setServerPowerConsumption();
-//		power.setRackPowerConsumption();
-//
-//		cooling.setServerCoolingValue();
-//		cooling.setRackCoolingPower();
-//		util.setRackUtilization();
-		
+		MigrationEfficiency mEff = new MigrationEfficiency();		
 		
 		History history = new History();
 		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyRBR.txt");
 		sUtil.displayPowerConsumptionAndCooling("[BEFORE DELETE] RBR");
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
-//		History history = new History();
-//		history.writeToFile(allocation, "historyRBR.txt");
 
 	}	
+		}
 
 //	}
 
@@ -389,13 +399,44 @@ public class Execution {
 
 	public void performFFD(List<VirtualMachine> allVMs, Charts chart,  ChartAirflow chartAirflow) {
 		FFD ffd = new FFD();
+		
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+		List<Server> allServers = serverDAO.getAllServers();
+
+		int initialNumberOnServers = serverDAO.getAllServersByState("on").size();
+		int initialNumberOffServers = allServers.size() - initialNumberOnServers;
+			
+		Cache l = new Cache();
+		boolean foundLearning = false;
+		try {
+			foundLearning = l.learning(allVMs, initialNumberOffServers, allServers, "historyFFD.txt");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("\n\n\n\n[Execution] foundLearning " +foundLearning);
+		
+
+		if(foundLearning){
+			System.out.println("\n\n\n ----------------- Experiment already done! --------------------------");
+			
+			sUtil.displayPowerConsumptionAndCooling("FFD ");
+
+			try {
+				Thread.sleep(50000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.exit(1);
+		}
+		
+	else{
+			System.out.println("\n\n\n ----------------- Performing experiment! --------------------------");
+	
+		
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
-		Map<VirtualMachine, Server> sortedAllocation = new HashMap<VirtualMachine, Server>();
-		Map<VirtualMachine, Server> tiny = new HashMap<VirtualMachine, Server>();
-		Map<VirtualMachine, Server> small = new HashMap<VirtualMachine, Server>();
-		Map<VirtualMachine, Server> medium = new HashMap<VirtualMachine, Server>();
-		Map<VirtualMachine, Server> large = new HashMap<VirtualMachine, Server>();
-		Map<VirtualMachine, Server> xlarge = new HashMap<VirtualMachine, Server>();
 
 		allocation = ffd.performFFD(allVMs);
 		
@@ -403,42 +444,15 @@ public class Execution {
 		PowerConsumption power = new PowerConsumption();
 
 
-		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
-			if(entry.getKey().getVmMips() == 250){
-				tiny.put(entry.getKey(), entry.getValue());
-			}
-			else if(entry.getKey().getVmMips() == 400){
-				small.put(entry.getKey(), entry.getValue());
-			}
-			else if(entry.getKey().getVmMips() == 600){
-				medium.put(entry.getKey(), entry.getValue());
-			}
-			else if(entry.getKey().getVmMips() == 800){
-				large.put(entry.getKey(), entry.getValue());
-			}
-			else if(entry.getKey().getVmMips() == 1000){
-				xlarge.put(entry.getKey(), entry.getValue());
-			}	
-		}
-		
-		 sortedAllocation.putAll(xlarge);
-		 sortedAllocation.putAll(large);
-		 sortedAllocation.putAll(medium);
-		 sortedAllocation.putAll(small);
-		 sortedAllocation.putAll(tiny);
-
 		 VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 		 List<VirtualMachine> vmList = vmDAO.getAllVMsByState("Running");
 		 int ct= vmList.size();
 		
-		for (Entry<VirtualMachine, Server> entry : sortedAllocation.entrySet()) {
+		for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 			ct++;
 			int serverId = entry.getValue().getServerId();
 			
 			System.out.println("\n\n...... Deploying vm "+ entry.getKey().getName()+ " on server "+entry.getValue().getServerId());
-//			rGUI.updateTextArea("\n...... Deploying vm "+ entry.getKey().getName()+ " on server "+entry.getValue().getServerId());
-//			rGUI.redirectSystemStreams();
-//			rGUI.getTextArea().append("\n...... Deploying vm "+ entry.getKey().getName()+ " on server "+entry.getValue().getServerId());
 			Server s = entry.getValue();
 			VirtualMachine vm = entry.getKey();
 			vm.setServer(s);
@@ -482,12 +496,6 @@ public class Execution {
 		MigrationEfficiency mEff = new MigrationEfficiency();
 
 		
-//		util.setServerUtilization();
-//		ffd.setServerPowerConsumption();
-//		power.setRackPowerConsumption();
-//		util.setRackUtilization();
-//		util.setRackUtilization();
-	//	power.comparePowerValues();
 		
 		CoolingSimulation cooling = new CoolingSimulation(Integer.parseInt(cracTemp));
 		cooling.setServerCoolingValue();
@@ -496,13 +504,12 @@ public class Execution {
 		
 		System.out.println("Allocation Success Ratio: "+ mEff.computeAllocationMigrationRatio(allocation.size(), allVMs.size()));
 		sUtil.displayPowerConsumptionAndCooling("[BEFORE DELETE] FFD ");
-		System.out.println("Demo finished. Cheers.");
-		System.out.println("Demo finished. Cheers.");
 		
-//		charts.finishChartExecution();
-	/*	History history = new History();
-		history.writeToFile(allocation, "historyRBR.txt");
-	*/	
+		History history = new History();
+		history.writeToFile(allVMs, initialNumberOffServers, allServers, allocation, "historyFFD.txt");
+		
+	}
+	
 	}
 	
 	private static String mergeSessionsForExecution(VirtualMachine vm) {

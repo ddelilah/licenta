@@ -3,7 +3,6 @@ package app.coolingSystems;
 public class FanPowerConsumption {
 	
 	private HACS hacs = new HACS();
-//	private CACS cacs = new CACS();
 	private ParallelPlacementStrategy parallel = new ParallelPlacementStrategy();
 	
 	
@@ -40,49 +39,74 @@ public class FanPowerConsumption {
 //		System.out.println("[Air mass flow rate] m = "+airMassFlowRate);
 //		System.out.println("[Volumetric air flow rate] f = "+volumetricAirFlow);
 //		System.out.println("[Air velocity] v = "+airVelocity);
+////		//----------- COMPUTE DECREASE IN FAN POWER CONSUMPTION ----------------------------
+////		
+//		System.out.println("\nDecrease in Fan Speed is "+computePercentageDecreaseInFanSpeed(idealVolumetricAirFlow, volumetricAirFlow)+"%");
+//		System.out.println("Decrease in Air Velocity is "+computePercentageDecreaseInAirVelocity(idealAirVelocity,airVelocity)+"%");
+//		System.out.println("Decrease in Fan Power Consumption is "+computePercentageDecreaseInFanPowerConsumption(idealAirVelocity,airVelocity)+"%");
+
+		
 //		//----------- COMPUTE DECREASE IN FAN POWER CONSUMPTION ----------------------------
 //		
-		System.out.println("\nDecrease in Fan Speed is "+computePercentageDecreaseInFanSpeed(idealVolumetricAirFlow, volumetricAirFlow)+"%");
-		System.out.println("Decrease in Air Velocity is "+computePercentageDecreaseInAirVelocity(idealAirVelocity,airVelocity)+"%");
-		System.out.println("Decrease in Fan Power Consumption is "+computePercentageDecreaseInFanPowerConsumption(idealAirVelocity,airVelocity)+"%");
-	}
-	/*
-public void getPercentagesCACS(float tIn, float airLoss){
-		
-		float idealAirMassFlowRate = cacs.computeMinMassFlowRate(tIn);
-		float idealVolumetricAirFlow = cacs.computeVolumetricAirFlow(idealAirMassFlowRate);
-		float idealAirVelocity = cacs.computeAirVelocity(idealVolumetricAirFlow);
-		
-		float airMassFlowRate =parallel.computeHeatRecirculation(airLoss,tIn);
-		float volumetricAirFlow = parallel.computeVolumetricAirFlow(airMassFlowRate);
-		float airVelocity = parallel.computeAirVelocity(volumetricAirFlow);
-		
-		System.out.println("[Computing % decrease in volumetric air flow]\n\n -------------------- [CACS]-------------------------");
-		System.out.println("[Tin = "+ tIn+ " ]");
-		System.out.println("[Ideal air mass flow rate] m = "+idealAirMassFlowRate);
-		System.out.println("[Ideal volumetric air flow rate] f = "+idealVolumetricAirFlow);
-		System.out.println("[Ideal air velocity] v = "+idealAirVelocity);
+//		System.out.print(computePercentageDecreaseInFanSpeed(idealVolumetricAirFlow, volumetricAirFlow)+"%");
+////		System.out.println("Decrease in Air Velocity is "+computePercentageDecreaseInAirVelocity(idealAirVelocity,airVelocity)+"%");
+//		System.out.println("                     "+computePercentageDecreaseInFanPowerConsumption(idealAirVelocity,airVelocity)+"%");
 
-		System.out.println("---------------------------------------");
-		System.out.println("\n[Loss = "+ airLoss+ " ]");
-		System.out.println("[Air mass flow rate] m = "+airMassFlowRate);
-		System.out.println("[Volumetric air flow rate] f = "+volumetricAirFlow);
-		System.out.println("[Air velocity] v = "+airVelocity);
-		//----------- COMPUTE DECREASE IN FAN POWER CONSUMPTION ----------------------------
-		
-		System.out.println("\nDecrease in Fan Speed is "+computePercentageDecreaseInFanSpeed(idealVolumetricAirFlow, volumetricAirFlow)+"%");
-		System.out.println("Decrease in Air Velocity is "+computePercentageDecreaseInAirVelocity(idealAirVelocity,airVelocity)+"%");
-		System.out.println("Decrease in Fan Power Consumption is "+computePercentageDecreaseInFanPowerConsumption(idealAirVelocity,airVelocity)+"%");
-	}*/
+//		System.out.print(" "+ airLoss+ "");
+//		System.out.print("     "+airMassFlowRate);
+//		System.out.print("       "+volumetricAirFlow);
+//		System.out.println("      "+airVelocity);
+	}
+	
+
 	public static void main(String[]args){
 		
 		FanPowerConsumption fp = new FanPowerConsumption();
 		
-		fp.getPercentagesHACS(20, 0.1f);
-		fp.getPercentagesHACS(20, 0.2f);
-		fp.getPercentagesHACS(20, 0.3f);
-		fp.getPercentagesHACS(20, 0.4f);
-		fp.getPercentagesHACS(20, 0.5f);
+		fp.getPercentagesHACS(18, 0.01f);
+		fp.getPercentagesHACS(18, 0.02f);
+		fp.getPercentagesHACS(18, 0.03f);
+		fp.getPercentagesHACS(18, 0.04f);
+		fp.getPercentagesHACS(18, 0.05f);
 
+		fp.getPercentagesHACS(19, 0.01f);
+		fp.getPercentagesHACS(19, 0.02f);
+		fp.getPercentagesHACS(19, 0.03f);
+		fp.getPercentagesHACS(19, 0.04f);
+		fp.getPercentagesHACS(19, 0.05f);
+
+		fp.getPercentagesHACS(20, 0.01f);
+		fp.getPercentagesHACS(20, 0.02f);
+		fp.getPercentagesHACS(20, 0.03f);
+		fp.getPercentagesHACS(20, 0.04f);
+		fp.getPercentagesHACS(20, 0.05f);
+
+		fp.getPercentagesHACS(21, 0.01f);
+		fp.getPercentagesHACS(21, 0.02f);
+		fp.getPercentagesHACS(21, 0.03f);
+		fp.getPercentagesHACS(21, 0.04f);
+		fp.getPercentagesHACS(21, 0.05f);
+
+		fp.getPercentagesHACS(22, 0.01f);
+		fp.getPercentagesHACS(22, 0.02f);
+		fp.getPercentagesHACS(22, 0.03f);
+		fp.getPercentagesHACS(22, 0.04f);
+		fp.getPercentagesHACS(22, 0.05f);
+
+		fp.getPercentagesHACS(23, 0.01f);
+		fp.getPercentagesHACS(23, 0.02f);
+		fp.getPercentagesHACS(23, 0.03f);
+		fp.getPercentagesHACS(23, 0.04f);
+		fp.getPercentagesHACS(23, 0.05f);
+
+		fp.getPercentagesHACS(24, 0.01f);
+		fp.getPercentagesHACS(24, 0.02f);
+		fp.getPercentagesHACS(24, 0.03f);
+		fp.getPercentagesHACS(24, 0.04f);
+		fp.getPercentagesHACS(24, 0.05f);
+
+		
+		
 	}
+	
 }

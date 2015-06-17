@@ -14,11 +14,14 @@ import app.GUI.Charts;
 import app.GUI.RackUtilizationGUI;
 import app.access.GenericDAO;
 import app.access.impl.GenericDAOImpl;
+import app.access.impl.ServerDAOImpl;
 import app.access.impl.VirtualMachineDAOImpl;
 import app.analysis.Analysis;
 import app.constants.VMState;
 import app.execution.Execution;
+import app.execution.History;
 import app.execution.Time;
+import app.model.Server;
 import app.model.VirtualMachine;
 import app.scheduling.Consolidation;
 import app.util.ConsolidationUtil;
@@ -29,7 +32,7 @@ public class Queue extends Thread {
 
 	private Charts chart = new Charts();
 	
-	private LinkedBlockingDeque<ContextData> receivedMessage;
+	private LinkedBlockingDeque<ContextData> dequeueReceivedMessage;
 	private Analysis analysis;
 	boolean statesChanged = false;
 	private GenericDAO dao;
@@ -47,7 +50,7 @@ public class Queue extends Thread {
 	private List<VirtualMachine> taskList = new ArrayList<VirtualMachine>();
 
 	public Queue() {
-		this.receivedMessage = new LinkedBlockingDeque<ContextData>();
+		this.dequeueReceivedMessage = new LinkedBlockingDeque<ContextData>();
 		this.analysis = new Analysis();
 		this.dao = new GenericDAOImpl();
 		this.sUtil = new SchedulingUtil();
@@ -62,9 +65,9 @@ public class Queue extends Thread {
 		String cracTemp = "";
 		
 		while (true) {
-			while (!receivedMessage.isEmpty()) {
+			while (!dequeueReceivedMessage.isEmpty()) {
 
-				ContextData message = receivedMessage.pollFirst();
+				ContextData message = dequeueReceivedMessage.pollFirst();
 
 
 				System.out.println("\n\n\n.............Monitoring "
@@ -105,7 +108,12 @@ public class Queue extends Thread {
 //		for (VirtualMachine vm : toBeDeletedVmList)
 //			System.out.println(vm.toString());
 
+		ServerDAOImpl serverDAO = new ServerDAOImpl();
+		List<Server> allServers = serverDAO.getAllServers();
 
+		int initialNumberOnServers = serverDAO.getAllServersByState("on").size();
+		int initialNumberOffServers = allServers.size() - initialNumberOnServers;
+			
 		analysis.performAnalysis(toBeDeployedVmList, algorithm, chart, chartAirflow, cracTemp);
 
 
@@ -120,7 +128,10 @@ public class Queue extends Thread {
 		}
 		
 		sUtil.displayPowerConsumptionAndCooling("[AFTER DELETE] " + algorithm);
-
+		
+		String filename="history"+algorithm+".txt";
+		History history = new History();
+		history.writeToFileAfterConsolidation( initialNumberOffServers, allServers, filename);
 
 		System.out.println("\n\n........ End of deployment..........");
 
@@ -178,7 +189,6 @@ public class Queue extends Thread {
 					vm.setState(VMState.PENDING.getValue());
 					vm.setServer(null);
 
-//					System.out.println("vm's state is " + vm.getState());
 					vmDAO.createInstance(vm);
 					VirtualMachine vmToAdd = vmDAO.getVirtualMachineById(vm
 							.getVmId());
@@ -464,6 +474,6 @@ public class Queue extends Thread {
 	}
 
 	public synchronized void addTOQueue(ContextData message) {
-		this.receivedMessage.add(message);
+		this.dequeueReceivedMessage.add(message);
 	}
 }

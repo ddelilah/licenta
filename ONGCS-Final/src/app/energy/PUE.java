@@ -4,7 +4,6 @@ public class PUE {
 /*Power Usage Effectiveness - PUE metric is associated with the data center infrastructure.
 	PUE is not a data center productivity metric, nor is it a standalone, comprehensive efficiency metric
 */	
-	//[TODO] find article with server configurations and see how much energy they consume
 	private float totalFacilityPower;
 	private float itEquipmentPower;
 	private float dcCoolingPower;

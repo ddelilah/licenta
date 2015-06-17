@@ -5,8 +5,7 @@ package app.monitoring;
 public class Monitoring {
 
 	private Queue queue;
-	private String algorithmToStart;
-	private String cracTemp;
+	private ContextData receivedData;
 	
 	public Monitoring() {
 	
@@ -15,8 +14,8 @@ public class Monitoring {
 
 	public void addToQueue(Object type, int numberOfInstances, String command, String alg, String cracTemp) {
 	
-		ContextData contextData = new ContextData(type, numberOfInstances, command, alg, cracTemp);	
-		queue.addTOQueue(contextData);
+		 receivedData = new ContextData(type, numberOfInstances, command, alg, cracTemp);	
+		queue.addTOQueue(receivedData);
 		
 	}
 	public void startMonitoring(){

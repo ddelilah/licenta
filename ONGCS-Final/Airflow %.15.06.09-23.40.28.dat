@@ -1,6 +1,0 @@
-##;##
-@Airflow2
-HACS volumetric airflow;Parallel volumetric airflow 0.1 loss;Parallel volumetric airflow 0.2 loss;Parallel volumetric airflow 0.3 loss;Parallel volumetric airflow 0.4 loss;Parallel volumetric airflow 0.5 loss
-0.08163265;0.08163265;0.08163265;0.08163265;0.08979592;0.10612244
-0.13877553;0.15510206;0.1714286;0.19591841;0.22857144;0.277551
-0.20408168;0.22857144;0.26122448;0.2938775;0.34285706;0.4081631

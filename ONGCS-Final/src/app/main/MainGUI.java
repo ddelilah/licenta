@@ -69,7 +69,6 @@ public class MainGUI extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-	
 		
 		JLabel lblCracInletTemperature = new JLabel("CRAC inlet temperature: ");
 		lblCracInletTemperature.setBounds(10, 23, 139, 14);

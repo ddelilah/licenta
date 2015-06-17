@@ -18,7 +18,8 @@ public class VMProcessor implements Comparator<VirtualMachine> {
 
 	@Override
 	public int compare(VirtualMachine vm1, VirtualMachine vm2) {
-		return vm1.getVmMips() > vm2.getVmMips() ? -1 : vm1.getVmMips() == vm2.getVmMips() ? 0 : 1;
+		return vm1.getVmMips() > vm2.getVmMips() ? -1 : 
+			vm1.getVmMips() == vm2.getVmMips() ? 0 : 1;
 	}
 	
 	public List sortVMListDescending(){
