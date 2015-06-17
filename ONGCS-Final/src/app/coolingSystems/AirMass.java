@@ -7,11 +7,11 @@ import app.model.Rack;
 public class AirMass {
 
 	private float airMass;
-	
-	public AirMass(float airMass){
+
+	public AirMass(float airMass) {
 		this.airMass = airMass;
 	}
-	
+
 	public float getAirMass() {
 		return airMass;
 	}
@@ -20,5 +20,4 @@ public class AirMass {
 		this.airMass = airMass;
 	}
 
-	
 }

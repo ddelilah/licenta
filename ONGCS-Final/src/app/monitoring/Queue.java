@@ -153,8 +153,6 @@ public class Queue extends Thread {
 			List<VirtualMachine> toBeDeployedVmList) {
 
 		for (VirtualMachine vm : toBeDeployedVmList) {
-//			System.out.println("Checking.... " + vm.getVmId() + " and "
-//					+ vmToCheck.getVmId());
 			if (vm.getVmId() == vmToCheck.getVmId())
 				return true;
 		}
@@ -181,7 +179,6 @@ public class Queue extends Thread {
 					System.out
 							.println("\n\n\n...........Preparing to create VM "
 									+ vm.getName() + "...........");
-//							+ vm.getName() + "...........");
 //					 try {
 //					 Thread.sleep(1000);
 //					 } catch (InterruptedException e) {}
@@ -462,8 +459,6 @@ public class Queue extends Thread {
 					System.out.println("\n\n\n...........VM "
 							+ vmToDelete.getVmId()
 							+ " has been deleted............");
-//					System.out.println("toBeDeployedVmList "
-//							+ toBeDeployedVmList);
 
 				}
 			}

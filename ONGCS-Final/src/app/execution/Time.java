@@ -4,9 +4,9 @@ public class Time {
 
 	private long startTime;
 	private long endTime;
-	
-	public Time(){
-		
+
+	public Time() {
+
 	}
 
 	public long getStartTime() {
@@ -24,8 +24,8 @@ public class Time {
 	public void setEndTime(long endTime) {
 		this.endTime = endTime;
 	}
-	
-	public long getExecutionTime(){
-		return this.endTime-this.startTime;
+
+	public long getExecutionTime() {
+		return this.endTime - this.startTime;
 	}
 }

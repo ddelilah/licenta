@@ -29,12 +29,10 @@ public class Charts {
 	public static final String DEMO_DIR = System.getProperty("user.dir");
 
 	private DataStreamWriter out;
-//	private DataStreamWriter outAirflow ;
 
 	public Charts(){
 		
 		out = DataStreamWriterFactory.createDataWriter(DEMO_DIR,"Chart");
-//		outAirflow = DataStreamWriterFactory.createDataWriter(DEMO_DIR,"Airflow %");
 		Calendar now = Calendar.getInstance();
 		int year = now.get(Calendar.YEAR);
 		int month = now.get(Calendar.MONTH) +1; 
@@ -73,7 +71,6 @@ public class Charts {
 		
 	
 		dfs.setDataFile(DEMO_DIR+"/Chart.15"+"."+mm+"."+dd+"-"+hh+"."+min+"."+ss+".dat");
-	//	dfss.setDataFile(DEMO_DIR+"/Airflow %.15"+"."+mm+"."+dd+"-"+hh+"."+min+"."+ss+".dat");
 
 		dfs.setUpdateFrequency(1000);
 		dfs.save("startup.lgdfs");		
@@ -91,17 +88,10 @@ public class Charts {
 		gfs.setHighlightDataPoints(true);
 		gfs.setVGridType(VGridType.VGrid_XAUnitAligned);
 		gfs.setVGridSize(1.0);
-	//	gfs.setXAxisScaleValue(10);
 		gfs.save("gfs.lggfs");
 	
 		
 		LiveGraph app = LiveGraph.application();
-		
-//		app.setDisplayGraphSettingsWindow(false);
-//		app.setDisplaySeriesSettingsWindow(false);
-//		app.setDisplayDataFileSettingsWindow(false);
-//		app.setDisplayDataFileSettingsWindow(false);
-//		
 		
 		app.exec(new String[] {"-dfs", "startup.lgdfs", "-dss","dss.lgdss", "-gs","gfs.lggfs"});
 				
@@ -140,29 +130,6 @@ public class Charts {
 //	        Thread.yield();		
 	}
 	
-//	public void updatChartAirflow(float hacsAirflow , float cacsAirflow, float parAirflow01, float parAirflow02, float parAirflow03, float parAirflow04, float parAirflow05){
-//		
-//		outAirflow.setDataValue(hacsAirflow);
-//		outAirflow.setDataValue(cacsAirflow);
-//		outAirflow.setDataValue(parAirflow01);
-//		outAirflow.setDataValue(parAirflow02);
-//		outAirflow.setDataValue(parAirflow03);
-//		outAirflow.setDataValue(parAirflow04);
-//		outAirflow.setDataValue(parAirflow05);
-//			 // Write dataset to disk:
-//		outAirflow.writeDataSet();
-//		      
-//		      // Check for IOErrors:      
-//		      if (outAirflow.hadIOException()) {
-//		    	  outAirflow.getIOException().printStackTrace();
-//		    	  outAirflow.resetIOException();
-//		      }
-//		      // Pause:
-////		      Thread.yield();
-////		        try { Thread.sleep(3000); } catch (InterruptedException e) {}
-////		        Thread.yield();		
-//
-//	}
 	
 	public void finishChartExecution(){
 		 out.close();

@@ -20,8 +20,8 @@ public class Utilization {
 	public void setSingleServerUtilization(Server s) {
 		ServerDAOImpl serverDAO = new ServerDAOImpl();
 		float utilization = computeUtilization(s);
-		
-		if(utilization == 0) {
+
+		if (utilization == 0) {
 			s.setState(ServerState.OFF.getValue());
 		}
 		s.setUtilization(utilization);
@@ -31,68 +31,70 @@ public class Utilization {
 	public float computeUtilization(Server server) {
 		List<VirtualMachine> vmList = server.getCorrespondingVMs();
 		float sum = 0;
-		
+
 		for (VirtualMachine vm : vmList) {
 			sum += vm.getVmMips();
 		}
 		return sum / server.getServerMIPS();
 
 	}
-	
-	public float computePotentialUtilizationForAServer(Server server, VirtualMachine vmToCheck, Map<VirtualMachine, Server> map) {
+
+	public float computePotentialUtilizationForAServer(Server server,
+			VirtualMachine vmToCheck, Map<VirtualMachine, Server> map) {
 		float potentialUtilization = 0, totalRequiredMips = 0;
 		List<VirtualMachine> vmList = server.getCorrespondingVMs();
-		
+
 		for (VirtualMachine vm : vmList) {
 			totalRequiredMips += vm.getVmMips();
 		}
-		
-		if(!map.isEmpty()) {
+
+		if (!map.isEmpty()) {
 			for (Entry<VirtualMachine, Server> entry : map.entrySet()) {
-				if(entry.getValue() != null)
-				if (server.getServerId() == entry.getValue().getServerId()) {
-					totalRequiredMips += entry.getKey().getVmMips();
-				}
+				if (entry.getValue() != null)
+					if (server.getServerId() == entry.getValue().getServerId()) {
+						totalRequiredMips += entry.getKey().getVmMips();
+					}
 			}
 		}
-			
-			potentialUtilization = (totalRequiredMips + vmToCheck.getVmMips()) / server.getServerMIPS();
+
+		potentialUtilization = (totalRequiredMips + vmToCheck.getVmMips())
+				/ server.getServerMIPS();
 
 		return potentialUtilization;
 	}
-	
-	
-	public float computePotentialUtilizationForARack(Rack r, VirtualMachine vmToCheck, Map<VirtualMachine, Server> map) {
+
+	public float computePotentialUtilizationForARack(Rack r,
+			VirtualMachine vmToCheck, Map<VirtualMachine, Server> map) {
 		List<Server> serversOnRack = r.getServers();
 		int nrOfServers = serversOnRack.size();
 		float rackPotentialUtilization = 0;
-		for(Server s: serversOnRack) {
-			rackPotentialUtilization += computePotentialUtilizationForAServer(s, vmToCheck, map);
+		for (Server s : serversOnRack) {
+			rackPotentialUtilization += computePotentialUtilizationForAServer(
+					s, vmToCheck, map);
 		}
-		
-		return (float) rackPotentialUtilization/nrOfServers;
+
+		return (float) rackPotentialUtilization / nrOfServers;
 	}
-	
+
 	public float computeSingleRackUtilization(Rack r) {
 
 		List<Server> allServers = new ArrayList<Server>();
 		float utilization = 0;
-		
+
 		allServers = r.getServers();
-		
-		for(Server server: allServers) {
+
+		for (Server server : allServers) {
 			utilization += server.getUtilization();
 		}
-	
-		return utilization/allServers.size();
-		
-		
+
+		return utilization / allServers.size();
+
 	}
-	
+
 	public void setSingleRackUtilization(Rack r) {
 		RackDAOImpl rackDAO = new RackDAOImpl();
 		float utilization = computeSingleRackUtilization(r);
-		if(utilization == 0) {
+		if (utilization == 0) {
 			r.setState(RackState.OFF.getValue());
 		}
 		r.setUtilization(utilization);

@@ -22,80 +22,49 @@ import app.model.Server;
 import app.model.VirtualMachine;
 
 public class FFD {
-	
+
 	private SchedulingUtil schedulingUtil = new SchedulingUtil();
 	private static VirtualMachineDAOImpl vmDAO = new VirtualMachineDAOImpl();
 
 	@SuppressWarnings("unchecked")
 	public Map<VirtualMachine, Server> performFFD(List<VirtualMachine> vmList) {
-	
+
 		boolean foundServer = false;
 		RackDAO rackDAO = new RackDAOImpl();
-		List<Rack> allRacks  = new ArrayList<Rack>();
-		List<Server> allServers  = new ArrayList<Server>();
+		List<Rack> allRacks = new ArrayList<Rack>();
+		List<Server> allServers = new ArrayList<Server>();
 		allRacks = rackDAO.getAllRacks();
-		VMProcessor vmProcessor= new VMProcessor(vmList); 
+		VMProcessor vmProcessor = new VMProcessor(vmList);
 		vmList = vmProcessor.sortVMListDescending();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
-		
-		for(VirtualMachine vm: vmList) {
-			 foundServer = false;
-			
-			for(Rack rack: allRacks) {
-				if(!foundServer){
+
+		for (VirtualMachine vm : vmList) {
+			foundServer = false;
+
+			for (Rack rack : allRacks) {
+				if (!foundServer) {
 					allServers = rack.getServers();
-								
-						for(Server server: allServers) {
-							if(schedulingUtil.enoughResources(server, vm, allocation)){
-//							Thread.yield();
-//							try { Thread.sleep(3000);} catch (InterruptedException e) {}
-//							Thread.yield();
-								allocation.put(vm, server);
-								foundServer = true;
-								break;
-							}
+
+					for (Server server : allServers) {
+						if (schedulingUtil.enoughResources(server, vm,
+								allocation)) {
+							allocation.put(vm, server);
+							foundServer = true;
+							break;
+						}
 					}
-	
+
 				}
 			}
-			
+
 			if (!allocation.keySet().contains(vm)) {
 				vm.setState(VMState.FAILED.getValue());
 				vmDAO.mergeSessionsForVirtualMachine(vm);
 			}
-			
+
 		}
-	
+
 		return allocation;
 	}
-	
-	private static final int MAXIMUM_POWER = 1023;
 
-	public void setServerPowerConsumption() {
-
-		List<Rack> allRacks = new ArrayList<Rack>();
-		List<Server> allServers = new ArrayList<Server>();
-		GenericDAOImpl genericDAO = new GenericDAOImpl();
-		ServerDAOImpl serverDAO = new ServerDAOImpl();
-
-		allServers = serverDAO.getAllServers();
-
-		if (!allServers.isEmpty())
-			for (Server server : allServers) {
-					float utilization = server.getUtilization();
-					float power = server.getIdleEnergy()
-							+ (MAXIMUM_POWER - server.getIdleEnergy())
-							* utilization;
-
-					if(power!= server.getIdleEnergy()){
-						server.setPowerValue(power);
-						server.setState(ServerState.ON.getValue());
-						genericDAO.updateInstance(server);
-					}
-					
-			
-			}
-	}
-	
-	
 }

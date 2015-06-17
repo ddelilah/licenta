@@ -23,29 +23,27 @@ public class PABFD {
 	private static final int MAXIMUM_POWER = 1023;
 	/** fraction of power consumption of an idle server */
 	private static final int K = 70;
-	/* suppose temperature is 25 degrees */
-	//private static final float COP = (float) (0.0068 * Math.pow(25, 2) + 0.0008 * 25 + 0.458);
 
 	public PABFD(List<Server> serverList, String cracTemp) {
 		this.serverList = serverList;
-		
+
 		coolingSimulation = new CoolingSimulation(Integer.parseInt(cracTemp));
 		schedulingUtil = new SchedulingUtil();
 	}
-	
-	
-	public Server findAppropriateServerForConsolidationStep(VirtualMachine vm, Map<VirtualMachine, Server> allocation) {
+
+	public Server findAppropriateServerForConsolidationStep(VirtualMachine vm,
+			Map<VirtualMachine, Server> allocation) {
 		Server result = new Server();
 		Utilization util = new Utilization();
-
 
 		float minPower = Float.MAX_VALUE;
 		float power = 0;
 		float utilization;
-		
+
 		for (Server server : serverList) {
 			if (schedulingUtil.enoughResources(server, vm, allocation)) {
-				utilization = util.computePotentialUtilizationForAServer(server, vm, allocation);
+				utilization = util.computePotentialUtilizationForAServer(
+						server, vm, allocation);
 				power = server.getIdleEnergy()
 						+ (MAXIMUM_POWER - server.getIdleEnergy())
 						* utilization;
@@ -55,19 +53,27 @@ public class PABFD {
 					break;
 				}
 			} else {
-//				System.out.println("[ERROR 404: Server not found] Virtual machine" + vm.getVmId() + vm.getName() + " can't be placed anywhere" );
+				// System.out.println("[ERROR 404: Server not found] Virtual machine"
+				// + vm.getVmId() + vm.getName() + " can't be placed anywhere"
+				// );
 			}
 		}
-		
+
 		/*
 		 * 
-		 * if no underutilized server can be found, leave the workload on the existing server
+		 * if no underutilized server can be found, leave the workload on the
+		 * existing server
 		 */
-		
+
 		return result;
 	}
-	/** returns the most appropriate server and the corresponding power consumption and cooling */
-	public Map<Server, List<Float>> findAppropriateServer(VirtualMachine vm, Map<VirtualMachine, Server> allocation) {
+
+	/**
+	 * returns the most appropriate server and the corresponding power
+	 * consumption and cooling
+	 */
+	public Map<Server, List<Float>> findAppropriateServer(VirtualMachine vm,
+			Map<VirtualMachine, Server> allocation) {
 		float minPower = Float.MAX_VALUE;
 		float cooling = 0;
 		float power = 0;
@@ -92,7 +98,9 @@ public class PABFD {
 				else {
 					/* non underutilized server */
 					if (schedulingUtil.enoughResources(server, vm, allocation)) {
-						utilization = util.computePotentialUtilizationForAServer(server, vm, allocation);
+						utilization = util
+								.computePotentialUtilizationForAServer(server,
+										vm, allocation);
 						power = server.getIdleEnergy()
 								+ (MAXIMUM_POWER - server.getIdleEnergy())
 								* utilization;
@@ -106,11 +114,13 @@ public class PABFD {
 				}
 			}
 		}
-		
+
 		if (allocatedServers.isEmpty()) {
 			for (Server sUnderutilized : underutilizedServers) {
-				if (schedulingUtil.enoughResources(sUnderutilized, vm, allocation)) {
-					utilization = util.computePotentialUtilizationForAServer(sUnderutilized, vm, allocation);
+				if (schedulingUtil.enoughResources(sUnderutilized, vm,
+						allocation)) {
+					utilization = util.computePotentialUtilizationForAServer(
+							sUnderutilized, vm, allocation);
 					power = sUnderutilized.getIdleEnergy()
 							+ (MAXIMUM_POWER - sUnderutilized.getIdleEnergy())
 							* utilization;
@@ -121,11 +131,13 @@ public class PABFD {
 					}
 				}
 			}
-			
+
 			if (allocatedServers.isEmpty()) {
 				for (Server sEmpty : emptyServers) {
-					if (schedulingUtil.enoughResources(sEmpty, vm,allocation)) {
-						utilization = util.computePotentialUtilizationForAServer(sEmpty, vm, allocation);
+					if (schedulingUtil.enoughResources(sEmpty, vm, allocation)) {
+						utilization = util
+								.computePotentialUtilizationForAServer(sEmpty,
+										vm, allocation);
 						power = sEmpty.getIdleEnergy()
 								+ (MAXIMUM_POWER - sEmpty.getIdleEnergy())
 								* utilization;
@@ -138,19 +150,17 @@ public class PABFD {
 					}
 				}
 			}
-			
+
 		}
 
-			
-
-		if(!allocatedServers.isEmpty()) {
+		if (!allocatedServers.isEmpty()) {
 			correspondingValues.add(power);
 			correspondingValues.add(cooling);
 			returnValue.put(allocatedServers.get(0), correspondingValues);
 		} else {
-//			System.out.println("[ERROR] No server has enough resources");
+			// System.out.println("[ERROR] No server has enough resources");
 		}
-		
+
 		return returnValue;
 
 	}

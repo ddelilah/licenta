@@ -29,10 +29,7 @@ public class ChartAirflow {
 		int hour = now.get(Calendar.HOUR_OF_DAY);
 		int minute = now.get(Calendar.MINUTE);
 		int sec = now.get(Calendar.SECOND);
-		
-	//	MainWindow mAirflow = new MainWindow();
 
-		
 		String yy ="15";
 		String mm = "0"+Integer.toString(month);
 		String dd,hh,min,ss;
@@ -66,10 +63,6 @@ public class ChartAirflow {
 				
 		dss.save("dssAirflow.lgdss");
 		LiveGraph appp = LiveGraph.application();
-	//	appp.setDisplayGraphSettingsWindow(false);
-	//	appp.setDisplaySeriesSettingsWindow(false);
-	//	appp.setDisplayDataFileSettingsWindow(false);
-	//	appp.setDisplayDataFileSettingsWindow(false);
 		appp.exec(new String[] {"-dfs", "startupAirflow2.lgdfs","-dss", "dssAirflow.lgdss"});
 	
 		
