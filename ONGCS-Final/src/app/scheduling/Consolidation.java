@@ -69,7 +69,7 @@ public class Consolidation {
 	}
 
 	public void canMoveAllVMsSomewhereElse(List<VirtualMachine> VMs,
-			List<Server> servers) {
+			List<Server> servers, Charts chart) {
 		boolean canMove = false;
 		Server resultOfOBFD = new Server();
 		Map<VirtualMachine, Server> allocation = new HashMap<VirtualMachine, Server>();
@@ -82,6 +82,8 @@ public class Consolidation {
 
 		vmProcessor = new VMProcessor(VMs);
 		sortedVMs = vmProcessor.sortVMListDescending();
+		
+		int allDeployedVMs;
 
 		numberOfVms = sortedVMs.size();
 
@@ -100,6 +102,7 @@ public class Consolidation {
 		}
 
 		if (canMove && allocation.entrySet().size() == numberOfVms) {
+			allDeployedVMs = vmDAO.getAllVMsByState("Running").size();
 			for (Entry<VirtualMachine, Server> entry : allocation.entrySet()) {
 				vmToBeMoved = entry.getKey();
 				serverToBePlacedOn = entry.getValue();
@@ -124,6 +127,8 @@ public class Consolidation {
 						.addVmsToServer(serverToBePlacedOn, vmToBeMoved));
 				consolidationUtil.turnOffServer(oldServer);
 				releasedNodes.add(oldServer);
+				chart.updateChartPowerConsumption(sUtil.getCurrentPowerConsumption(),
+						sUtil.getCurrentCoolingPowerConsumption(), allDeployedVMs);
 
 				consolidationUtil.updatesToServerValues(serverToBePlacedOn);
 				resultOfServerAllocation.add(serverToBePlacedOn);
@@ -132,6 +137,9 @@ public class Consolidation {
 				resultOfRackReallocation.add(oldRack);
 				consolidationUtil.updatesToRackValues(newRack);
 				resultOfRackReallocation.add(newRack);
+				
+				chart.updateChartPowerConsumption(sUtil.getCurrentPowerConsumption(),
+						sUtil.getCurrentCoolingPowerConsumption(), allDeployedVMs);
 			}
 
 		} else {
@@ -154,17 +162,17 @@ public class Consolidation {
 		}
 	}
 
-	public void tryToMoveAllVMsFromARack(Rack r) {
+	public void tryToMoveAllVMsFromARack(Rack r, Charts chart) {
 		List<Server> serversList = r.getServers();
 
 		for (Server s : serversList) {
 			if (s.getState().equalsIgnoreCase("ON")) {
-				tryToMoveAllVMsFromAServer(s);
+				tryToMoveAllVMsFromAServer(s, chart);
 			}
 		}
 	}
 
-	public void tryToMoveAllVMsFromAServer(Server s) {
+	public void tryToMoveAllVMsFromAServer(Server s, Charts chart) {
 
 		List<VirtualMachine> allVmsOnServer = new ArrayList<VirtualMachine>();
 		List<VirtualMachine> allVmsOnServerToBeMigrated = new ArrayList<VirtualMachine>();
@@ -293,7 +301,7 @@ public class Consolidation {
 			System.out
 					.println("[RACK POLICY IS VIOLATED, BUT THIS IS THE ONLY TURNED ON RACK => MIGRATE ALL VMS FROM THE UNDERUTILIZED SERVER TO SERVERS ON THE SAME RACK");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated,
-					serversThatDontBreakPolicyOnRack);
+					serversThatDontBreakPolicyOnRack, chart);
 			Thread.yield();
 			try {
 				Thread.sleep(1000);
@@ -308,7 +316,7 @@ public class Consolidation {
 							+ r.getUtilization()
 							+ " TO SERVERS ON OTHER RACKS");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated,
-					serversThatDontBreakPolicy);
+					serversThatDontBreakPolicy, chart);
 			Thread.yield();
 			try {
 				Thread.sleep(1000);
@@ -318,7 +326,7 @@ public class Consolidation {
 			System.out
 					.println("[RACK POLICY IS NOT VIOLATED => MIGRATE ALL VMS TO OTHER SERVERS ON THE SAME RACK");
 			canMoveAllVMsSomewhereElse(allVmsOnServerToBeMigrated,
-					serversThatDontBreakPolicyOnRack);
+					serversThatDontBreakPolicyOnRack, chart);
 			Thread.yield();
 			try {
 				Thread.sleep(1000);
@@ -336,6 +344,8 @@ public class Consolidation {
 		List<Rack> allRacks = rackDAO.getAllRacks();
 		Server underUtilizedServerFromAllocationStep = new Server();
 		Rack underUtilizedRackFromAllocationStep = new Rack();
+
+		int allDeployedVMs = vmDAO.getAllVMsByState("Running").size();
 
 		for (Server sr : allServers) {
 			ServerPolicy serverPolicy = new ServerPolicy(p.SERVER_POLICY,
@@ -385,8 +395,10 @@ public class Consolidation {
 
 		}
 
+		
+		int ct = 0;
 		for (Server sr : allModifiedServers) {
-
+			ct++;
 			newServerUtilizationAfterVMDelete = utilization
 					.computeUtilization(sr);
 			newServerPowerConsumptionAfterVMDelete = powerConsumption
@@ -423,6 +435,9 @@ public class Consolidation {
 			} else {
 				rackDAO.mergeSessionsForRack(correspondingRack);
 			}
+			
+			chart.updateChartPowerConsumption(sUtil.getCurrentPowerConsumption(),
+					sUtil.getCurrentCoolingPowerConsumption(), allDeployedVMs - ct);
 		}
 
 		sUtil.displayPowerConsumptionAndCooling("[AFTER DELETE, BEFORE ACTUAL CONSOLIDATION]");
@@ -434,7 +449,7 @@ public class Consolidation {
 						.equalsIgnoreCase(ServerState.OFF.getValue())) {
 			// move all vms from that server on other servers
 			System.out.println("[SERVER RECONSOLIDATION]");
-			tryToMoveAllVMsFromAServer(underUtilizedServerFromAllocationStep);
+			tryToMoveAllVMsFromAServer(underUtilizedServerFromAllocationStep, chart);
 		}
 
 		if (underUtilizedServerFromAllocationStep != null
@@ -467,7 +482,7 @@ public class Consolidation {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 					}
-					tryToMoveAllVMsFromARack(underUtilizedRackFromAllocationStep);
+					tryToMoveAllVMsFromARack(underUtilizedRackFromAllocationStep, chart);
 				}
 			} else {
 				System.out
@@ -517,7 +532,7 @@ public class Consolidation {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 				}
-				tryToMoveAllVMsFromAServer(sr);
+				tryToMoveAllVMsFromAServer(sr, chart);
 
 			} else {
 				// Server does not break policy => check rack
@@ -532,7 +547,7 @@ public class Consolidation {
 					}
 					System.out
 							.println("[RACK POLICY IS VIOLATED => MIGRATE ALL VMS FROM THE RACK TO OTHER RACKS");
-					tryToMoveAllVMsFromARack(correspondingRack);
+					tryToMoveAllVMsFromARack(correspondingRack, chart);
 
 				} else {
 					// System.out.println("[HAPPY FLOW]");

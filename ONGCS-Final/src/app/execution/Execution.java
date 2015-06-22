@@ -81,8 +81,8 @@ public class Execution {
 			cooling.setSingleServerCoolingValueGivenPowerConsumption(s,
 					s.getPowerValue());
 			cooling.setSingleRackCoolingValue(s.getRack());
-			chart.updateChartPowerConsumption(getCurrentPowerConsumption(),
-					getCurrentCoolingPowerConsumption(), ct);
+			chart.updateChartPowerConsumption(sUtil.getCurrentPowerConsumption(),
+					sUtil.getCurrentCoolingPowerConsumption(), ct);
 
 		}
 		MigrationEfficiency mEff = new MigrationEfficiency();
@@ -198,8 +198,8 @@ public class Execution {
 						parallelVolumetricAirFlow04,
 						parallelVolumetricAirFlow05);
 
-				chart.updateChartPowerConsumption(getCurrentPowerConsumption(),
-						getCurrentCoolingPowerConsumption(), ct);
+				chart.updateChartPowerConsumption(sUtil.getCurrentPowerConsumption(),
+						sUtil.getCurrentCoolingPowerConsumption(), ct);
 
 			}
 			MigrationEfficiency mEff = new MigrationEfficiency();
@@ -328,8 +328,8 @@ public class Execution {
 						parallelVolumetricAirFlow04,
 						parallelVolumetricAirFlow05);
 
-				chart.updateChartPowerConsumption(getCurrentPowerConsumption(),
-						getCurrentCoolingPowerConsumption(), ct);
+				chart.updateChartPowerConsumption(sUtil.getCurrentPowerConsumption(),
+						sUtil.getCurrentCoolingPowerConsumption(), ct);
 
 				Thread.yield();
 				try {
@@ -370,42 +370,6 @@ public class Execution {
 
 		}
 
-	}
-
-	public float getCurrentPowerConsumption() {
-		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
-		List<Rack> allRacks = new ArrayList<Rack>();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		List<Server> allServers = new ArrayList<Server>();
-		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
-		allRacks = rackDAO.getAllRacks();
-		float power = 0, cooling = 0;
-		for (Rack rack : allRacks) {
-			allServers = rack.getServers();
-			for (Server server : allServers) {
-				power += server.getPowerValue();
-			}
-
-		}
-		return power;
-	}
-
-	public float getCurrentCoolingPowerConsumption() {
-		List<VirtualMachine> allVMs = new ArrayList<VirtualMachine>();
-		List<Rack> allRacks = new ArrayList<Rack>();
-		RackDAOImpl rackDAO = new RackDAOImpl();
-		List<Server> allServers = new ArrayList<Server>();
-		List<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
-		allRacks = rackDAO.getAllRacks();
-		float cooling = 0;
-		for (Rack rack : allRacks) {
-			allServers = rack.getServers();
-			for (Server server : allServers) {
-				cooling += server.getCoolingValue();
-			}
-
-		}
-		return cooling;
 	}
 
 	public void performFFD(List<VirtualMachine> allVMs, Charts chart,

@@ -23,6 +23,8 @@ public class Utilization {
 
 		if (utilization == 0) {
 			s.setState(ServerState.OFF.getValue());
+		} else {
+			s.setState(ServerState.ON.getValue());
 		}
 		s.setUtilization(utilization);
 		serverDAO.mergeSessionsForServer(s);
